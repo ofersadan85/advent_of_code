@@ -13,6 +13,7 @@ pub fn count_increments_windows(data: Vec<i32>) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::common::*;
 
     fn setup_data(data: Vec<String>) -> Vec<i32> {
@@ -33,21 +34,21 @@ mod tests {
         260
         263";
         let data = setup_data(split_lines(data));
-        let result = super::count_increments(data);
+        let result = count_increments(data);
         assert_eq!(result, 7);
     }
 
     #[test]
     fn task_1() {
         let data = setup_data(get_data("inputs/aoc_2021_1.txt").unwrap());
-        let result = super::count_increments(data);
+        let result = count_increments(data);
         assert_eq!(result, 1316);
 }
     
     #[test]
     fn task_2() {
         let data = setup_data(get_data("inputs/aoc_2021_1.txt").unwrap());
-        let result = super::count_increments_windows(data);
+        let result = count_increments_windows(data);
         assert_eq!(result, 1344);
     }
 }
