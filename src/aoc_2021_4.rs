@@ -111,11 +111,11 @@ mod tests {
         let guesses: Vec<usize> = data
             .first()
             .unwrap()
-            .split(",")
+            .split(',')
             .map(|s| s.parse().unwrap())
             .collect();
         let boards: Vec<BingoBoard> = data[2..]
-            .split(|line| line.trim().to_string() == "".to_string())
+            .split(|line| *line.trim() == *"")
             .map(|lines| BingoBoard::from_lines(lines.to_vec()))
             .collect();
         BingoGame {

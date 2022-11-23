@@ -83,7 +83,7 @@ mod tests {
             .map(|line| {
                 let (a, b, c, d): (usize, usize, usize, usize) = line
                     .replace(" -> ", ",")
-                    .split(",")
+                    .split(',')
                     .map(|s| s.parse().unwrap())
                     .collect_tuple()
                     .unwrap();
@@ -104,7 +104,7 @@ mod tests {
             })
             .rev()
             .join("\n")
-            .replace("0", ".")
+            .replace('0', ".")
     }
 
     #[test]
