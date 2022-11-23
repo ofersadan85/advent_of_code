@@ -13,9 +13,15 @@ pub fn count_increments_windows(data: Vec<i32>) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use crate::common::*;
+
+    fn setup_data(data: Vec<String>) -> Vec<i32> {
+        data.iter().map(|x| x.parse().unwrap_or_default()).collect()
+    }
+
     #[test]
-    fn aoc_2021_1_1() {
-        let example = "
+    fn example() {
+        let data = "
         199
         200
         208
@@ -26,11 +32,22 @@ mod tests {
         269
         260
         263";
-        let example = example
-            .split_ascii_whitespace()
-            .map(|x| x.parse().unwrap_or_default())
-            .collect();
-        let result = super::count_increments(example);
+        let data = setup_data(split_lines(data));
+        let result = super::count_increments(data);
         assert_eq!(result, 7);
+    }
+
+    #[test]
+    fn task_1() {
+        let data = setup_data(get_data("inputs/aoc_2021_1.txt").unwrap());
+        let result = super::count_increments(data);
+        assert_eq!(result, 1316);
+}
+    
+    #[test]
+    fn task_2() {
+        let data = setup_data(get_data("inputs/aoc_2021_1.txt").unwrap());
+        let result = super::count_increments_windows(data);
+        assert_eq!(result, 1344);
     }
 }
