@@ -1,5 +1,7 @@
+#[allow(unused_imports)]
 use itertools::Itertools;
 use std::collections::HashMap;
+use std::cmp::Ordering;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 struct Point {
@@ -16,20 +18,18 @@ struct Line {
 impl Line {
     fn get_points(&self) -> Vec<Point> {
         let mut result = vec![];
-        let mut p = self.start.clone();
-        let x_inc = if self.start.x > self.end.x {
-            -1
-        } else if self.start.x < self.end.x {
-            1
-        } else {
-            0
+        let mut p = self.start;
+        let x_inc = match self.start.x.cmp(&self.end.x) {
+            Ordering::Greater => -1,
+            Ordering::Less => 1,
+            Ordering::Equal => 0
+   
         };
-        let y_inc = if self.start.y > self.end.y {
-            -1
-        } else if self.start.y < self.end.y {
-            1
-        } else {
-            0
+        let y_inc = match self.start.y.cmp(&self.end.y) {
+            Ordering::Greater => -1,
+            Ordering::Less => 1,
+            Ordering::Equal => 0
+   
         };
         while (p.x, p.y) != (self.end.x, self.end.y) {
             result.push(p);
@@ -129,7 +129,7 @@ mod tests {
     #[test]
     fn example_1() {
         let lines = split_lines(EXAMPLE);
-        let data = setup_data(lines.clone());
+        let data = setup_data(lines);
         let counter = point_count(data, false);
         let result = counter.values().filter(|v| **v >= 2).count();
         assert_eq!(result, 5);
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn example_2() {
         let lines = split_lines(EXAMPLE);
-        let data = setup_data(lines.clone());
+        let data = setup_data(lines);
         let counter = point_count(data, true);
         let result = counter.values().filter(|v| **v >= 2).count();
         assert_eq!(result, 12);
@@ -147,7 +147,7 @@ mod tests {
     #[test]
     fn task_1() {
         let lines = get_data(PATH).unwrap();
-        let data = setup_data(lines.clone());
+        let data = setup_data(lines);
         let counter = point_count(data, false);
         let result = counter.values().filter(|v| **v >= 2).count();
         assert_eq!(result, 6267);
@@ -156,7 +156,7 @@ mod tests {
     #[test]
     fn task_2() {
         let lines = get_data(PATH).unwrap();
-        let data = setup_data(lines.clone());
+        let data = setup_data(lines);
         let counter = point_count(data, true);
         let result = counter.values().filter(|v| **v >= 2).count();
         assert_eq!(result, 20196);
