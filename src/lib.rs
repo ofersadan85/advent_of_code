@@ -5,3 +5,4 @@ mod aoc_2021_2;
 mod aoc_2021_3;
 mod aoc_2021_4;
 mod aoc_2021_5;
+mod aoc_2021_6;
