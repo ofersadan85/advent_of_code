@@ -24,3 +24,7 @@ pub fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
         })
         .collect()
 }
+
+pub fn simple_series_sum(n: usize) -> usize{
+    (n.pow(2) + n) / 2
+}
