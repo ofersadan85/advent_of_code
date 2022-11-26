@@ -1,25 +1,5 @@
+use crate::common::get_neighbors;
 use std::collections::HashSet;
-
-fn get_neighbors(x: usize, y: usize, w: usize, h: usize) -> Vec<(usize, usize)> {
-    let mut xs = vec![];
-    let mut ys = vec![];
-    if x > 0 {
-        xs.push(x - 1);
-    }
-    if x < w - 1 {
-        xs.push(x + 1);
-    }
-    if y > 0 {
-        ys.push(y - 1);
-    }
-    if y < h - 1 {
-        ys.push(y + 1);
-    }
-
-    let mut result: Vec<(usize, usize)> = xs.iter().map(|xi| (*xi, y)).collect();
-    result.extend(ys.iter().map(|yi| (x, *yi)));
-    result
-}
 
 fn get_low_points(data: &Vec<Vec<u8>>) -> usize {
     let mut sum: usize = 0;
@@ -27,7 +7,7 @@ fn get_low_points(data: &Vec<Vec<u8>>) -> usize {
     let (h, w) = (data.len(), data[0].len());
     for (y, row) in data.iter().enumerate() {
         for (x, value) in row.iter().enumerate() {
-            let neighbors: Vec<u8> = get_neighbors(x, y, w, h)
+            let neighbors: Vec<u8> = get_neighbors(x, y, w, h, false)
                 .iter()
                 .map(|(xi, yi)| data[*yi][*xi])
                 .collect();
@@ -46,7 +26,7 @@ fn get_basin(data: &Vec<Vec<u8>>, x: usize, y: usize, set: &mut HashSet<(usize, 
     }
     set.insert((x, y));
     let (h, w) = (data.len(), data[0].len());
-    for (xi, yi) in get_neighbors(x, y, w, h) {
+    for (xi, yi) in get_neighbors(x, y, w, h, false) {
         if data[yi][xi] != 9 && !set.contains(&(xi, yi)) {
             set.insert((xi, yi));
             get_basin(data, xi, yi, set);
