@@ -7,3 +7,4 @@ mod aoc_2021_4;
 mod aoc_2021_5;
 mod aoc_2021_6;
 mod aoc_2021_7;
+mod aoc_2021_8;
