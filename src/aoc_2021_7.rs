@@ -54,6 +54,6 @@ mod tests {
     fn task_2() {
         let data = setup_data(get_data(PATH).unwrap());
         let result: usize = calc_fuel_increasing(data);
-        assert_eq!(result, 356958);
+        assert_eq!(result, 105461913);
     }
 }
