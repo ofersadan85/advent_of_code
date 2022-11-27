@@ -10,3 +10,4 @@ mod aoc_2021_7;
 mod aoc_2021_8;
 mod aoc_2021_9;
 mod aoc_2021_10;
+mod aoc_2021_11;
