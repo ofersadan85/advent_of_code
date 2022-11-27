@@ -13,3 +13,4 @@ mod aoc_2021_10;
 mod aoc_2021_11;
 mod graph;
 mod aoc_2021_12;
+mod aoc_2021_13;
