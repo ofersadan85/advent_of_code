@@ -11,3 +11,5 @@ mod aoc_2021_8;
 mod aoc_2021_9;
 mod aoc_2021_10;
 mod aoc_2021_11;
+mod graph;
+mod aoc_2021_12;
