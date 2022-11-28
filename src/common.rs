@@ -61,9 +61,48 @@ pub fn get_neighbors(
     }
 }
 
+pub fn parse_lines<F, T>(lines: &str, f: F) -> Vec<T>
+where
+    F: Fn(&String) -> T,
+{
+    split_lines(lines).iter().map(f).collect()
+}
+
+pub fn parse_number_lines(lines: &str) -> Vec<usize> {
+    parse_lines(lines, |s| s.parse().unwrap())
+}
+
+pub fn parse_digit_lines(lines: &str, radix: u32) -> Vec<Vec<u8>> {
+    parse_lines(lines, |s| {
+        s.chars()
+            .map(|c| c.to_digit(radix).unwrap() as u8)
+            .collect()
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_num(){
+        let lines = "
+        423
+        32587
+        0
+        3";
+        let result = parse_number_lines(lines);
+        assert_eq!(result, vec![423, 32587, 0, 3])
+    }
+
+    #[test]
+    fn test_parse_digits() {
+        let lines = "
+        123
+        456";
+        let result = parse_digit_lines(lines, 10);
+        assert_eq!(result, vec![vec![1,2,3], vec![4,5,6]])
+    }
 
     #[test]
     fn test_neighbors() {
