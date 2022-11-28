@@ -1,53 +1,63 @@
-use itertools::iproduct;
+use itertools::{iproduct, Itertools};
+use num::{Integer, NumCast, One, Zero};
+use std::collections::HashMap;
+use std::fmt;
+use std::hash::Hash;
+use std::str::FromStr;
 
+/// A 2 dimensional Vector
+pub type V2<T> = Vec<Vec<T>>;
+
+/// Count the recurrence of recurrences
+pub fn counts_of_counts<T: Eq + Hash>(v: Vec<T>) -> HashMap<usize, usize> {
+    v.iter().counts().values().copied().counts()
+}
+
+/// Split on lines breaks and trim whitespace from lines
 pub fn split_lines(s: &str) -> Vec<String> {
     s.trim().split('\n').map(|x| x.trim().to_string()).collect()
 }
 
+/// Read data from file and return it as a Vector of Strings
 pub fn get_data(path: &str) -> Result<Vec<String>, std::io::Error> {
     Ok(split_lines(&std::fs::read_to_string(path)?))
 }
 
-pub fn transpose<T>(v: Vec<Vec<T>>) -> Vec<Vec<T>> {
+/// Flips the axis of 2d Vectors
+pub fn transpose<T>(v: V2<T>) -> V2<T> {
     if v.is_empty() {
         return v;
     }
     let len = v[0].len();
     let mut iters: Vec<_> = v.into_iter().map(|n| n.into_iter()).collect();
     (0..len)
-        .map(|_| {
-            iters
-                .iter_mut()
-                .map(|n| n.next().unwrap())
-                .collect::<Vec<T>>()
-        })
+        .map(|_| iters.iter_mut().map(|n| n.next().unwrap()).collect())
         .collect()
 }
 
-pub fn simple_series_sum(n: usize) -> usize {
-    (n.pow(2) + n) / 2
+/// Sums the series [1, 2, .., n]
+pub fn simple_series_sum<T: Integer + NumCast + Copy>(n: T) -> T {
+    (n * n + n) / NumCast::from(2).unwrap()
 }
 
-pub fn get_neighbors(
-    x: usize,
-    y: usize,
-    w: usize,
-    h: usize,
-    diagonals: bool,
-) -> Vec<(usize, usize)> {
+/// Get's neighbor coordinates for 2d grids
+pub fn get_neighbors<T>(x: T, y: T, w: T, h: T, diagonals: bool) -> Vec<(T, T)>
+where
+    T: Integer + Clone + Copy,
+{
     let mut xs = vec![];
     let mut ys = vec![];
-    if x > 0 {
-        xs.push(x - 1);
+    if x > Zero::zero() {
+        xs.push(x - One::one());
     }
-    if x < w - 1 {
-        xs.push(x + 1);
+    if x < w - One::one() {
+        xs.push(x + One::one());
     }
-    if y > 0 {
-        ys.push(y - 1);
+    if y > Zero::zero() {
+        ys.push(y - One::one());
     }
-    if y < h - 1 {
-        ys.push(y + 1);
+    if y < h - One::one() {
+        ys.push(y + One::one());
     }
 
     if diagonals {
@@ -55,12 +65,13 @@ pub fn get_neighbors(
         ys.push(y);
         iproduct!(xs, ys).collect()
     } else {
-        let mut result: Vec<(usize, usize)> = xs.iter().map(|xi| (*xi, y)).collect();
+        let mut result: Vec<(T, T)> = xs.iter().map(|xi| (*xi, y)).collect();
         result.extend(ys.iter().map(|yi| (x, *yi)));
         result
     }
 }
 
+/// Convert lines of strings into a Vector based on given function
 pub fn parse_lines<F, T>(lines: &str, f: F) -> Vec<T>
 where
     F: Fn(&String) -> T,
@@ -68,11 +79,17 @@ where
     split_lines(lines).iter().map(f).collect()
 }
 
-pub fn parse_number_lines(lines: &str) -> Vec<usize> {
+/// Convert lines of strings to integers
+pub fn parse_number_lines<T>(lines: &str) -> Vec<T>
+where
+    T: Integer + FromStr,
+    <T as FromStr>::Err: fmt::Debug,
+{
     parse_lines(lines, |s| s.parse().unwrap())
 }
 
-pub fn parse_digit_lines(lines: &str, radix: u32) -> Vec<Vec<u8>> {
+/// Convert lines of strings to 2d Vector of digits
+pub fn parse_digit_lines(lines: &str, radix: u32) -> V2<u8> {
     parse_lines(lines, |s| {
         s.chars()
             .map(|c| c.to_digit(radix).unwrap() as u8)
@@ -85,14 +102,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_num(){
+    fn test_parse_num() {
         let lines = "
         423
         32587
         0
-        3";
-        let result = parse_number_lines(lines);
-        assert_eq!(result, vec![423, 32587, 0, 3])
+        -3";
+        let result: Vec<i32> = parse_number_lines(lines);
+        assert_eq!(result, vec![423, 32587, 0, -3]);
     }
 
     #[test]
@@ -101,7 +118,7 @@ mod tests {
         123
         456";
         let result = parse_digit_lines(lines, 10);
-        assert_eq!(result, vec![vec![1,2,3], vec![4,5,6]])
+        assert_eq!(result, vec![vec![1, 2, 3], vec![4, 5, 6]])
     }
 
     #[test]

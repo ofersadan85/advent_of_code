@@ -10,4 +10,5 @@ publish = false
 [dependencies]
 itertools = "0.10.5"
 log = "0.4.17"
+num = { version = "0.4.0", features = ["rand", "num-bigint"] }
 rand = "0.8.5"
