@@ -89,10 +89,13 @@ where
 }
 
 /// Convert lines of strings to 2d Vector of digits
-pub fn parse_digit_lines(lines: &str, radix: u32) -> V2<u8> {
+pub fn parse_digit_lines<T>(lines: &str, radix: u32) -> V2<T>
+where
+    T: Integer + NumCast,
+{
     parse_lines(lines, |s| {
         s.chars()
-            .map(|c| c.to_digit(radix).unwrap() as u8)
+            .map(|c| NumCast::from(c.to_digit(radix).unwrap()).unwrap())
             .collect()
     })
 }
@@ -117,7 +120,7 @@ mod tests {
         let lines = "
         123
         456";
-        let result = parse_digit_lines(lines, 10);
+        let result = parse_digit_lines::<u32>(lines, 10);
         assert_eq!(result, vec![vec![1, 2, 3], vec![4, 5, 6]])
     }
 
