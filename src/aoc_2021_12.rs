@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-use crate::graph::{Graph, UndirectedGraph};
+use crate::algo::graph::{Graph, UndirectedGraph};
 
 fn visit_caves(graph: UndirectedGraph, allow_double: bool) -> usize {
     let mut known_paths = vec![vec!["start".to_string()]];
@@ -40,7 +40,7 @@ fn visit_caves(graph: UndirectedGraph, allow_double: bool) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    use crate::graph::{Graph, UndirectedGraph};
+    use crate::algo::graph::{Graph, UndirectedGraph};
     const PATH: &str = "inputs/aoc_2021_12.txt";
     const EXAMPLE_1: &str = "start-A
     start-b
