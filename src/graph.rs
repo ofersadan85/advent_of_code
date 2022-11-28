@@ -88,7 +88,7 @@ pub trait Graph {
             });
     }
 
-    fn neighbours(&self, node: &str) -> Result<&Vec<(String, i32)>, NodeNotInGraph> {
+    fn neighbors(&self, node: &str) -> Result<&Vec<(String, i32)>, NodeNotInGraph> {
         match self.adjacency_table().get(node) {
             None => Err(NodeNotInGraph),
             Some(i) => Ok(i),
@@ -105,8 +105,8 @@ pub trait Graph {
 
     fn edges(&self) -> Vec<(&String, &String, i32)> {
         let mut edges = Vec::new();
-        for (from_node, from_node_neighbours) in self.adjacency_table() {
-            for (to_node, weight) in from_node_neighbours {
+        for (from_node, from_node_neighbors) in self.adjacency_table() {
+            for (to_node, weight) in from_node_neighbors {
                 edges.push((from_node, to_node, *weight));
             }
         }
@@ -140,7 +140,7 @@ mod test_undirected_graph {
     }
 
     #[test]
-    fn test_neighbours() {
+    fn test_neighbors() {
         let mut graph = UndirectedGraph::new();
 
         graph.add_edge(("a", "b", 5));
@@ -148,7 +148,7 @@ mod test_undirected_graph {
         graph.add_edge(("c", "a", 7));
 
         assert_eq!(
-            graph.neighbours("a").unwrap(),
+            graph.neighbors("a").unwrap(),
             &vec![(String::from("b"), 5), (String::from("c"), 7)]
         );
     }
@@ -193,7 +193,7 @@ mod test_directed_graph {
     }
 
     #[test]
-    fn test_neighbours() {
+    fn test_neighbors() {
         let mut graph = DirectedGraph::new();
 
         graph.add_edge(("a", "b", 5));
@@ -201,7 +201,7 @@ mod test_directed_graph {
         graph.add_edge(("c", "a", 7));
 
         assert_eq!(
-            graph.neighbours("a").unwrap(),
+            graph.neighbors("a").unwrap(),
             &vec![(String::from("b"), 5)]
         );
     }

@@ -11,7 +11,7 @@ fn visit_caves(graph: UndirectedGraph, allow_double: bool) -> usize {
             result.push(path);
             continue;
         }
-        for (next_node, _) in graph.neighbours(path.last().unwrap()).unwrap() {
+        for (next_node, _) in graph.neighbors(path.last().unwrap()).unwrap() {
             let cave_count = path.iter().counts();
             let top_small_cave = path
                 .iter()
