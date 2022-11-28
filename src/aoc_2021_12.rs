@@ -123,7 +123,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "Takes too long"]
     fn task_2() {
         let data = setup_data(get_data(PATH).unwrap());
         let result: usize = visit_caves(data, true);
