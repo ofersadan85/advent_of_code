@@ -8,6 +8,14 @@ use std::str::FromStr;
 /// A 2 dimensional Vector
 pub type V2<T> = Vec<Vec<T>>;
 
+/// A quick shortcut to convert binary strings to integers
+pub fn bin2int<T>(s: &str) -> Option<T>
+where
+    T: Integer,
+{
+    T::from_str_radix(s, 2).ok()
+}
+
 /// Count the recurrence of recurrences
 pub fn counts_of_counts<T: Eq + Hash>(v: Vec<T>) -> HashMap<usize, usize> {
     v.iter().counts().values().copied().counts()
