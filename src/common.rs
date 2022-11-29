@@ -1,9 +1,15 @@
 use itertools::{iproduct, Itertools};
 use num::{Integer, NumCast, One, Zero};
 use std::collections::HashMap;
-use std::fmt;
+use std::fmt::Debug;
 use std::hash::Hash;
 use std::str::FromStr;
+
+
+/// Quick shortcut to "pretty-print"
+pub fn pprint<T: Debug>(item: &T) {
+    println!("{:#?}", item)
+}
 
 /// A 2 dimensional Vector
 pub type V2<T> = Vec<Vec<T>>;
@@ -91,7 +97,7 @@ where
 pub fn parse_number_lines<T>(lines: &str) -> Vec<T>
 where
     T: Integer + FromStr,
-    <T as FromStr>::Err: fmt::Debug,
+    <T as FromStr>::Err: Debug,
 {
     parse_lines(lines, |s| s.parse().unwrap())
 }
