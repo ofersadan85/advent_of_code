@@ -168,7 +168,7 @@ fn nested_version_sum(packet: &Packet, sum: &mut usize) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const PATH: &str = "inputs/aoc_2021_16.txt";
+    const PATH: &str = "inputs/2021/day16.txt";
     const EXAMPLES: [&str; 4] = [
         "8A004A801A8002F478",
         "620080001611562C8802118E34",

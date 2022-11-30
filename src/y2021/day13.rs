@@ -45,7 +45,7 @@ fn format_points(points: HashSet<Point>) -> String {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_13.txt";
+    const PATH: &str = "inputs/2021/day13.txt";
     const EXAMPLE: &str = "6,10
     0,14
     9,10

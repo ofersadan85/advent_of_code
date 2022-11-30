@@ -113,7 +113,7 @@ fn count_unique(data: Vec<String>) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_8.txt";
+    const PATH: &str = "inputs/2021/day08.txt";
     const EXAMPLE: &str =
         "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
     edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc

@@ -64,7 +64,7 @@ fn point_count(data: Vec<Line>, diagonals: bool) -> HashMap<Point, usize> {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_5.txt";
+    const PATH: &str = "inputs/2021/day05.txt";
     const EXAMPLE: &str = "
     0,9 -> 5,9
     8,0 -> 0,8

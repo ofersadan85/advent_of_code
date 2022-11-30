@@ -11,7 +11,7 @@ mod tests {
 
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_6.txt";
+    const PATH: &str = "inputs/2021/day06.txt";
     const EXAMPLE: &str = "3,4,3,1,2";
 
     fn setup_data(data: Vec<String>) -> [usize; 9] {

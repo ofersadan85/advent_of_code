@@ -22,7 +22,7 @@ fn calc_fuel_increasing(data: Vec<usize>) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_7.txt";
+    const PATH: &str = "inputs/2021/day07.txt";
     const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
 
     fn setup_data(data: Vec<String>) -> Vec<usize> {

@@ -40,14 +40,14 @@ mod tests {
 
     #[test]
     fn task_1() {
-        let data = setup_data(get_data("inputs/aoc_2021_1.txt").unwrap());
+        let data = setup_data(get_data("inputs/2021/day01.txt").unwrap());
         let result = count_increments(data);
         assert_eq!(result, 1316);
 }
     
     #[test]
     fn task_2() {
-        let data = setup_data(get_data("inputs/aoc_2021_1.txt").unwrap());
+        let data = setup_data(get_data("inputs/2021/day01.txt").unwrap());
         let result = count_increments_windows(data);
         assert_eq!(result, 1344);
     }

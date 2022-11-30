@@ -76,7 +76,7 @@ fn enlarge_vertical(data: &V2<usize>, n: usize) -> V2<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const PATH: &str = "inputs/aoc_2021_15.txt";
+    const PATH: &str = "inputs/2021/day15.txt";
     const EXAMPLE: &str = "1163751742
     1381373672
     2136511328

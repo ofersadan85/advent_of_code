@@ -55,7 +55,7 @@ fn fix_incomplete(data: &[String]) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_10.txt";
+    const PATH: &str = "inputs/2021/day10.txt";
     const EXAMPLE: &str = "[({(<(())[]>[[{[]{<()<>>
         [(()[<>])]({[<{<<[]>>(
         {([(<{}[<>[]}>{[]{[(<()>

@@ -73,14 +73,14 @@ mod tests {
 
     #[test]
     fn task_1() {
-        let data = setup_data(get_data("inputs/aoc_2021_2.txt").unwrap());
+        let data = setup_data(get_data("inputs/2021/day02.txt").unwrap());
         let result = navigate(data);
         assert_eq!(result, 1855814);
     }
 
     #[test]
     fn task_2() {
-        let data = setup_data(get_data("inputs/aoc_2021_2.txt").unwrap());
+        let data = setup_data(get_data("inputs/2021/day02.txt").unwrap());
         let result = navigate_aim(data);
         assert_eq!(result, 1845455714);
     }

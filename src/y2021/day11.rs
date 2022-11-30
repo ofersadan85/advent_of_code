@@ -59,7 +59,7 @@ fn count_flashes(data: &mut Vec<Vec<u8>>, steps: usize) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_11.txt";
+    const PATH: &str = "inputs/2021/day11.txt";
     const EXAMPLE: &str = "5483143223
     2745854711
     5264556173

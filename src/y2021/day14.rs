@@ -54,7 +54,7 @@ fn count_chars(pairs: &PairCounter, edges: &CharPair) -> i64 {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_14.txt";
+    const PATH: &str = "inputs/2021/day14.txt";
     const EXAMPLE: &str = "NNCB
 
     CH -> B

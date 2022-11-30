@@ -41,7 +41,7 @@ mod tests {
     use super::*;
     use crate::common::*;
     use crate::algo::graph::{Graph, UndirectedGraph};
-    const PATH: &str = "inputs/aoc_2021_12.txt";
+    const PATH: &str = "inputs/2021/day12.txt";
     const EXAMPLE_1: &str = "start-A
     start-b
     A-c

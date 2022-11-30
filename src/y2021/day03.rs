@@ -76,7 +76,7 @@ fn life_support(data: V2dBool) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_3.txt";
+    const PATH: &str = "inputs/2021/day03.txt";
     const EXAMPLE: &str = "
     00100
     11110

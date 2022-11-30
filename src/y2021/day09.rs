@@ -58,7 +58,7 @@ fn count_basins(data: &Vec<Vec<u8>>) -> usize {
 mod tests {
     use super::*;
     use crate::common::*;
-    const PATH: &str = "inputs/aoc_2021_9.txt";
+    const PATH: &str = "inputs/2021/day09.txt";
     const EXAMPLE: &str = "2199943210
     3987894921
     9856789892
