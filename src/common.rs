@@ -1,5 +1,5 @@
 use itertools::{iproduct, Itertools};
-use num::{Integer, NumCast, One, Zero};
+use num::{Integer, Num, NumCast, One, Zero};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -51,7 +51,17 @@ pub fn transpose<T>(v: V2<T>) -> V2<T> {
 
 /// Sums the series [1, 2, .., n]
 pub fn simple_series_sum<T: Integer + NumCast + Copy>(n: T) -> T {
-    (n * n + n) / NumCast::from(2).unwrap()
+    series_sum(One::one(), n, One::one())
+}
+
+/// Sums the series [n.., m] in steps
+pub fn series_sum<T>(start: T, end: T, step: T) -> T
+where
+    T: Num + NumCast + Copy,
+{
+    let real_end = end - (end % step);
+    let steps = (real_end - start) / step + One::one();
+    steps * (start + real_end) / NumCast::from(2).unwrap()
 }
 
 /// Get's neighbor coordinates for 2d grids
@@ -117,6 +127,14 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_series_sum() {
+        assert_eq!(series_sum(6., 13., 3.), 27.);
+        assert_eq!(series_sum(-6, 13, 2), 30);
+        assert_eq!(series_sum(6, 12, 3), series_sum(6, 13, 3));
+        assert_eq!(series_sum(1, 13, 1), simple_series_sum(13));
+    }
 
     #[test]
     fn test_parse_num() {
