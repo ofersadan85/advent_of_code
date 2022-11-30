@@ -26,7 +26,7 @@ where
 
 /// Quick shortcut to "pretty-print"
 pub fn pprint<T: Debug>(item: &T) {
-    println!("{:#?}", item)
+    println!("{:#?}", item);
 }
 
 /// A 2 dimensional Vector
@@ -41,7 +41,7 @@ where
 }
 
 /// Count the recurrence of recurrences
-pub fn counts_of_counts<T: Eq + Hash>(v: Vec<T>) -> HashMap<usize, usize> {
+pub fn counts_of_counts<T: Eq + Hash>(v: &[T]) -> HashMap<usize, usize> {
     v.iter().counts().values().copied().counts()
 }
 
@@ -61,7 +61,7 @@ pub fn transpose<T>(v: V2<T>) -> V2<T> {
         return v;
     }
     let len = v[0].len();
-    let mut iters: Vec<_> = v.into_iter().map(|n| n.into_iter()).collect();
+    let mut iters: Vec<_> = v.into_iter().map(IntoIterator::into_iter).collect();
     (0..len)
         .map(|_| iters.iter_mut().map(|n| n.next().unwrap()).collect())
         .collect()
@@ -146,6 +146,7 @@ where
 mod tests {
     use super::*;
 
+    #[allow(clippy::float_cmp)] // This comparison is already tested to work
     #[test]
     fn test_series_sum() {
         assert_eq!(series_sum(6., 13., 3.), 27.);
@@ -183,7 +184,7 @@ mod tests {
         123
         456";
         let result = parse_digit_lines::<u32>(lines, 10);
-        assert_eq!(result, vec![vec![1, 2, 3], vec![4, 5, 6]])
+        assert_eq!(result, vec![vec![1, 2, 3], vec![4, 5, 6]]);
     }
 
     #[test]

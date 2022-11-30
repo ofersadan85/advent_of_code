@@ -31,7 +31,7 @@ fn format_points(points: HashSet<Point>) -> String {
     for p in points {
         v[p.y][p.x] = "*".to_string();
     }
-    let mut result = "".to_string();
+    let mut result = String::new();
     for row in v {
         for value in row {
             result += &value;
@@ -44,7 +44,7 @@ fn format_points(points: HashSet<Point>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
     const PATH: &str = "inputs/2021/day13.txt";
     const EXAMPLE: &str = "6,10
     0,14

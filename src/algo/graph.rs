@@ -2,21 +2,21 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 #[derive(Debug, Clone)]
-pub struct NodeNotInGraph;
+pub struct UnconnectedNode;
 
-impl fmt::Display for NodeNotInGraph {
+impl fmt::Display for UnconnectedNode {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "accessing a node that is not in the graph")
     }
 }
 
-pub struct DirectedGraph {
+pub struct Directed {
     adjacency_table: HashMap<String, Vec<(String, i32)>>,
 }
 
-impl Graph for DirectedGraph {
-    fn new() -> DirectedGraph {
-        DirectedGraph {
+impl Graph for Directed {
+    fn new() -> Directed {
+        Directed {
             adjacency_table: HashMap::new(),
         }
     }
@@ -28,13 +28,13 @@ impl Graph for DirectedGraph {
     }
 }
 
-pub struct UndirectedGraph {
+pub struct Undirected {
     adjacency_table: HashMap<String, Vec<(String, i32)>>,
 }
 
-impl Graph for UndirectedGraph {
-    fn new() -> UndirectedGraph {
-        UndirectedGraph {
+impl Graph for Undirected {
+    fn new() -> Undirected {
+        Undirected {
             adjacency_table: HashMap::new(),
         }
     }
@@ -88,9 +88,9 @@ pub trait Graph {
             });
     }
 
-    fn neighbors(&self, node: &str) -> Result<&Vec<(String, i32)>, NodeNotInGraph> {
+    fn neighbors(&self, node: &str) -> Result<&Vec<(String, i32)>, UnconnectedNode> {
         match self.adjacency_table().get(node) {
-            None => Err(NodeNotInGraph),
+            None => Err(UnconnectedNode),
             Some(i) => Ok(i),
         }
     }
@@ -117,10 +117,10 @@ pub trait Graph {
 #[cfg(test)]
 mod test_undirected_graph {
     use super::Graph;
-    use super::UndirectedGraph;
+    use super::Undirected;
     #[test]
     fn test_add_edge() {
-        let mut graph = UndirectedGraph::new();
+        let mut graph = Undirected::new();
 
         graph.add_edge(("a", "b", 5));
         graph.add_edge(("b", "c", 10));
@@ -134,14 +134,14 @@ mod test_undirected_graph {
             (&String::from("b"), &String::from("c"), 10),
             (&String::from("c"), &String::from("b"), 10),
         ];
-        for edge in expected_edges.iter() {
+        for edge in &expected_edges {
             assert!(graph.edges().contains(edge));
         }
     }
 
     #[test]
     fn test_neighbors() {
-        let mut graph = UndirectedGraph::new();
+        let mut graph = Undirected::new();
 
         graph.add_edge(("a", "b", 5));
         graph.add_edge(("b", "c", 10));
@@ -156,12 +156,12 @@ mod test_undirected_graph {
 
 #[cfg(test)]
 mod test_directed_graph {
-    use super::DirectedGraph;
+    use super::Directed;
     use super::Graph;
 
     #[test]
     fn test_add_node() {
-        let mut graph = DirectedGraph::new();
+        let mut graph = Directed::new();
         graph.add_node("a");
         graph.add_node("b");
         graph.add_node("c");
@@ -169,14 +169,14 @@ mod test_directed_graph {
             graph.nodes(),
             [&String::from("a"), &String::from("b"), &String::from("c")]
                 .iter()
-                .cloned()
+                .copied()
                 .collect()
         );
     }
 
     #[test]
     fn test_add_edge() {
-        let mut graph = DirectedGraph::new();
+        let mut graph = Directed::new();
 
         graph.add_edge(("a", "b", 5));
         graph.add_edge(("c", "a", 7));
@@ -187,28 +187,25 @@ mod test_directed_graph {
             (&String::from("c"), &String::from("a"), 7),
             (&String::from("b"), &String::from("c"), 10),
         ];
-        for edge in expected_edges.iter() {
+        for edge in &expected_edges {
             assert!(graph.edges().contains(edge));
         }
     }
 
     #[test]
     fn test_neighbors() {
-        let mut graph = DirectedGraph::new();
+        let mut graph = Directed::new();
 
         graph.add_edge(("a", "b", 5));
         graph.add_edge(("b", "c", 10));
         graph.add_edge(("c", "a", 7));
 
-        assert_eq!(
-            graph.neighbors("a").unwrap(),
-            &vec![(String::from("b"), 5)]
-        );
+        assert_eq!(graph.neighbors("a").unwrap(), &vec![(String::from("b"), 5)]);
     }
 
     #[test]
     fn test_contains() {
-        let mut graph = DirectedGraph::new();
+        let mut graph = Directed::new();
         graph.add_node("a");
         graph.add_node("b");
         graph.add_node("c");

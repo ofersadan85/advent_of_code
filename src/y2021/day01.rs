@@ -1,10 +1,10 @@
-pub fn count_increments(data: Vec<i32>) -> usize {
+pub fn count_increments(data: &[i32]) -> usize {
     (1..data.len())
         .filter(|i| data[*i] - data[i - 1] > 0)
         .count()
 }
 
-pub fn count_increments_windows(data: Vec<i32>) -> usize {
+pub fn count_increments_windows(data: &[i32]) -> usize {
     let windows: Vec<i32> = data.windows(3).map(|slice| slice.iter().sum()).collect();
     (1..windows.len())
         .filter(|i| windows[*i] - windows[i - 1] > 0)
@@ -14,9 +14,9 @@ pub fn count_increments_windows(data: Vec<i32>) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
 
-    fn setup_data(data: Vec<String>) -> Vec<i32> {
+    fn setup_data(data: &[String]) -> Vec<i32> {
         data.iter().map(|x| x.parse().unwrap_or_default()).collect()
     }
 
@@ -33,22 +33,22 @@ mod tests {
         269
         260
         263";
-        let data = setup_data(split_lines(data));
-        let result = count_increments(data);
+        let data = setup_data(&split_lines(data));
+        let result = count_increments(&data);
         assert_eq!(result, 7);
     }
 
     #[test]
     fn task_1() {
-        let data = setup_data(get_data("inputs/2021/day01.txt").unwrap());
-        let result = count_increments(data);
+        let data = setup_data(&get_data("inputs/2021/day01.txt").unwrap());
+        let result = count_increments(&data);
         assert_eq!(result, 1316);
-}
-    
+    }
+
     #[test]
     fn task_2() {
-        let data = setup_data(get_data("inputs/2021/day01.txt").unwrap());
-        let result = count_increments_windows(data);
+        let data = setup_data(&get_data("inputs/2021/day01.txt").unwrap());
+        let result = count_increments_windows(&data);
         assert_eq!(result, 1344);
     }
 }

@@ -1,8 +1,8 @@
 use itertools::Itertools;
 
-use crate::algo::graph::{Graph, UndirectedGraph};
+use crate::algo::graph::{Graph, Undirected};
 
-fn visit_caves(graph: UndirectedGraph, allow_double: bool) -> usize {
+fn visit_caves(graph: &Undirected, allow_double: bool) -> usize {
     let mut known_paths = vec![vec!["start".to_string()]];
     let mut result: Vec<Vec<String>> = vec![];
     while !known_paths.is_empty() {
@@ -39,8 +39,8 @@ fn visit_caves(graph: UndirectedGraph, allow_double: bool) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
-    use crate::algo::graph::{Graph, UndirectedGraph};
+    use crate::algo::graph::{Graph, Undirected};
+    use crate::common::{get_data, split_lines};
     const PATH: &str = "inputs/2021/day12.txt";
     const EXAMPLE_1: &str = "start-A
     start-b
@@ -78,8 +78,8 @@ mod tests {
     pj-fs
     start-RW";
 
-    fn setup_data(data: Vec<String>) -> UndirectedGraph {
-        let mut graph = UndirectedGraph::new();
+    fn setup_data(data: Vec<String>) -> Undirected {
+        let mut graph = Undirected::new();
         for row in data {
             let mut split = row.split('-');
             let first = split.next().unwrap();
@@ -92,33 +92,33 @@ mod tests {
     #[test]
     fn example_1() {
         let data = setup_data(split_lines(EXAMPLE_1));
-        let result = visit_caves(data, false);
+        let result = visit_caves(&data, false);
         assert_eq!(result, 10);
         let data = setup_data(split_lines(EXAMPLE_2));
-        let result = visit_caves(data, false);
+        let result = visit_caves(&data, false);
         assert_eq!(result, 19);
         let data = setup_data(split_lines(EXAMPLE_3));
-        let result = visit_caves(data, false);
+        let result = visit_caves(&data, false);
         assert_eq!(result, 226);
     }
 
     #[test]
     fn example_2() {
         let data = setup_data(split_lines(EXAMPLE_1));
-        let result = visit_caves(data, true);
+        let result = visit_caves(&data, true);
         assert_eq!(result, 36);
         let data = setup_data(split_lines(EXAMPLE_2));
-        let result = visit_caves(data, true);
+        let result = visit_caves(&data, true);
         assert_eq!(result, 103);
         let data = setup_data(split_lines(EXAMPLE_3));
-        let result = visit_caves(data, true);
+        let result = visit_caves(&data, true);
         assert_eq!(result, 3509);
     }
 
     #[test]
     fn task_1() {
         let data = setup_data(get_data(PATH).unwrap());
-        let result: usize = visit_caves(data, false);
+        let result: usize = visit_caves(&data, false);
         assert_eq!(result, 3369);
     }
 
@@ -126,7 +126,7 @@ mod tests {
     #[ignore = "Takes too long"]
     fn task_2() {
         let data = setup_data(get_data(PATH).unwrap());
-        let result: usize = visit_caves(data, true);
+        let result: usize = visit_caves(&data, true);
         assert_eq!(result, 85883);
     }
 }

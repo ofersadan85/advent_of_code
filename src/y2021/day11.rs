@@ -1,7 +1,7 @@
-use crate::common::get_neighbors;
+use crate::common::{get_neighbors, V2};
 use itertools::iproduct;
 
-fn flash(data: &mut Vec<Vec<u8>>, x: usize, y: usize) -> usize {
+fn flash(data: &mut V2<u32>, x: usize, y: usize) -> usize {
     let mut counter = 0;
     if data[y][x] >= 10 {
         let (h, w) = (data.len(), data[0].len());
@@ -17,7 +17,7 @@ fn flash(data: &mut Vec<Vec<u8>>, x: usize, y: usize) -> usize {
     counter
 }
 
-fn sync_flash(data: &mut Vec<Vec<u8>>) -> usize {
+fn sync_flash(data: &mut V2<u32>) -> usize {
     let mut counter = 0;
     let (h, w) = (data.len(), data[0].len());
 
@@ -28,7 +28,7 @@ fn sync_flash(data: &mut Vec<Vec<u8>>) -> usize {
         for (y, x) in iproduct!(0..h, 0..w) {
             if data[y][x] == 10 {
                 let result = flash(data, x, y);
-                if result == h*w {
+                if result == h * w {
                     return counter + 1;
                 }
             }
@@ -37,7 +37,7 @@ fn sync_flash(data: &mut Vec<Vec<u8>>) -> usize {
     }
 }
 
-fn count_flashes(data: &mut Vec<Vec<u8>>, steps: usize) -> usize {
+fn count_flashes(data: &mut V2<u32>, steps: usize) -> usize {
     let mut counter = 0;
     let (h, w) = (data.len(), data[0].len());
 
@@ -58,7 +58,7 @@ fn count_flashes(data: &mut Vec<Vec<u8>>, steps: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
     const PATH: &str = "inputs/2021/day11.txt";
     const EXAMPLE: &str = "5483143223
     2745854711
@@ -71,36 +71,36 @@ mod tests {
     4846848554
     5283751526";
 
-    fn setup_data(data: Vec<String>) -> Vec<Vec<u8>> {
+    fn setup_data(data: &[String]) -> V2<u32> {
         data.iter()
-            .map(|row| row.chars().map(|c| c.to_digit(10).unwrap() as u8).collect())
+            .map(|row| row.chars().map(|c| c.to_digit(10).unwrap()).collect())
             .collect()
     }
 
     #[test]
     fn example_1() {
-        let mut data = setup_data(split_lines(EXAMPLE));
+        let mut data = setup_data(&split_lines(EXAMPLE));
         let result = count_flashes(&mut data, 100);
         assert_eq!(result, 1656);
     }
 
     #[test]
     fn example_2() {
-        let mut data = setup_data(split_lines(EXAMPLE));
+        let mut data = setup_data(&split_lines(EXAMPLE));
         let result: usize = sync_flash(&mut data);
         assert_eq!(result, 195);
     }
 
     #[test]
     fn task_1() {
-        let mut data = setup_data(get_data(PATH).unwrap());
+        let mut data = setup_data(&get_data(PATH).unwrap());
         let result: usize = count_flashes(&mut data, 100);
         assert_eq!(result, 1741);
     }
 
     #[test]
     fn task_2() {
-        let mut data = setup_data(get_data(PATH).unwrap());
+        let mut data = setup_data(&get_data(PATH).unwrap());
         let result: usize = sync_flash(&mut data);
         assert_eq!(result, 440);
     }

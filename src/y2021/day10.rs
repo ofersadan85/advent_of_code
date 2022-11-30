@@ -47,14 +47,14 @@ fn fix_incomplete(data: &[String]) -> usize {
             result
         })
         .collect();
-    scores.sort();
+    scores.sort_unstable();
     scores.get(scores.len() / 2).unwrap().to_owned()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
     const PATH: &str = "inputs/2021/day10.txt";
     const EXAMPLE: &str = "[({(<(())[]>[[{[]{<()<>>
         [(()[<>])]({[<{<<[]>>(
@@ -82,20 +82,20 @@ mod tests {
     fn example_2() {
         let data = setup_data(split_lines(EXAMPLE));
         let result: usize = fix_incomplete(&data);
-        assert_eq!(result, 288957);
+        assert_eq!(result, 288_957);
     }
 
     #[test]
     fn task_1() {
         let data = setup_data(get_data(PATH).unwrap());
         let result: usize = clean_corrupted(&data);
-        assert_eq!(result, 290691);
+        assert_eq!(result, 290_691);
     }
 
     #[test]
     fn task_2() {
         let data = setup_data(get_data(PATH).unwrap());
         let result: usize = fix_incomplete(&data);
-        assert_eq!(result, 2768166558);
+        assert_eq!(result, 2_768_166_558);
     }
 }

@@ -22,9 +22,9 @@ struct BingoGame {
 impl BingoGame {
     fn play(&mut self) {
         for (index, guess) in self.guesses.clone().iter().enumerate() {
-            for board in self.boards.iter_mut() {
+            for board in &mut self.boards {
                 board.mark_guess(*guess);
-                if board.is_winner() && !board.has_won{
+                if board.is_winner() && !board.has_won {
                     self.winners.push((board.calc_value() * guess, index));
                     board.has_won = true;
                 }
@@ -34,7 +34,7 @@ impl BingoGame {
 }
 
 impl BingoBoard {
-    fn from_lines(lines: Vec<String>) -> Self {
+    fn from_lines(lines: &[String]) -> Self {
         let cells = lines
             .iter()
             .map(|line| {
@@ -84,7 +84,7 @@ impl BingoBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
     const PATH: &str = "inputs/2021/day04.txt";
     const EXAMPLE: &str = "
     7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
@@ -107,7 +107,7 @@ mod tests {
     22 11 13  6  5
      2  0 12  3  7";
 
-    fn setup_data(data: Vec<String>) -> BingoGame {
+    fn setup_data(data: &[String]) -> BingoGame {
         let guesses: Vec<usize> = data
             .first()
             .unwrap()
@@ -116,7 +116,7 @@ mod tests {
             .collect();
         let boards: Vec<BingoBoard> = data[2..]
             .split(|line| *line.trim() == *"")
-            .map(|lines| BingoBoard::from_lines(lines.to_vec()))
+            .map(BingoBoard::from_lines)
             .collect();
         BingoGame {
             guesses,
@@ -127,7 +127,7 @@ mod tests {
 
     #[test]
     fn example_1() {
-        let mut data = setup_data(split_lines(EXAMPLE));
+        let mut data = setup_data(&split_lines(EXAMPLE));
         data.play();
         let result = data.winners.iter().min_by_key(|w| w.1).unwrap().0;
         assert_eq!(result, 4512);
@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn example_2() {
-        let mut data = setup_data(split_lines(EXAMPLE));
+        let mut data = setup_data(&split_lines(EXAMPLE));
         data.play();
         let result = data.winners.iter().max_by_key(|w| w.1).unwrap().0;
         println!("{:#?}", data.winners);
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn task_1() {
-        let mut data = setup_data(get_data(PATH).unwrap());
+        let mut data = setup_data(&get_data(PATH).unwrap());
         data.play();
         let result = data.winners.iter().min_by_key(|w| w.1).unwrap().0;
         assert_eq!(result, 29440);
@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn task_2() {
-        let mut data = setup_data(get_data(PATH).unwrap());
+        let mut data = setup_data(&get_data(PATH).unwrap());
         data.play();
         let result = data.winners.iter().max_by_key(|w| w.1).unwrap().0;
         assert_eq!(result, 13884);

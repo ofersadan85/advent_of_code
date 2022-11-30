@@ -4,7 +4,7 @@ enum Direction {
     Down,
 }
 
-fn navigate(data: Vec<(Direction, usize)>) -> usize {
+fn navigate(data: Vec<(Direction, i32)>) -> i32 {
     let mut depth = 0;
     let mut forward = 0;
     for (direction, value) in data {
@@ -17,12 +17,11 @@ fn navigate(data: Vec<(Direction, usize)>) -> usize {
     depth * forward
 }
 
-fn navigate_aim(data: Vec<(Direction, usize)>) -> isize {
+fn navigate_aim(data: Vec<(Direction, i32)>) -> i32 {
     let mut depth = 0;
     let mut forward = 0;
     let mut aim = 0;
     for (direction, value) in data {
-        let value = value as isize;
         match direction {
             Direction::Forward => {
                 forward += value;
@@ -38,9 +37,9 @@ fn navigate_aim(data: Vec<(Direction, usize)>) -> isize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
 
-    fn setup_data(data: Vec<String>) -> Vec<(Direction, usize)> {
+    fn setup_data(data: &[String]) -> Vec<(Direction, i32)> {
         data.iter()
             .map(|line| {
                 let mut split = line.split_ascii_whitespace();
@@ -66,22 +65,22 @@ mod tests {
         up 3
         down 8
         forward 2";
-        let data = setup_data(split_lines(data));
+        let data = setup_data(&split_lines(data));
         let result = navigate(data);
         assert_eq!(result, 150);
     }
 
     #[test]
     fn task_1() {
-        let data = setup_data(get_data("inputs/2021/day02.txt").unwrap());
+        let data = setup_data(&get_data("inputs/2021/day02.txt").unwrap());
         let result = navigate(data);
-        assert_eq!(result, 1855814);
+        assert_eq!(result, 1_855_814);
     }
 
     #[test]
     fn task_2() {
-        let data = setup_data(get_data("inputs/2021/day02.txt").unwrap());
+        let data = setup_data(&get_data("inputs/2021/day02.txt").unwrap());
         let result = navigate_aim(data);
-        assert_eq!(result, 1845455714);
+        assert_eq!(result, 1_845_455_714);
     }
 }

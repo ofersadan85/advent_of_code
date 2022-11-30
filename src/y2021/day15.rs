@@ -1,5 +1,5 @@
 use crate::algo::dijkstra::{dijkstra, Graph};
-use crate::common::*;
+use crate::common::{get_neighbors, V2};
 use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -45,9 +45,9 @@ fn multi_wrap(v: usize, count: usize) -> usize {
     let mut value = v;
     for _ in 0..count {
         if value < 9 {
-            value += 1
+            value += 1;
         } else {
-            value = 1
+            value = 1;
         }
     }
     value
@@ -76,6 +76,7 @@ fn enlarge_vertical(data: &V2<usize>, n: usize) -> V2<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::common::{get_data, parse_digit_lines};
     const PATH: &str = "inputs/2021/day15.txt";
     const EXAMPLE: &str = "1163751742
     1381373672
@@ -133,7 +134,7 @@ mod tests {
             vec![2, 8, 3, 9, 4, 1, 5, 2, 6, 3],
             vec![5, 6, 6, 7, 7, 8, 8, 9, 9, 1],
         ];
-        assert_eq!(enlarge_horizontal(&start, 5), expected)
+        assert_eq!(enlarge_horizontal(&start, 5), expected);
     }
 
     #[test]
@@ -151,6 +152,6 @@ mod tests {
             vec![5, 3],
             vec![9, 1],
         ];
-        assert_eq!(enlarge_vertical(&start, 5), expected)
+        assert_eq!(enlarge_vertical(&start, 5), expected);
     }
 }

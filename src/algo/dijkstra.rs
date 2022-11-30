@@ -97,15 +97,12 @@ mod tests {
             add_edge(&mut graph, i, i * 2, i * 2);
             add_edge(&mut graph, i, i * 2 + 1, i * 2 + 1);
 
-            match dists[&i] {
-                Some((_, d)) => {
-                    dists.insert(i * 2, Some((i, d + i * 2)));
-                    dists.insert(i * 2 + 1, Some((i, d + i * 2 + 1)));
-                }
-                None => {
-                    dists.insert(i * 2, Some((i, i * 2)));
-                    dists.insert(i * 2 + 1, Some((i, i * 2 + 1)));
-                }
+            if let Some((_, d)) = dists[&i] {
+                dists.insert(i * 2, Some((i, d + i * 2)));
+                dists.insert(i * 2 + 1, Some((i, d + i * 2 + 1)));
+            } else {
+                dists.insert(i * 2, Some((i, i * 2)));
+                dists.insert(i * 2 + 1, Some((i, i * 2 + 1)));
             }
         }
 

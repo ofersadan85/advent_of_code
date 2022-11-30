@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
 use itertools::{iproduct, Itertools};
 
@@ -37,23 +37,33 @@ fn apply_rules(pairs: &mut PairCounter, rules: &ChainRules) {
     }
 }
 
-fn count_chars(pairs: &PairCounter, edges: &CharPair) -> i64 {
+fn count_chars(pairs: &PairCounter, edges: CharPair) -> i64 {
     let mut result: HashMap<char, i64> = HashMap::new();
     for ((char1, char2), count) in pairs.iter().filter(|(_, &v)| v > 0) {
-        result.entry(*char1).and_modify(|v| *v += count).or_insert(*count);
-        result.entry(*char2).and_modify(|v| *v += count).or_insert(*count);
+        result
+            .entry(*char1)
+            .and_modify(|v| *v += count)
+            .or_insert(*count);
+        result
+            .entry(*char2)
+            .and_modify(|v| *v += count)
+            .or_insert(*count);
     }
     result.entry(edges.0).and_modify(|v| *v += 1);
     result.entry(edges.1).and_modify(|v| *v += 1);
 
-    let (min, max) = result.iter().minmax_by_key(|(_, &v)| v).into_option().unwrap();
+    let (min, max) = result
+        .iter()
+        .minmax_by_key(|(_, &v)| v)
+        .into_option()
+        .unwrap();
     (max.1 - min.1) / 2
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::common::*;
+    use crate::common::{get_data, split_lines};
     const PATH: &str = "inputs/2021/day14.txt";
     const EXAMPLE: &str = "NNCB
 
@@ -74,7 +84,7 @@ mod tests {
     CC -> N
     CN -> C";
 
-    fn setup_data(data: Vec<String>) -> (PairCounter, ChainRules, CharPair) {
+    fn setup_data(data: &[String]) -> (PairCounter, ChainRules, CharPair) {
         let mut counter = char_pair_counter();
         let v: Vec<char> = data[0].chars().collect();
         for window in v.windows(2) {
@@ -102,41 +112,41 @@ mod tests {
 
     #[test]
     fn example_1() {
-        let mut data = setup_data(split_lines(EXAMPLE));
+        let mut data = setup_data(&split_lines(EXAMPLE));
         for _ in 0..10 {
             apply_rules(&mut data.0, &data.1);
         }
-        let result = count_chars(&data.0, &data.2);
+        let result = count_chars(&data.0, data.2);
         assert_eq!(result, 1588);
     }
 
     #[test]
     fn example_2() {
-        let mut data = setup_data(split_lines(EXAMPLE));
+        let mut data = setup_data(&split_lines(EXAMPLE));
         for _ in 0..40 {
             apply_rules(&mut data.0, &data.1);
         }
-        let result = count_chars(&data.0, &data.2);
-        assert_eq!(result, 2188189693529);
+        let result = count_chars(&data.0, data.2);
+        assert_eq!(result, 2_188_189_693_529);
     }
 
     #[test]
     fn task_1() {
-        let mut data = setup_data(get_data(PATH).unwrap());
+        let mut data = setup_data(&get_data(PATH).unwrap());
         for _ in 0..10 {
             apply_rules(&mut data.0, &data.1);
         }
-        let result = count_chars(&data.0, &data.2);
+        let result = count_chars(&data.0, data.2);
         assert_eq!(result, 2587);
     }
 
     #[test]
     fn task_2() {
-        let mut data = setup_data(get_data(PATH).unwrap());
+        let mut data = setup_data(&get_data(PATH).unwrap());
         for _ in 0..40 {
             apply_rules(&mut data.0, &data.1);
         }
-        let result = count_chars(&data.0, &data.2);
-        assert_eq!(result, 3318837563123);
+        let result = count_chars(&data.0, data.2);
+        assert_eq!(result, 3_318_837_563_123);
     }
 }

@@ -1,4 +1,4 @@
-use crate::common::*;
+use crate::common::bin2int;
 
 #[derive(Debug, PartialEq, Eq)]
 enum LengthType {
@@ -8,9 +8,10 @@ enum LengthType {
 
 impl LengthType {
     fn from_bool(value: bool) -> Self {
-        match value {
-            false => Self::SubPacketBits,
-            true => Self::SubPacketNumber,
+        if value {
+            Self::SubPacketNumber
+        } else {
+            Self::SubPacketBits
         }
     }
 }
@@ -22,7 +23,7 @@ struct LiteralValue {
 }
 impl LiteralValue {
     fn from_binary(raw_binary: &str) -> Self {
-        let mut value = "".to_string();
+        let mut value = String::new();
         let mut count = 6;
         loop {
             let next_chunk = raw_binary.get(count..count + 5).unwrap();
@@ -125,7 +126,7 @@ struct Packet {
 
 impl Packet {
     fn from_hex(s: &str) -> Self {
-        let mut raw_binary = "".to_string();
+        let mut raw_binary = String::new();
         let hex_vec: Vec<char> = s.chars().collect();
         for i in (0..hex_vec.len()).step_by(2) {
             let small_hex = s.get(i..i + 2).unwrap();
@@ -153,13 +154,10 @@ impl Packet {
 
 fn nested_version_sum(packet: &Packet, sum: &mut usize) {
     *sum += packet.version as usize;
-    match &packet.packet_type {
-        PacketType::Operator(value) => {
-            for p in &value.sub_packets {
-                nested_version_sum(p, sum)
-            }
+    if let PacketType::Operator(value) = &packet.packet_type {
+        for p in &value.sub_packets {
+            nested_version_sum(p, sum);
         }
-        _ => (),
     }
 }
 
