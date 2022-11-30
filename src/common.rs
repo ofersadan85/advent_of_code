@@ -5,6 +5,24 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::str::FromStr;
 
+/// Find real quadratic roots
+pub fn quadratic_roots_real<T>(a: T, b: T, c: T) -> Vec<f64>
+where
+    T: Into<f64>,
+{
+    let (a, b, c): (f64, f64, f64) = (a.into(), b.into(), c.into());
+    assert!(a > Zero::zero());
+    let two: f64 = NumCast::from(2).unwrap();
+    let discriminant = b * b - two * two * a * c;
+    if discriminant < 0. {
+        vec![]
+    } else {
+        vec![
+            (-b + discriminant.sqrt()) / (two * a),
+            (-b - discriminant.sqrt()) / (two * a),
+        ]
+    }
+}
 
 /// Quick shortcut to "pretty-print"
 pub fn pprint<T: Debug>(item: &T) {
@@ -134,6 +152,18 @@ mod tests {
         assert_eq!(series_sum(-6, 13, 2), 30);
         assert_eq!(series_sum(6, 12, 3), series_sum(6, 13, 3));
         assert_eq!(series_sum(1, 13, 1), simple_series_sum(13));
+    }
+
+    #[test]
+    fn test_quadratic_real() {
+        assert_eq!(quadratic_roots_real(3, 3, 3), vec![]);
+        assert_eq!(quadratic_roots_real(1, 0, -16), vec![4., -4.]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_quadratic_error() {
+        quadratic_roots_real(0, 5, 3);
     }
 
     #[test]
