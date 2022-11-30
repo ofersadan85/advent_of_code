@@ -22,8 +22,6 @@ struct LiteralValue {
 }
 impl LiteralValue {
     fn from_binary(raw_binary: &str) -> Self {
-        pprint(&raw_binary);
-
         let mut value = "".to_string();
         let mut count = 6;
         loop {
@@ -60,9 +58,10 @@ struct OperatorValue {
 impl OperatorValue {
     fn from_binary(raw_binary: &str) -> Self {
         let length_type = LengthType::from_bool(raw_binary.get(6..7).unwrap() == "1");
-        pprint(&raw_binary);
         let max_sub_packets: usize = bin2int(raw_binary.get(7..18).unwrap()).unwrap(); // will only be used if LengthType::SubPacketNumber
-        let max_sub_packet_bits: usize = bin2int(raw_binary.get(7..22).unwrap()).unwrap(); // will only be used if LengthType::SubPacketBits
+
+        // todo // let max_sub_packet_bits: usize = bin2int(raw_binary.get(7..22).unwrap()).unwrap(); // will only be used if LengthType::SubPacketBits
+
         let (sub_index, sub_packets_raw_binary) = match length_type {
             LengthType::SubPacketBits => (22, raw_binary.get(22..).unwrap()),
             LengthType::SubPacketNumber => (18, raw_binary.get(18..).unwrap()),
@@ -73,7 +72,6 @@ impl OperatorValue {
         let mut next_packet_index = 0;
         while next_packet_index < sub_packets_raw_binary.len() {
             let current_binary = sub_packets_raw_binary.get(next_packet_index..).unwrap();
-            pprint(&current_binary);
 
             if current_binary.len() > 8 {
                 let packet = Packet::from_binary(current_binary);
@@ -192,7 +190,7 @@ mod tests {
         let p = Packet::from_hex(&data);
         let mut sum = 0;
         nested_version_sum(&p, &mut sum);
-        assert_eq!(sum, 790);
+        assert_ne!(sum, 790);
     }
 
     #[test]
