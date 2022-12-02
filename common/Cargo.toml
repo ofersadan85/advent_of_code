@@ -1,0 +1,12 @@
+[package]
+name = "advent_of_code_common"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ofer Sadan"]
+description = "Common helpers for solutions to adventofcode.com in Rust"
+repository = "https://github.com/ofersadan85/advent_of_code"
+publish = false
+
+[dependencies]
+itertools = "0.10.5"
+num = { version = "0.4.0", features = ["rand", "num-bigint"] }

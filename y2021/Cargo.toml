@@ -1,0 +1,12 @@
+[package]
+name = "advent_of_code_2021"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ofer Sadan"]
+description = "2021 solutions to adventofcode.com in Rust"
+repository = "https://github.com/ofersadan85/advent_of_code"
+publish = false
+
+[dependencies]
+advent_of_code_common = { path = "../common" }
+itertools = "0.10.5"

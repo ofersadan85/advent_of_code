@@ -1,14 +1,8 @@
-[package]
-name = "advent_of_code"
-version = "0.1.0"
-edition = "2021"
-authors = ["Ofer Sadan"]
-description = "Solutions for adventofcode.com in Rust"
-repository = "https://github.com/ofersadan85/advent_of_code"
-publish = false
+[workspace]
 
-[dependencies]
-itertools = "0.10.5"
-log = "0.4.17"
-num = { version = "0.4.0", features = ["rand", "num-bigint"] }
-rand = "0.8.5"
+members = [
+    "common",
+    "y2020",
+    "y2021",
+    "y2022",
+]
