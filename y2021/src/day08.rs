@@ -112,7 +112,7 @@ fn count_unique(data: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day08.txt";
     const EXAMPLE: &str =
         "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe

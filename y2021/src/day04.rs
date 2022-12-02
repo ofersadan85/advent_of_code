@@ -1,4 +1,4 @@
-use advent_of_code_common::transpose;
+use advent_of_code_common::v2::transpose;
 #[derive(Debug, Clone, Copy)]
 struct BingoCell {
     value: usize,
@@ -84,7 +84,7 @@ impl BingoBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day04.txt";
     const EXAMPLE: &str = "
     7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1

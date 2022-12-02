@@ -39,7 +39,7 @@ fn visit_caves(graph: &Undirected, allow_double: bool) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day12.txt";
     const EXAMPLE_1: &str = "start-A
     start-b

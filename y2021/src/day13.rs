@@ -44,7 +44,7 @@ fn format_points(points: HashSet<Point>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day13.txt";
     const EXAMPLE: &str = "6,10
     0,14

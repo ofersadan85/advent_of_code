@@ -63,7 +63,7 @@ fn count_chars(pairs: &PairCounter, edges: CharPair) -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day14.txt";
     const EXAMPLE: &str = "NNCB
 

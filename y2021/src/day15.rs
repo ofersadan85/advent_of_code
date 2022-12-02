@@ -1,5 +1,5 @@
 use advent_of_code_common::algorithms::dijkstra::{dijkstra, Graph};
-use advent_of_code_common::{get_neighbors, V2};
+use advent_of_code_common::v2::{get_neighbors, V2};
 use std::collections::BTreeMap;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -75,7 +75,7 @@ fn enlarge_vertical(data: &V2<usize>, n: usize) -> V2<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, parse_digit_lines};
+    use advent_of_code_common::file::{get_data, parse_digit_lines};
     const PATH: &str = "inputs/day15.txt";
     const EXAMPLE: &str = "1163751742
     1381373672

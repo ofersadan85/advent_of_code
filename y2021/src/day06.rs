@@ -10,7 +10,7 @@ mod tests {
     use itertools::Itertools;
 
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day06.txt";
     const EXAMPLE: &str = "3,4,3,1,2";
 

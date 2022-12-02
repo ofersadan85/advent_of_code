@@ -61,7 +61,7 @@ fn point_count(data: &[Line], diagonals: bool) -> HashMap<Point, i32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day05.txt";
     const EXAMPLE: &str = "
     0,9 -> 5,9

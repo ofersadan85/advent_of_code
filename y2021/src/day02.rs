@@ -37,7 +37,7 @@ fn navigate_aim(data: Vec<(Direction, i32)>) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
 
     fn setup_data(data: &[String]) -> Vec<(Direction, i32)> {
         data.iter()

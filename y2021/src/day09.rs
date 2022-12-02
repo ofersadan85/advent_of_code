@@ -1,4 +1,4 @@
-use advent_of_code_common::{get_neighbors, V2};
+use advent_of_code_common::v2::{get_neighbors, V2};
 use std::collections::HashSet;
 
 fn get_low_points(data: &V2<u32>) -> usize {
@@ -57,7 +57,7 @@ fn count_basins(data: &V2<u32>) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day09.txt";
     const EXAMPLE: &str = "2199943210
     3987894921

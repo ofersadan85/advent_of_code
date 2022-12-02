@@ -26,7 +26,7 @@ fn calc_fuel_increasing(data: &[u32]) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day07.txt";
     const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
 

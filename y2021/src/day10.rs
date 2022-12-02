@@ -54,7 +54,7 @@ fn fix_incomplete(data: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
     const PATH: &str = "inputs/day10.txt";
     const EXAMPLE: &str = "[({(<(())[]>[[{[]{<()<>>
         [(()[<>])]({[<{<<[]>>(

@@ -14,7 +14,7 @@ pub fn count_increments_windows(data: &[i32]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{get_data, split_lines};
+    use advent_of_code_common::{file::get_data, split_lines};
 
     fn setup_data(data: &[String]) -> Vec<i32> {
         data.iter().map(|x| x.parse().unwrap_or_default()).collect()
