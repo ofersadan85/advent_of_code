@@ -40,7 +40,7 @@ fn input(example: bool) -> Vec<Vec<bool>> {
     .map(|row| {
         row.trim()
             .chars()
-            .map(|c| if c == '#' { true } else { false })
+            .map(|c| c == '#')
             .collect()
     })
     .collect()
@@ -52,7 +52,7 @@ fn count_trees(data: &[Vec<bool>], step: PositionVector) -> usize {
     let row_len = data[0].len();
     while mover.y < data.len() {
         if mover.x >= row_len {
-            mover.x = mover.x % row_len
+            mover.x %= row_len;
         }
         if data[mover.y][mover.x] {
             tree_counter += 1;
@@ -64,14 +64,14 @@ fn count_trees(data: &[Vec<bool>], step: PositionVector) -> usize {
 
 fn part_1(data: &[Vec<bool>]) -> usize {
     let step = PositionVector { x: 3, y: 1 };
-    count_trees(&data, step)
+    count_trees(data, step)
 }
 
 fn part_2(data: &[Vec<bool>]) -> usize {
     [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
         .iter()
-        .map(|s| count_trees(&data, PositionVector { x: s.0, y: s.1 }))
-        .fold(1, |acc, p| acc * p)
+        .map(|s| count_trees(data, PositionVector { x: s.0, y: s.1 }))
+        .product()
 }
 
 #[test]
