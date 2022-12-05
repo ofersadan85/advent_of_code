@@ -88,6 +88,11 @@ pub trait Graph {
             });
     }
 
+    /// Get connected neighbors
+    ///
+    /// # Errors
+    ///
+    /// Will return `UnconnectedNode` if the node is not in the graph
     fn neighbors(&self, node: &str) -> Result<&Vec<(String, i32)>, UnconnectedNode> {
         match self.adjacency_table().get(node) {
             None => Err(UnconnectedNode),

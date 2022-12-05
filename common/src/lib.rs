@@ -10,7 +10,9 @@ pub fn pprint<T: Debug>(item: &T) {
     println!("{:#?}", item);
 }
 
-/// Split on lines breaks and trim whitespace from lines
-pub fn split_lines(s: &str) -> Vec<String> {
-    s.trim().split('\n').map(|x| x.trim().to_string()).collect()
+/// General building block for advent of code
+pub struct AdventOfCode {
+    pub year: u16,
+    pub day: u8,
+    pub example: String,
 }

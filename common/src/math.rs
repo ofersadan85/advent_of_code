@@ -4,14 +4,20 @@ use std::collections::HashMap;
 use std::hash::Hash;
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum MathError {
+pub enum Error {
     DivisionByZero,
     ImaginaryRoots,
 }
 
 /// Find real quadratic roots
-#[allow(clippy::float_cmp)] // Checking for strict division by zero error
-pub fn quadratic_roots_real<T>(a: T, b: T, c: T) -> Result<(f64, f64), MathError>
+///
+/// # Errors
+///
+/// Will return `Error::DivisionByZero` if first argument is zero
+///
+/// Will return `Error::ImaginaryRoots` if no real roots can be found
+#[allow(clippy::float_cmp, clippy::missing_panics_doc)] // Checking for strict division by zero error
+pub fn quadratic_roots_real<T>(a: T, b: T, c: T) -> Result<(f64, f64), Error>
 where
     T: Into<f64>,
 {
@@ -19,10 +25,10 @@ where
     let two: f64 = NumCast::from(2).unwrap();
     let discriminant = b * b - two * two * a * c;
     if a == Zero::zero() {
-        return Err(MathError::DivisionByZero);
+        return Err(Error::DivisionByZero);
     }
     if discriminant < 0. {
-        Err(MathError::ImaginaryRoots)
+        Err(Error::ImaginaryRoots)
     } else {
         Ok((
             (-b + discriminant.sqrt()) / (two * a),
@@ -70,10 +76,11 @@ mod tests {
 }
 
 /// A quick shortcut to convert binary strings to integers
-pub fn bin2int<T>(s: &str) -> Result<T, T::FromStrRadixErr>
-where
-    T: Integer,
-{
+///
+/// # Errors
+///
+/// Will return `T::FromStrRadixErr` if string is not a valid binary of 0s and 1s
+pub fn bin2int<T: Integer>(s: &str) -> Result<T, T::FromStrRadixErr> {
     T::from_str_radix(s, 2)
 }
 

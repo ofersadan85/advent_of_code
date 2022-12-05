@@ -1,66 +1,160 @@
-use num::{Integer, NumCast};
+use num::Integer;
 use std::fmt::Debug;
+use std::num::IntErrorKind;
 use std::str::FromStr;
 
-use crate::split_lines;
 use crate::v2::V2;
 
-/// Read data from file and return it as a Vector of Strings
-pub fn get_data(path: &str) -> Result<Vec<String>, std::io::Error> {
-    Ok(split_lines(&std::fs::read_to_string(path)?))
+/// Split on lines breaks and trim whitespace from lines
+pub fn split_lines(s: &str) -> Vec<String> {
+    s.split('\n').map(String::from).collect()
+}
+
+/// Same as `split_lines` but trims whitespace from start and end of input and from every line
+pub fn split_lines_trim(s: &str) -> Vec<String> {
+    split_lines(s.trim())
+        .iter()
+        .map(|row| row.trim().to_string())
+        .collect()
 }
 
 /// Convert lines of strings into a Vector based on given function
-pub fn parse_lines<F, T>(lines: &str, f: F) -> Vec<T>
+///
+/// # Errors
+///
+/// Will return `Err` if lines cannot be parsed as the required type
+pub fn parse_lines<T, E, F>(lines: &str, f: F) -> Result<Vec<T>, E>
 where
-    F: Fn(&String) -> T,
+    F: Fn(&str) -> Result<T, E>,
 {
-    split_lines(lines).iter().map(f).collect()
+    let lines = split_lines_trim(lines);
+    let mut result = vec![];
+    for line in lines {
+        result.push(f(&line)?);
+    }
+    Ok(result)
+}
+
+/// Convert lines of strings into a Vector based on given function
+///
+/// # Errors
+///
+/// Will return `Err` if lines cannot be parsed as the required type
+///
+/// # Panics
+///
+/// Will panic if there's an error reading the file
+#[allow(clippy::module_name_repetitions)]
+pub fn parse_file<T, E, F>(path: &str, f: F) -> Result<Vec<T>, E>
+where
+    F: Fn(&str) -> Result<Vec<T>, E>,
+{
+    let lines = std::fs::read_to_string(path).unwrap();
+    f(&lines)
 }
 
 /// Convert lines of strings to integers
-pub fn parse_number_lines<T>(lines: &str) -> Vec<T>
+///
+/// # Errors
+///
+/// Will return `Err` if lines cannot be parsed as the required type
+pub fn lines_as_numbers<T, E>(lines: &str) -> Result<Vec<T>, E>
 where
-    T: Integer + FromStr,
+    T: Integer + FromStr<Err = E>,
     <T as FromStr>::Err: Debug,
 {
-    parse_lines(lines, |s| s.parse().unwrap())
+    parse_lines(lines, |s| s.parse())
 }
 
 /// Convert lines of strings to 2d Vector of digits
-pub fn parse_digit_lines<T>(lines: &str, radix: u32) -> V2<T>
+///
+/// # Errors
+///
+/// Will return `Err` if characters are not valid digits under given radix
+pub fn lines_as_digits_radix<T>(lines: &str, radix: u32) -> Result<V2<T>, IntErrorKind>
 where
-    T: Integer + NumCast,
+    T: From<u32>,
 {
-    parse_lines(lines, |s| {
-        s.chars()
-            .map(|c| NumCast::from(c.to_digit(radix).unwrap()).unwrap())
-            .collect()
-    })
+    let mut result = vec![];
+    for row in split_lines_trim(lines) {
+        let mut row_vec = vec![];
+        for c in row.chars() {
+            row_vec.push(c.to_digit(radix).ok_or(IntErrorKind::InvalidDigit)?.into());
+        }
+        result.push(row_vec);
+    }
+    Ok(result)
 }
 
+/// Shortcut to `lines_as_digits_radix` with radix of 10
+///
+/// # Errors
+///
+/// Will return `Err` if characters are not valid digits under given radix
+pub fn lines_as_digits<T>(lines: &str) -> Result<V2<T>, IntErrorKind>
+where
+    T: From<u32>,
+{
+    lines_as_digits_radix(lines, 10)
+}
+
+/// Separates lines to blocks on empty lines
+pub fn lines_as_blocks(lines: &str) -> V2<String> {
+    let mut result = vec![];
+    let mut block = vec![];
+    for row in split_lines_trim(lines) {
+        if row.is_empty() {
+            result.push(block);
+            block = vec![];
+        } else {
+            block.push(row);
+        }
+    }
+    result.push(block);
+    result
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_num() {
+    fn lines_as_numbers_test() {
         let lines = "
         423
         32587
         0
         -3";
-        let result: Vec<i32> = parse_number_lines(lines);
-        assert_eq!(result, vec![423, 32587, 0, -3]);
+        let result: Vec<i32> = lines_as_numbers(lines).unwrap();
+        assert_eq!(result, [423, 32587, 0, -3]);
+        let result: Vec<usize> = parse_file("../y2020/inputs/day01.txt", lines_as_numbers).unwrap();
+        assert_eq!(result.len(), 200);
+        assert_eq!(result[..3], [1899, 1358, 1824]);
     }
 
     #[test]
-    fn test_parse_digits() {
+    fn lines_as_digits_test() {
+        let lines = "
+            123
+            456";
+        let result: V2<u64> = lines_as_digits(lines).unwrap();
+        assert_eq!(result, [[1, 2, 3], [4, 5, 6]]);
+        let result: V2<u64> = parse_file("../y2020/inputs/day01.txt", lines_as_digits).unwrap();
+        assert_eq!(result.len(), 200);
+        assert_eq!(result[..3], [[1, 8, 9, 9], [1, 3, 5, 8], [1, 8, 2, 4]]);
+    }
+
+    #[test]
+    fn lines_as_blocks_test() {
         let lines = "
         123
-        456";
-        let result = parse_digit_lines::<u32>(lines, 10);
-        assert_eq!(result, vec![vec![1, 2, 3], vec![4, 5, 6]]);
+        456
+        
+        789";
+        let result = lines_as_blocks(lines);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].len(), 2);
+        assert_eq!(result[1].len(), 1);
+        assert_eq!(result[1][0], "789");
     }
 }

@@ -5,6 +5,10 @@ use num::{Integer, One, Zero};
 pub type V2<T> = Vec<Vec<T>>;
 
 /// Flips the axis of 2d Vectors
+///
+/// # Panics
+///
+/// Will panic if inner vectors have different lengths
 pub fn transpose<T>(v: V2<T>) -> V2<T> {
     if v.is_empty() {
         return v;
@@ -53,11 +57,11 @@ mod tests {
 
     #[test]
     fn test_neighbors() {
-        assert_eq!(get_neighbors(0, 0, 10, 10, false), vec![(1, 0), (0, 1)]);
-        assert_eq!(get_neighbors(10, 10, 10, 10, false), vec![(9, 10), (10, 9)]);
+        assert_eq!(get_neighbors(0, 0, 10, 10, false), [(1, 0), (0, 1)]);
+        assert_eq!(get_neighbors(10, 10, 10, 10, false), [(9, 10), (10, 9)]);
         assert_eq!(
             get_neighbors(5, 5, 10, 10, false),
-            vec![(4, 5), (6, 5), (5, 4), (5, 6)]
+            [(4, 5), (6, 5), (5, 4), (5, 6)]
         );
     }
 
@@ -65,15 +69,15 @@ mod tests {
     fn test_neighbors_diagonals() {
         assert_eq!(
             get_neighbors(0, 0, 10, 10, true),
-            vec![(1, 1), (1, 0), (0, 1), (0, 0)]
+            [(1, 1), (1, 0), (0, 1), (0, 0)]
         );
         assert_eq!(
             get_neighbors(10, 10, 10, 10, true),
-            vec![(9, 9), (9, 10), (10, 9), (10, 10)]
+            [(9, 9), (9, 10), (10, 9), (10, 10)]
         );
         assert_eq!(
             get_neighbors(5, 5, 10, 10, true),
-            vec![
+            [
                 (4, 4),
                 (4, 6),
                 (4, 5),
