@@ -103,7 +103,7 @@ fn example_1() {
 
 #[test]
 fn example_2() {
-    let (mut points, foldings) = input(false);
+    let (mut points, foldings) = input(true);
     for (fold_y, fold_n) in foldings {
         points = fold_once(points, fold_y, fold_n);
     }
@@ -119,7 +119,7 @@ fn example_2() {
 
 #[test]
 fn task_1() {
-    let (points, foldings) = input(true);
+    let (points, foldings) = input(false);
     let (fold_y, fold_n) = foldings.first().unwrap();
     let result = fold_once(points, *fold_y, *fold_n);
     assert_eq!(result.len(), 684);
@@ -127,7 +127,7 @@ fn task_1() {
 
 #[test]
 fn task_2() {
-    let (mut points, foldings) = input(true);
+    let (mut points, foldings) = input(false);
     for (fold_y, fold_n) in foldings {
         points = fold_once(points, fold_y, fold_n);
     }
