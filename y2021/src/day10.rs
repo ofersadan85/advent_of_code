@@ -1,3 +1,15 @@
+const PATH: &str = "inputs/day10.txt";
+const EXAMPLE: &str = "[({(<(())[]>[[{[]{<()<>>
+[(()[<>])]({[<{<<[]>>(
+{([(<{}[<>[]}>{[]{[(<()>
+(((({<>}<{<{<>}{[]{[]{}
+[[<[([]))<([[{}[[()]]]
+[{[{({}]{}}([{[{{{}}([]
+{<[[]]>}<{[{[{[]{()[[[]
+[<(<(<(<{}))><([]([]()
+<{([([[(<>()){}]>(<<{{
+<{([{{}}[<[[[<>{}]]]>[]]";
+
 fn calc_score(s: &str) -> usize {
     let s = s.replace(['(', '[', '{', '<'], "");
     match s.chars().next().unwrap_or('X') {
@@ -54,48 +66,29 @@ fn fix_incomplete(data: &[String]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{file::get_data, split_lines};
-    const PATH: &str = "inputs/day10.txt";
-    const EXAMPLE: &str = "[({(<(())[]>[[{[]{<()<>>
-        [(()[<>])]({[<{<<[]>>(
-        {([(<{}[<>[]}>{[]{[(<()>
-        (((({<>}<{<{<>}{[]{[]{}
-        [[<[([]))<([[{}[[()]]]
-        [{[{({}]{}}([{[{{{}}([]
-        {<[[]]>}<{[{[{[]{()[[[]
-        [<(<(<(<{}))><([]([]()
-        <{([([[(<>()){}]>(<<{{
-        <{([{{}}[<[[[<>{}]]]>[]]";
-
-    fn setup_data(data: Vec<String>) -> Vec<String> {
-        data
-    }
+    use advent_of_code_common::file::split_lines;
 
     #[test]
     fn example_1() {
-        let data = setup_data(split_lines(EXAMPLE));
-        let result: usize = clean_corrupted(&data);
-        assert_eq!(result, 26397);
+        let data = split_lines(EXAMPLE);
+        assert_eq!(clean_corrupted(&data), 26397);
     }
 
     #[test]
     fn example_2() {
-        let data = setup_data(split_lines(EXAMPLE));
-        let result: usize = fix_incomplete(&data);
-        assert_eq!(result, 288_957);
+        let data = split_lines(EXAMPLE);
+        assert_eq!(fix_incomplete(&data), 288_957);
     }
 
     #[test]
     fn task_1() {
-        let data = setup_data(get_data(PATH).unwrap());
-        let result: usize = clean_corrupted(&data);
-        assert_eq!(result, 290_691);
+        let data = split_lines(&std::fs::read_to_string(PATH).unwrap());
+        assert_eq!(clean_corrupted(&data), 290_691);
     }
 
     #[test]
     fn task_2() {
-        let data = setup_data(get_data(PATH).unwrap());
-        let result: usize = fix_incomplete(&data);
-        assert_eq!(result, 2_768_166_558);
+        let data = split_lines(&std::fs::read_to_string(PATH).unwrap());
+        assert_eq!(fix_incomplete(&data), 2_768_166_558);
     }
 }

@@ -57,7 +57,6 @@ fn part_1(data: &[Password]) -> usize {
 
 fn part_2(data: &[Password]) -> usize {
     data.iter().filter(|p| p.is_valid_2()).count()
-
 }
 
 #[test]

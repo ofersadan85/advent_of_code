@@ -9,10 +9,3 @@ pub mod v2;
 pub fn pprint<T: Debug>(item: &T) {
     println!("{:#?}", item);
 }
-
-/// General building block for advent of code
-pub struct AdventOfCode {
-    pub year: u16,
-    pub day: u8,
-    pub example: String,
-}

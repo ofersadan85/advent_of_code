@@ -1,9 +1,26 @@
+use advent_of_code_common::{
+    file::{lines_as_digits_radix, parse_file},
+    v2::V2,
+};
 use itertools::iproduct;
 use std::collections::HashMap;
 
-type V2dBool = Vec<Vec<bool>>;
+const PATH: &str = "inputs/day03.txt";
+const EXAMPLE: &str = "
+00100
+11110
+10110
+10111
+10101
+01111
+00111
+11100
+10000
+11001
+00010
+01010";
 
-fn count_true(data: &V2dBool) -> HashMap<usize, usize> {
+fn count_true(data: &V2<bool>) -> HashMap<usize, usize> {
     let mut counter = HashMap::new();
     for (row, i) in iproduct!(data, 0..data[0].len()) {
         if *row.get(i).unwrap_or(&false) {
@@ -13,7 +30,7 @@ fn count_true(data: &V2dBool) -> HashMap<usize, usize> {
     counter
 }
 
-fn power_consumption(data: &V2dBool) -> usize {
+fn power_consumption(data: &V2<bool>) -> usize {
     let counter = count_true(data);
     let mut gamma = String::new();
     let mut epsilon = String::new();
@@ -31,7 +48,7 @@ fn power_consumption(data: &V2dBool) -> usize {
     gamma * epsilon
 }
 
-fn filter_v2d(data: &V2dBool, i: usize, common: bool) -> V2dBool {
+fn filter_v2d(data: &V2<bool>, i: usize, common: bool) -> V2<bool> {
     let data = data.clone();
     let counter = count_true(&data);
     let common_test = if common {
@@ -45,7 +62,7 @@ fn filter_v2d(data: &V2dBool, i: usize, common: bool) -> V2dBool {
         .collect()
 }
 
-fn num_bin_vec(data: &V2dBool) -> Vec<usize> {
+fn num_bin_vec(data: &V2<bool>) -> Vec<usize> {
     data.iter()
         .map(|row| {
             usize::from_str_radix(
@@ -59,7 +76,7 @@ fn num_bin_vec(data: &V2dBool) -> Vec<usize> {
         .collect()
 }
 
-fn life_support(data: &V2dBool) -> usize {
+fn life_support(data: &V2<bool>) -> usize {
     let mut data_oxygen = data.clone();
     let mut data_co2 = data.clone();
     for i in 0..data[0].len() {
@@ -73,56 +90,34 @@ fn life_support(data: &V2dBool) -> usize {
     num_bin_vec(&data_oxygen)[0] * num_bin_vec(&data_co2)[0]
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use advent_of_code_common::{file::get_data, split_lines};
-    const PATH: &str = "inputs/day03.txt";
-    const EXAMPLE: &str = "
-    00100
-    11110
-    10110
-    10111
-    10101
-    01111
-    00111
-    11100
-    10000
-    11001
-    00010
-    01010";
-
-    fn setup_data(data: &[String]) -> V2dBool {
-        data.iter()
-            .map(|line| line.as_bytes().iter().map(|b| *b as char == '1').collect())
-            .collect()
+fn input(example: bool) -> V2<bool> {
+    let data: V2<u32> = if example {
+        lines_as_digits_radix(EXAMPLE, 2)
+    } else {
+        parse_file(PATH, |lines| lines_as_digits_radix(lines, 2))
     }
+    .unwrap();
+    data.iter()
+        .map(|line| line.iter().map(|&b| b == 1).collect())
+        .collect()
+}
 
-    #[test]
-    fn example_1() {
-        let data = setup_data(&split_lines(EXAMPLE));
-        let result = power_consumption(&data);
-        assert_eq!(result, 198);
-    }
+#[test]
+fn example_1() {
+    assert_eq!(power_consumption(&input(true)), 198);
+}
 
-    #[test]
-    fn example_2() {
-        let data = setup_data(&split_lines(EXAMPLE));
-        let result = life_support(&data);
-        assert_eq!(result, 230);
-    }
+#[test]
+fn example_2() {
+    assert_eq!(life_support(&input(true)), 230);
+}
 
-    #[test]
-    fn task_1() {
-        let data = setup_data(&get_data(PATH).unwrap());
-        let result = power_consumption(&data);
-        assert_eq!(result, 2_035_764);
-    }
+#[test]
+fn task_1() {
+    assert_eq!(power_consumption(&input(false)), 2_035_764);
+}
 
-    #[test]
-    fn task_2() {
-        let data = setup_data(&get_data(PATH).unwrap());
-        let result = life_support(&data);
-        assert_eq!(result, 2_817_661);
-    }
+#[test]
+fn task_2() {
+    assert_eq!(life_support(&input(false)), 2_817_661);
 }

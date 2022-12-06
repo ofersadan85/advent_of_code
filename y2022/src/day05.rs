@@ -102,7 +102,6 @@ fn part_2(stack: &mut SupplyStacks) -> String {
         }
         temp_storage.reverse();
         stack.columns[move_order.dst].append(&mut temp_storage);
-
     }
     stack
         .columns

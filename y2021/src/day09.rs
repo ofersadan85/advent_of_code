@@ -1,6 +1,13 @@
 use advent_of_code_common::v2::{get_neighbors, V2};
 use std::collections::HashSet;
 
+const PATH: &str = "inputs/day09.txt";
+const EXAMPLE: &str = "2199943210
+3987894921
+9856789892
+8767896789
+9899965678";
+
 fn get_low_points(data: &V2<u32>) -> usize {
     let mut sum: usize = 0;
     let mut count: usize = 0;
@@ -54,48 +61,38 @@ fn count_basins(data: &V2<u32>) -> usize {
     result[(result.len() - 3)..].iter().product()
 }
 
+fn setup_data(data: &[String]) -> V2<u32> {
+    data.iter()
+        .map(|row| row.chars().map(|c| c.to_digit(10).unwrap()).collect())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::{file::get_data, split_lines};
-    const PATH: &str = "inputs/day09.txt";
-    const EXAMPLE: &str = "2199943210
-    3987894921
-    9856789892
-    8767896789
-    9899965678";
-
-    fn setup_data(data: &[String]) -> V2<u32> {
-        data.iter()
-            .map(|row| row.chars().map(|c| c.to_digit(10).unwrap()).collect())
-            .collect()
-    }
+    use advent_of_code_common::file::{lines_as_digits, parse_file};
 
     #[test]
     fn example_1() {
-        let data = setup_data(&split_lines(EXAMPLE));
-        let result: usize = get_low_points(&data);
-        assert_eq!(result, 15);
+        let data = lines_as_digits(EXAMPLE).unwrap();
+        assert_eq!(get_low_points(&data), 15);
     }
 
     #[test]
     fn example_2() {
-        let data = setup_data(&split_lines(EXAMPLE));
-        let result: usize = count_basins(&data);
-        assert_eq!(result, 1134);
+        let data = lines_as_digits(EXAMPLE).unwrap();
+        assert_eq!(count_basins(&data), 1134);
     }
 
     #[test]
     fn task_1() {
-        let data = setup_data(&get_data(PATH).unwrap());
-        let result: usize = get_low_points(&data);
-        assert_eq!(result, 594);
+        let data = parse_file(PATH, lines_as_digits).unwrap();
+        assert_eq!(get_low_points(&data), 594);
     }
 
     #[test]
     fn task_2() {
-        let data = setup_data(&get_data(PATH).unwrap());
-        let result: usize = count_basins(&data);
-        assert_eq!(result, 858_494);
+        let data = parse_file(PATH, lines_as_digits).unwrap();
+        assert_eq!(count_basins(&data), 858_494);
     }
 }

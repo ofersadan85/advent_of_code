@@ -91,7 +91,7 @@ fn part_2(data: &[BoardingPass]) -> usize {
     all_ids.sort_unstable();
     for window in all_ids.windows(2) {
         if window[0] != window[1] - 1 {
-            return window[0] + 1
+            return window[0] + 1;
         }
     }
     0

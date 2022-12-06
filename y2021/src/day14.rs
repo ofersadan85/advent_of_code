@@ -1,10 +1,30 @@
-use std::collections::HashMap;
-
+use advent_of_code_common::file::split_lines_trim;
 use itertools::{iproduct, Itertools};
+use std::collections::HashMap;
 
 type CharPair = (char, char);
 type PairCounter = HashMap<CharPair, i64>;
 type ChainRules = HashMap<CharPair, (CharPair, CharPair)>;
+
+const PATH: &str = "inputs/day14.txt";
+const EXAMPLE: &str = "NNCB
+
+CH -> B
+HH -> N
+CB -> H
+NH -> C
+HB -> C
+HC -> B
+HN -> C
+NN -> C
+BH -> H
+NC -> B
+NB -> B
+BN -> B
+BB -> N
+BC -> B
+CC -> N
+CN -> C";
 
 fn char_pair_counter() -> PairCounter {
     iproduct!(
@@ -60,93 +80,69 @@ fn count_chars(pairs: &PairCounter, edges: CharPair) -> i64 {
     (max.1 - min.1) / 2
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use advent_of_code_common::{file::get_data, split_lines};
-    const PATH: &str = "inputs/day14.txt";
-    const EXAMPLE: &str = "NNCB
-
-    CH -> B
-    HH -> N
-    CB -> H
-    NH -> C
-    HB -> C
-    HC -> B
-    HN -> C
-    NN -> C
-    BH -> H
-    NC -> B
-    NB -> B
-    BN -> B
-    BB -> N
-    BC -> B
-    CC -> N
-    CN -> C";
-
-    fn setup_data(data: &[String]) -> (PairCounter, ChainRules, CharPair) {
-        let mut counter = char_pair_counter();
-        let v: Vec<char> = data[0].chars().collect();
-        for window in v.windows(2) {
-            *counter.get_mut(&(window[0], window[1])).unwrap() += 1;
-        }
-
-        let arrow = " -> ";
-        let rules = data
-            .iter()
-            .filter(|s| s.contains(arrow))
-            .map(|s| {
-                let mut split = s.split(arrow);
-                let mut left = split.next().unwrap().chars();
-                let a = left.next().unwrap();
-                let b = left.next().unwrap();
-                let c = split.next().unwrap().chars().next().unwrap();
-                ((a, b), ((a, c), (c, b)))
-            })
-            .collect();
-
-        let edges = (v.first().unwrap().to_owned(), v.last().unwrap().to_owned());
-
-        (counter, rules, edges)
+fn input(example: bool) -> (PairCounter, ChainRules, CharPair) {
+    let data = if example {
+        split_lines_trim(EXAMPLE)
+    } else {
+        split_lines_trim(&std::fs::read_to_string(PATH).unwrap())
+    };
+    let mut counter = char_pair_counter();
+    let v: Vec<char> = data[0].chars().collect();
+    for window in v.windows(2) {
+        *counter.get_mut(&(window[0], window[1])).unwrap() += 1;
     }
 
-    #[test]
-    fn example_1() {
-        let mut data = setup_data(&split_lines(EXAMPLE));
-        for _ in 0..10 {
-            apply_rules(&mut data.0, &data.1);
-        }
-        let result = count_chars(&data.0, data.2);
-        assert_eq!(result, 1588);
-    }
+    let arrow = " -> ";
+    let rules = data
+        .iter()
+        .filter(|s| s.contains(arrow))
+        .map(|s| {
+            let mut split = s.split(arrow);
+            let mut left = split.next().unwrap().chars();
+            let a = left.next().unwrap();
+            let b = left.next().unwrap();
+            let c = split.next().unwrap().chars().next().unwrap();
+            ((a, b), ((a, c), (c, b)))
+        })
+        .collect();
 
-    #[test]
-    fn example_2() {
-        let mut data = setup_data(&split_lines(EXAMPLE));
-        for _ in 0..40 {
-            apply_rules(&mut data.0, &data.1);
-        }
-        let result = count_chars(&data.0, data.2);
-        assert_eq!(result, 2_188_189_693_529);
-    }
+    let edges = (v.first().unwrap().to_owned(), v.last().unwrap().to_owned());
 
-    #[test]
-    fn task_1() {
-        let mut data = setup_data(&get_data(PATH).unwrap());
-        for _ in 0..10 {
-            apply_rules(&mut data.0, &data.1);
-        }
-        let result = count_chars(&data.0, data.2);
-        assert_eq!(result, 2587);
-    }
+    (counter, rules, edges)
+}
 
-    #[test]
-    fn task_2() {
-        let mut data = setup_data(&get_data(PATH).unwrap());
-        for _ in 0..40 {
-            apply_rules(&mut data.0, &data.1);
-        }
-        let result = count_chars(&data.0, data.2);
-        assert_eq!(result, 3_318_837_563_123);
+#[test]
+fn example_1() {
+    let mut data = input(true);
+    for _ in 0..10 {
+        apply_rules(&mut data.0, &data.1);
     }
+    assert_eq!(count_chars(&data.0, data.2), 1588);
+}
+
+#[test]
+fn example_2() {
+    let mut data = input(true);
+    for _ in 0..40 {
+        apply_rules(&mut data.0, &data.1);
+    }
+    assert_eq!(count_chars(&data.0, data.2), 2_188_189_693_529);
+}
+
+#[test]
+fn task_1() {
+    let mut data = input(false);
+    for _ in 0..10 {
+        apply_rules(&mut data.0, &data.1);
+    }
+    assert_eq!(count_chars(&data.0, data.2), 2587);
+}
+
+#[test]
+fn task_2() {
+    let mut data = input(false);
+    for _ in 0..40 {
+        apply_rules(&mut data.0, &data.1);
+    }
+    assert_eq!(count_chars(&data.0, data.2), 3_318_837_563_123);
 }

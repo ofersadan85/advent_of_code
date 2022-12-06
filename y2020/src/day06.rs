@@ -59,7 +59,10 @@ fn part_2(data: &[String]) -> usize {
                 local_set = row.chars().collect();
                 is_first = false;
             }
-            local_set = local_set.intersection(&row.chars().collect()).copied().collect();
+            local_set = local_set
+                .intersection(&row.chars().collect())
+                .copied()
+                .collect();
         }
     }
     sum += local_set.len();

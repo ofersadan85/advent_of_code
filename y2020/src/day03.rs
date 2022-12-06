@@ -37,12 +37,7 @@ fn input(example: bool) -> Vec<Vec<bool>> {
     }
     .trim()
     .split('\n')
-    .map(|row| {
-        row.trim()
-            .chars()
-            .map(|c| c == '#')
-            .collect()
-    })
+    .map(|row| row.trim().chars().map(|c| c == '#').collect())
     .collect()
 }
 

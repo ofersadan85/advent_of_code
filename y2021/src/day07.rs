@@ -1,5 +1,8 @@
 use itertools::Itertools;
 
+const PATH: &str = "inputs/day07.txt";
+const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
+
 fn calc_fuel(data: &[u32]) -> u32 {
     let (min, max) = data.iter().minmax().into_option().unwrap();
     (*min..*max)
@@ -23,42 +26,37 @@ fn calc_fuel_increasing(data: &[u32]) -> u32 {
         .unwrap()
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use advent_of_code_common::{file::get_data, split_lines};
-    const PATH: &str = "inputs/day07.txt";
-    const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
-
-    fn setup_data(data: &[String]) -> Vec<u32> {
-        data[0].split(',').map(|s| s.parse().unwrap()).collect()
+fn input(example: bool) -> Vec<u32> {
+    if example {
+        EXAMPLE.to_string()
+    } else {
+        std::fs::read_to_string(PATH).unwrap()
     }
+    .split(',')
+    .map(|s| s.parse().unwrap())
+    .collect()
+}
 
-    #[test]
-    fn example_1() {
-        let data = setup_data(&split_lines(EXAMPLE));
-        let result: u32 = calc_fuel(&data);
-        assert_eq!(result, 37);
-    }
+#[test]
+fn example_1() {
+    let data = input(true);
+    assert_eq!(calc_fuel(&data), 37);
+}
 
-    #[test]
-    fn example_2() {
-        let data = setup_data(&split_lines(EXAMPLE));
-        let result: u32 = calc_fuel_increasing(&data);
-        assert_eq!(result, 168);
-    }
+#[test]
+fn example_2() {
+    let data = input(true);
+    assert_eq!(calc_fuel_increasing(&data), 168);
+}
 
-    #[test]
-    fn task_1() {
-        let data = setup_data(&get_data(PATH).unwrap());
-        let result: u32 = calc_fuel(&data);
-        assert_eq!(result, 356_958);
-    }
+#[test]
+fn task_1() {
+    let data = input(false);
+    assert_eq!(calc_fuel(&data), 356_958);
+}
 
-    #[test]
-    fn task_2() {
-        let data = setup_data(&get_data(PATH).unwrap());
-        let result: u32 = calc_fuel_increasing(&data);
-        assert_eq!(result, 105_461_913);
-    }
+#[test]
+fn task_2() {
+    let data = input(false);
+    assert_eq!(calc_fuel_increasing(&data), 105_461_913);
 }
