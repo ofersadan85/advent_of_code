@@ -20,5 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Run tests
-        run: cargo test
+      - name: Run tests on the common crate
+        run: cargo test -p advent_of_code_common
+      - name: Run tests on all examples
+        run: cargo test example
