@@ -127,9 +127,6 @@ mod tests {
         -3";
         let result: Vec<i32> = lines_as_numbers(lines).unwrap();
         assert_eq!(result, [423, 32587, 0, -3]);
-        let result: Vec<usize> = parse_file("../y2020/inputs/day01.txt", lines_as_numbers).unwrap();
-        assert_eq!(result.len(), 200);
-        assert_eq!(result[..3], [1899, 1358, 1824]);
     }
 
     #[test]
@@ -139,9 +136,6 @@ mod tests {
             456";
         let result: V2<u64> = lines_as_digits(lines).unwrap();
         assert_eq!(result, [[1, 2, 3], [4, 5, 6]]);
-        let result: V2<u64> = parse_file("../y2020/inputs/day01.txt", lines_as_digits).unwrap();
-        assert_eq!(result.len(), 200);
-        assert_eq!(result[..3], [[1, 8, 9, 9], [1, 3, 5, 8], [1, 8, 2, 4]]);
     }
 
     #[test]
