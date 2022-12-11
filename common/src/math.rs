@@ -1,5 +1,6 @@
+use integer_sqrt::IntegerSquareRoot;
 use itertools::Itertools;
-use num::{Integer, Num, NumCast, One, Zero};
+use num::{Integer, Num, NumCast, One, PrimInt, Unsigned, Zero};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -54,9 +55,47 @@ where
     steps * (start + real_end) / NumCast::from(2).unwrap()
 }
 
+/// Calculate the prime factors of positive integers
+#[allow(clippy::missing_panics_doc)] // False positive - will never panic
+pub fn prime_factors<T>(n: &T) -> Vec<T>
+where
+    T: PrimInt +Unsigned + NumCast + Copy,
+{
+    let two = NumCast::from(2).unwrap();
+    let mut n = *n;
+    let mut div = two;
+    let mut result: Vec<T> = Vec::new();
+    let max_div = n.integer_sqrt();
+    while n > One::one() {
+        if div > max_div {
+            result.push(n);
+            break;
+        } else if n % div == Zero::zero() {
+            result.push(div);
+            n = n / div;
+            div = two;
+        } else {
+            div = div + One::one();
+        }
+    }
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_prime_factors() {
+        assert_eq!(prime_factors(&49_u8), [7, 7], "U8 square");
+        assert_eq!(prime_factors(&247_u8), [13, 19], "U8");
+        assert_eq!(prime_factors(&251_u8), [251], "U8 prime");
+        assert_eq!(prime_factors(&8211_u16), [3, 7, 17, 23], "U16");
+        assert_eq!(prime_factors(&8211_u32), [3, 7, 17, 23], "U32");
+        assert_eq!(prime_factors(&8211_u64), [3, 7, 17, 23], "U64");
+        assert_eq!(prime_factors(&8211_u128), [3, 7, 17, 23], "U128");
+        assert_eq!(prime_factors(&8211_usize), [3, 7, 17, 23], "Usize");
+    }
 
     #[allow(clippy::float_cmp)] // This comparison is already tested to work
     #[test]
