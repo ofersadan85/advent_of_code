@@ -104,14 +104,12 @@ fn part_2(data: &[PacketPair]) -> usize {
         .flat_map(|p| [p.left.clone(), p.right.clone()])
         .collect();
     all_packets.sort_unstable();
-
-    let mut product = 1;
-    for (i, p) in all_packets.iter().enumerate() {
-        if p == &dividers.left || p == &dividers.right {
-            product *= i + 1;
-        }
-    }
-    product
+    all_packets
+        .iter()
+        .enumerate()
+        .filter(|&(_, p)| p == &dividers.left || p == &dividers.right)
+        .map(|(i, _)| i + 1)
+        .product()
 }
 
 #[test]
