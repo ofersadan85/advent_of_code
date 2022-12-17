@@ -7,15 +7,15 @@ const EXAMPLE: &str = "inputs/day15_example.txt";
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct Sensor {
-    x: i32,
-    y: i32,
-    distance: i32,
+    x: i64,
+    y: i64,
+    distance: i64,
 }
 
 impl Sensor {
     fn from_row(row: &str) -> Self {
         let re = Regex::new(r"(-?\d+)").unwrap();
-        let caps: Vec<i32> = re
+        let caps: Vec<i64> = re
             .captures_iter(row)
             .map(|cap| cap[1].parse().unwrap())
             .collect();
@@ -26,7 +26,7 @@ impl Sensor {
         }
     }
 
-    fn points_in_row(&self, y: i32, min_x: i32, max_x: i32) -> HashSet<(i32, i32)> {
+    fn points_in_row(&self, y: i64, min_x: i64, max_x: i64) -> HashSet<(i64, i64)> {
         if (self.y - y).abs() > self.distance {
             return HashSet::new();
         }
@@ -39,7 +39,7 @@ impl Sensor {
             .collect()
     }
 
-    fn can_detect(&self, x: i32, y: i32) -> bool {
+    fn can_detect(&self, x: i64, y: i64) -> bool {
         (self.x - x).abs() + (self.y - y).abs() <= self.distance
     }
 }
@@ -53,10 +53,10 @@ fn input(example: bool) -> Vec<Sensor> {
         .collect()
 }
 
-fn part_1(sensors: &[Sensor], y: i32) -> i32 {
+fn part_1(sensors: &[Sensor], y: i64) -> i64 {
     let points: HashSet<_> = sensors
         .iter()
-        .flat_map(|s| s.points_in_row(y, i32::MIN, i32::MAX))
+        .flat_map(|s| s.points_in_row(y, i64::MIN, i64::MAX))
         .collect();
     points
         .iter()
@@ -66,12 +66,31 @@ fn part_1(sensors: &[Sensor], y: i32) -> i32 {
         .unwrap()
 }
 
-fn part_2(sensors: &[Sensor], max_distance: i32) -> i32 {
-    // todo: needs to be optimized to not iterate over all points
-    let (x, y) = iproduct!(0..=max_distance, 0..=max_distance)
-        .filter(|(x, y)| sensors.iter().all(|s| !s.can_detect(*x, *y)))
-        .next()
+fn part_2(sensors: &[Sensor]) -> i64 {
+    let n2 = sensors.len() * 2;
+    let positive_lines: Vec<_> = sensors
+        .iter()
+        .flat_map(|s| [s.x - s.y - s.distance, s.x - s.y + s.distance])
+        .collect();
+    let negative_lines: Vec<_> = sensors
+        .iter()
+        .flat_map(|s| [s.x + s.y - s.distance, s.x + s.y + s.distance])
+        .collect();
+    let p_options: Vec<_> = iproduct!(0..n2, 0..n2)
+        .filter(|(i, j)| i < j)
+        .filter(|&(i, j)| positive_lines[i].abs_diff(positive_lines[j]) == 2)
+        .map(|(i, j)| positive_lines[i].min(positive_lines[j]) + 1)
+        .collect();
+    let n_options: Vec<_> = iproduct!(0..n2, 0..n2)
+        .filter(|(i, j)| i < j)
+        .filter(|&(i, j)| negative_lines[i].abs_diff(negative_lines[j]) == 2)
+        .map(|(i, j)| negative_lines[i].min(negative_lines[j]) + 1)
+        .collect();
+    let (x, y) = iproduct!(p_options, n_options)
+        .map(|(p, n)| ((p + n) / 2, (p - n).abs() / 2))
+        .find(|(x, y)| sensors.iter().all(|s| !s.can_detect(*x, *y)))
         .unwrap();
+
     x * 4_000_000 + y
 }
 
@@ -88,11 +107,10 @@ fn task_1() {
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true), 20), 56_000_011);
+    assert_eq!(part_2(&input(true)), 56_000_011);
 }
 
 #[test]
-#[ignore = "Takes too long"]
 fn task_2() {
-    assert_eq!(part_2(&input(false), 4_000_000), 0);
+    assert_eq!(part_2(&input(false)), 10_852_583_132_904);
 }
