@@ -94,5 +94,5 @@ fn example_2() {
 
 #[test]
 fn solution_2() {
-    assert_eq!(part_2(&input(false)), 268800);
+    assert_eq!(part_2(&input(false)), 268_800);
 }

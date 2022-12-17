@@ -59,7 +59,7 @@ where
 #[allow(clippy::missing_panics_doc)] // False positive - will never panic
 pub fn prime_factors<T>(n: &T) -> Vec<T>
 where
-    T: PrimInt +Unsigned + NumCast + Copy,
+    T: PrimInt + Unsigned + NumCast + Copy,
 {
     let two = NumCast::from(2).unwrap();
     let mut n = *n;

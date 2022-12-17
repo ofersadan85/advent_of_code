@@ -143,10 +143,7 @@ fn get_big_folders(root: &FolderRef, min_size: u32) -> Vec<u32> {
 
 fn part_2(root: &FolderRef) -> u32 {
     let min_size = root.borrow().size() - 40_000_000;
-    *get_big_folders(root, min_size)
-        .iter()
-        .min()
-        .unwrap()
+    *get_big_folders(root, min_size).iter().min().unwrap()
 }
 
 #[test]
@@ -156,15 +153,15 @@ fn example_1() {
 
 #[test]
 fn task_1() {
-    assert_eq!(part_1(&input(false)), 1182909);
+    assert_eq!(part_1(&input(false)), 1_182_909);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 24933642);
+    assert_eq!(part_2(&input(true)), 24_933_642);
 }
 
 #[test]
 fn task_2() {
-    assert_eq!(part_2(&input(false)), 2832508);
+    assert_eq!(part_2(&input(false)), 2_832_508);
 }

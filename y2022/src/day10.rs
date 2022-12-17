@@ -88,5 +88,5 @@ fn example_2() {
 #[test]
 fn task_2() {
     let output = part_2(&input(false));
-    assert_eq!(output, EXPECTED_PART_2, "\n{}\n", output);
+    assert_eq!(output, EXPECTED_PART_2, "\n{output}\n");
 }

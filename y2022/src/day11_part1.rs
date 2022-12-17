@@ -64,7 +64,7 @@ impl Mul for Item {
 
     fn mul(self, rhs: Self) -> Self::Output {
         if let Self::Factors(lhs_factors) = self {
-            let mut lhs_factors = lhs_factors.clone();
+            let mut lhs_factors = lhs_factors;
             match rhs {
                 Item::Value(n) => {
                     lhs_factors.push(n);
@@ -114,7 +114,7 @@ impl Monkey {
 
     fn inspect(&self, item: Item) -> Item {
         if self.operation == "old * old" {
-            item.clone() * item.clone()
+            item.clone() * item
         } else {
             let number = Item::Value(last_number(&self.operation));
             match &self.operation[4..5] {
@@ -127,7 +127,7 @@ impl Monkey {
 
     fn inspect_and_throw(&mut self, worry: bool) -> Vec<(Item, usize)> {
         let mut result = Vec::new();
-        for item in self.holding.iter() {
+        for item in &self.holding {
             let new_item = if worry {
                 self.inspect(item.clone())
             } else {
@@ -170,7 +170,7 @@ fn part_1(monkeys: &mut [Monkey]) -> u128 {
         throwing_round(monkeys, false);
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
-    inspect_counts.sort();
+    inspect_counts.sort_unstable();
     inspect_counts[(monkeys.len() - 2)..monkeys.len()]
         .iter()
         .product()
@@ -181,7 +181,7 @@ fn part_2(monkeys: &mut [Monkey]) -> u128 {
         throwing_round(monkeys, true);
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
-    inspect_counts.sort();
+    inspect_counts.sort_unstable();
     inspect_counts[(monkeys.len() - 2)..monkeys.len()]
         .iter()
         .product()
