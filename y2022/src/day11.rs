@@ -1,6 +1,4 @@
-use std::ops::{Add, Mul};
-
-use advent_of_code_common::{file::lines_as_blocks, math::prime_factors};
+use advent_of_code_common::file::lines_as_blocks;
 
 pub const PATH: &str = "inputs/day11.txt";
 pub const EXAMPLE: &str = "inputs/day11_example.txt";
@@ -15,74 +13,8 @@ pub fn last_number(s: &str) -> u128 {
 }
 
 #[derive(Debug, Clone)]
-enum Item {
-    Value(u128),
-    Factors(Vec<u128>),
-}
-
-impl Item {
-    fn from_number(n: u128) -> Self {
-        Self::Factors(prime_factors(&n))
-    }
-
-    fn from_str(s: &str) -> Option<Self> {
-        let n = s.parse().ok()?;
-        Some(Self::Factors(prime_factors(&n)))
-    }
-
-    fn value(&self) -> u128 {
-        match self {
-            Self::Value(n) => *n,
-            Self::Factors(factors) => factors.iter().product(),
-        }
-    }
-
-    fn to_factors(&self) -> Self {
-        match self {
-            Item::Value(n) => Self::from_number(*n),
-            Item::Factors(_) => self.clone(),
-        }
-    }
-}
-
-impl Add for Item {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        if let Self::Factors(_) = self {
-            let new_value = self.value() + rhs.value();
-            let new_factors = prime_factors(&new_value);
-            Self::Factors(new_factors)
-        } else {
-            Self::Value(self.value() + rhs.value())
-        }
-    }
-}
-
-impl Mul for Item {
-    type Output = Self;
-
-    fn mul(self, rhs: Self) -> Self::Output {
-        if let Self::Factors(lhs_factors) = self {
-            let mut lhs_factors = lhs_factors;
-            match rhs {
-                Item::Value(n) => {
-                    lhs_factors.push(n);
-                }
-                Item::Factors(rhs_factors) => {
-                    lhs_factors.extend(rhs_factors);
-                }
-            }
-            Self::Factors(lhs_factors)
-        } else {
-            Self::Value(self.value() * rhs.value())
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
 struct Monkey {
-    holding: Vec<Item>,
+    holding: Vec<u128>,
     operation: String,
     divisor: u128,
     target_true: usize,
@@ -95,7 +27,7 @@ impl Monkey {
         let holding = block[1]
             .replace(',', "")
             .split_ascii_whitespace()
-            .filter_map(Item::from_str)
+            .filter_map(|s| s.parse().ok())
             .collect();
         let operation = block[2].split(" = ").last().unwrap().to_string();
         let divisor = last_number(&block[3]);
@@ -112,11 +44,11 @@ impl Monkey {
         }
     }
 
-    fn inspect(&self, item: Item) -> Item {
+    fn inspect(&self, item: u128) -> u128 {
         if self.operation == "old * old" {
-            item.clone() * item
+            item * item
         } else {
-            let number = Item::Value(last_number(&self.operation));
+            let number = last_number(&self.operation);
             match &self.operation[4..5] {
                 "+" => item + number,
                 "*" => item * number,
@@ -125,24 +57,20 @@ impl Monkey {
         }
     }
 
-    fn inspect_and_throw(&mut self, worry: bool) -> Vec<(Item, usize)> {
+    fn inspect_and_throw(&mut self, worry: bool) -> Vec<(u128, usize)> {
         let mut result = Vec::new();
         for item in &self.holding {
-            let new_item = if worry {
-                self.inspect(item.clone())
-            } else {
-                Item::Value(self.inspect(item.clone()).value() / 3)
+            let mut new_item = self.inspect(*item);
+            if !worry {
+                new_item /= 3;
             };
             self.inspect_count += 1;
-            if let Item::Factors(factors) = new_item.to_factors() {
-                // Should always be true
-                let target = if factors.contains(&self.divisor) {
-                    self.target_true
-                } else {
-                    self.target_false
-                };
-                result.push((new_item, target));
-            }
+            let target = if new_item % self.divisor == 0 {
+                self.target_true
+            } else {
+                self.target_false
+            };
+            result.push((new_item, target));
         }
         self.holding = Vec::new();
         result
@@ -157,17 +85,19 @@ fn input(example: bool) -> Vec<Monkey> {
         .collect()
 }
 
-fn throwing_round(monkeys: &mut [Monkey], worry: bool) {
+fn throwing_round(monkeys: &mut [Monkey], worry: bool, max_div: u128) {
     for i in 0..monkeys.len() {
         for (item, target) in monkeys[i].inspect_and_throw(worry) {
+            let item = item % max_div;
             monkeys[target].holding.push(item);
         }
     }
 }
 
 fn part_1(monkeys: &mut [Monkey]) -> u128 {
+    let max_div: u128 = monkeys.iter().map(|m| m.divisor).product();
     for _ in 0..20 {
-        throwing_round(monkeys, false);
+        throwing_round(monkeys, false, max_div);
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
     inspect_counts.sort_unstable();
@@ -177,8 +107,9 @@ fn part_1(monkeys: &mut [Monkey]) -> u128 {
 }
 
 fn part_2(monkeys: &mut [Monkey]) -> u128 {
+    let max_div: u128 = monkeys.iter().map(|m| m.divisor).product();
     for _ in 0..10000 {
-        throwing_round(monkeys, true);
+        throwing_round(monkeys, true, max_div);
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
     inspect_counts.sort_unstable();
@@ -197,4 +128,16 @@ fn example_1() {
 fn task_1() {
     let mut monkeys = input(false);
     assert_eq!(part_1(&mut monkeys), 62491);
+}
+
+#[test]
+fn example_2() {
+    let mut monkeys = input(true);
+    assert_eq!(part_2(&mut monkeys), 2_713_310_158);
+}
+
+#[test]
+fn task_2() {
+    let mut monkeys = input(false);
+    assert_eq!(part_2(&mut monkeys), 17_408_399_184);
 }
