@@ -18,10 +18,17 @@ impl Display for Pixel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Pixel::Empty => write!(f, "."),
-            Pixel::Moving => write!(f, "M"),
+            Pixel::Moving => write!(f, "@"),
             Pixel::Full => write!(f, "#"),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Direction {
+    Left,
+    Right,
+    Down,
 }
 
 enum Shape {
@@ -83,6 +90,7 @@ struct Game {
     width: usize,
     score: usize,
     shape_index: usize,
+    _top_of_mover: usize,
 }
 
 impl Display for Game {
@@ -90,10 +98,12 @@ impl Display for Game {
         let result = self
             .board
             .iter()
-            .map(|row| row.iter().map(Pixel::to_string).collect::<String>())
+            .enumerate()
+            .map(|(i, row)| {
+                row.iter().map(Pixel::to_string).collect::<String>() + " " + &i.to_string()
+            })
             .join("\n");
-        writeln!(f, "{result}")?;
-        writeln!(f, "Score: {}", self.score)
+        writeln!(f, "{result}")
     }
 }
 
@@ -104,18 +114,21 @@ impl Game {
             width,
             score: 0,
             shape_index: 0,
+            _top_of_mover: 0,
         }
     }
 
     fn add_shape(&mut self) {
         let mut shape = Shape::from_int(self.shape_index % 5).to_vec(self.width);
         self.shape_index += 1;
-        self.board.push_front(vec![Pixel::Empty; self.width]);
+        for _ in 0..3 {
+            self.board.push_front(vec![Pixel::Empty; self.width]);
+        }
         while !shape.is_empty() {
             let row = shape.pop().unwrap();
             self.board.push_front(row);
         }
-        println!("{self}");
+        self._top_of_mover = 0;
     }
 
     fn prune_top(&mut self) {
@@ -139,17 +152,136 @@ impl Game {
             self.score += self.board.split_off(at).len();
         }
     }
+
+    fn get_mover_coordinates(&self) -> Vec<(usize, usize)> {
+        let lookup_range = self._top_of_mover..(self._top_of_mover + 4).min(self.board.len());
+        self.board
+            .range(lookup_range)
+            .enumerate()
+            .flat_map(|(y, row)| {
+                row.iter().enumerate().filter_map(move |(x, p)| {
+                    if *p == Pixel::Moving {
+                        Some((x, y + self._top_of_mover))
+                    } else {
+                        None
+                    }
+                })
+            })
+            .collect()
+    }
+
+    fn move_step(&mut self, dir: Direction) -> bool {
+        use Direction::{Down, Left, Right};
+        use Pixel::{Empty, Full, Moving};
+        let mover_coords = self.get_mover_coordinates();
+        if mover_coords.is_empty() {
+            return false;
+        }
+        let (min_x, max_x, max_y) = mover_coords
+            .iter()
+            .fold((self.width, 0, 0), |(min_x, max_x, max_y), (x, y)| {
+                (min_x.min(*x), max_x.max(*x), max_y.max(*y))
+            });
+
+        let can_move = match dir {
+            Left => {
+                min_x > 0
+                    && mover_coords
+                        .iter()
+                        .all(|(x, y)| self.board[*y][*x - 1] != Full)
+            }
+            Right => {
+                max_x + 1 < self.width
+                    && mover_coords
+                        .iter()
+                        .all(|(x, y)| self.board[*y][*x + 1] != Full)
+            }
+            Down => {
+                max_y + 1 < self.board.len()
+                    && mover_coords
+                        .iter()
+                        .all(|(x, y)| self.board[*y + 1][*x] != Full)
+            }
+        };
+        if can_move {
+            mover_coords
+                .iter()
+                .for_each(|&(x, y)| self.board[y][x] = Empty);
+            mover_coords.iter().for_each(|&(x, y)| match dir {
+                Left => self.board[y][x - 1] = Moving,
+                Right => self.board[y][x + 1] = Moving,
+                Down => self.board[y + 1][x] = Moving,
+            });
+            if dir == Down {
+                self._top_of_mover += 1;
+            }
+        } else if dir == Down {
+            mover_coords
+                .iter()
+                .for_each(|&(x, y)| self.board[y][x] = Full);
+            self._top_of_mover = 0;
+            self.prune_top();
+            // self.prune_bottom();
+        }
+        can_move
+    }
+
+    fn game_loop(&mut self, directions: &str, shapes: usize) {
+        let mut chars = directions.chars().cycle();
+        for i in 0..shapes {
+            if self.board.len() < 4 {
+                println!("Game over after {} shapes (len: {})", i, self.board.len());
+            }
+            self.add_shape();
+            loop {
+                match chars.next().unwrap_or(' ') {
+                    '<' => self.move_step(Direction::Left),
+                    '>' => self.move_step(Direction::Right),
+                    _ => false,
+                };
+                let moved = self.move_step(Direction::Down);
+                if !moved {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+fn input(example: bool) -> String {
+    if example {
+        EXAMPLE.to_string()
+    } else {
+        std::fs::read_to_string(PATH).unwrap()
+    }
+}
+
+fn play(directions: &str, shapes: usize) -> usize {
+    let mut game = Game::new(7);
+    game.game_loop(directions, shapes);
+    println!("Board: {}", game);
+    println!("Score: {}", game.score);
+    println!("Board: {}", game.board.len());
+    game.score + game.board.len()
 }
 
 #[test]
-fn test_game() {
-    let mut game = Game::new(7);
-    game.add_shape();
-    game.add_shape();
-    game.add_shape();
-    game.add_shape();
-    game.add_shape();
-    game.add_shape();
-    game.add_shape();
-    todo!()
+fn example_1() {
+    assert_eq!(play(&input(true), 2022), 3068);
 }
+
+#[test]
+fn task_1() {
+    assert_eq!(play(&input(false), 2022), 3188);
+}
+
+// #[test]
+// fn example_2() {
+//     let score = play(&input(true), 53);
+//     assert_eq!(play(&input(true), 53), 1_514_285_714_288);
+// }
+
+// #[test]
+// fn task_2() {
+//     assert_eq!(play(&input(false), 1_000_000_000_000), 0);
+// }
