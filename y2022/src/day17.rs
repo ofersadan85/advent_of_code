@@ -1,6 +1,3 @@
-// Building A Tetris game in Rust
-// https://adventofcode.com/2022/day/17
-
 use itertools::Itertools;
 use std::{collections::VecDeque, fmt::Display};
 
@@ -88,9 +85,8 @@ impl Shape {
 struct Game {
     board: VecDeque<Vec<Pixel>>,
     width: usize,
-    score: usize,
     shape_index: usize,
-    _top_of_mover: usize,
+    top_of_mover: usize,
 }
 
 impl Display for Game {
@@ -98,10 +94,7 @@ impl Display for Game {
         let result = self
             .board
             .iter()
-            .enumerate()
-            .map(|(i, row)| {
-                row.iter().map(Pixel::to_string).collect::<String>() + " " + &i.to_string()
-            })
+            .map(|row| row.iter().map(Pixel::to_string).collect::<String>())
             .join("\n");
         writeln!(f, "{result}")
     }
@@ -112,9 +105,8 @@ impl Game {
         Self {
             board: VecDeque::new(),
             width,
-            score: 0,
             shape_index: 0,
-            _top_of_mover: 0,
+            top_of_mover: 0,
         }
     }
 
@@ -128,7 +120,7 @@ impl Game {
             let row = shape.pop().unwrap();
             self.board.push_front(row);
         }
-        self._top_of_mover = 0;
+        self.top_of_mover = 0;
     }
 
     fn prune_top(&mut self) {
@@ -142,26 +134,15 @@ impl Game {
         }
     }
 
-    fn prune_bottom(&mut self) {
-        let full_row = self
-            .board
-            .iter()
-            .find_position(|row| row.iter().all(|p| *p == Pixel::Full));
-        if let Some((at, _)) = full_row {
-            // Split and drop the bottom rows, and add the number of rows dropped to the score
-            self.score += self.board.split_off(at).len();
-        }
-    }
-
     fn get_mover_coordinates(&self) -> Vec<(usize, usize)> {
-        let lookup_range = self._top_of_mover..(self._top_of_mover + 4).min(self.board.len());
+        let lookup_range = self.top_of_mover..(self.top_of_mover + 4).min(self.board.len());
         self.board
             .range(lookup_range)
             .enumerate()
             .flat_map(|(y, row)| {
                 row.iter().enumerate().filter_map(move |(x, p)| {
                     if *p == Pixel::Moving {
-                        Some((x, y + self._top_of_mover))
+                        Some((x, y + self.top_of_mover))
                     } else {
                         None
                     }
@@ -213,25 +194,21 @@ impl Game {
                 Down => self.board[y + 1][x] = Moving,
             });
             if dir == Down {
-                self._top_of_mover += 1;
+                self.top_of_mover += 1;
             }
         } else if dir == Down {
             mover_coords
                 .iter()
                 .for_each(|&(x, y)| self.board[y][x] = Full);
-            self._top_of_mover = 0;
+            self.top_of_mover = 0;
             self.prune_top();
-            // self.prune_bottom();
         }
         can_move
     }
 
     fn game_loop(&mut self, directions: &str, shapes: usize) {
         let mut chars = directions.chars().cycle();
-        for i in 0..shapes {
-            if self.board.len() < 4 {
-                println!("Game over after {} shapes (len: {})", i, self.board.len());
-            }
+        for _ in 0..shapes {
             self.add_shape();
             loop {
                 match chars.next().unwrap_or(' ') {
@@ -259,10 +236,16 @@ fn input(example: bool) -> String {
 fn play(directions: &str, shapes: usize) -> usize {
     let mut game = Game::new(7);
     game.game_loop(directions, shapes);
-    println!("Board: {}", game);
-    println!("Score: {}", game.score);
-    println!("Board: {}", game.board.len());
-    game.score + game.board.len()
+    game.board.len()
+}
+
+fn part_2(directions: &str, r_cycle: usize, shapes: usize) -> usize {
+    let r_start = r_cycle * 10;
+    let start_len = play(directions, r_start);
+    let r_len = play(directions, r_start + r_cycle) - start_len;
+    let repeats = (shapes - r_start) / r_cycle;
+    let diff = play(directions, shapes - (repeats * r_cycle));
+    diff + repeats * r_len
 }
 
 #[test]
@@ -275,13 +258,17 @@ fn task_1() {
     assert_eq!(play(&input(false), 2022), 3188);
 }
 
-// #[test]
-// fn example_2() {
-//     let score = play(&input(true), 53);
-//     assert_eq!(play(&input(true), 53), 1_514_285_714_288);
-// }
+#[test]
+fn example_2() {
+    let r_cycle = 35; // Measured the repeats by hand //todo: automate
+    let shapes = 1_000_000_000_000;
+    assert_eq!(part_2(&input(true), r_cycle, shapes), 1_514_285_714_288);
+}
 
-// #[test]
-// fn task_2() {
-//     assert_eq!(play(&input(false), 1_000_000_000_000), 0);
-// }
+#[test]
+fn task_2() {
+    let r_cycle = 2778; // Measured the repeats by hand //todo: automate
+    let shapes = 1_000_000_000_000;
+    assert_eq!(part_2(&input(false), r_cycle, shapes), 0);
+    todo!("This is not the right answer, but it's the right order of magnitude. I'm not sure what's wrong. :(")
+}
