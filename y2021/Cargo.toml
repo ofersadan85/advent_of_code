@@ -9,5 +9,5 @@ publish = false
 
 [dependencies]
 advent_of_code_common = { path = "../common" }
-euclid = "0.22.7"
-itertools = "0.10.5"
+euclid = "0.22.9"
+itertools = "0.11.0"
