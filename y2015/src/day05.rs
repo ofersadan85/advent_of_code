@@ -1,24 +1,52 @@
 use std::collections::HashMap;
 
-const FORBIDDEN_STRINGS: [&str; 4] = ["ab", "cd", "pq", "xy"];
-
-pub fn is_nice_string(s: &str) -> bool {
-    if FORBIDDEN_STRINGS.iter().any(|fs| s.contains(fs)) {
-        return false;
-    }
+pub fn is_nice_str(s: &str) -> bool {
     let mut vowel_count = 0;
     let mut has_double_letter = false;
-    let mut previous = ' ';
-    s.chars().for_each(|c| {
-        if c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u' {
-            vowel_count += 1;
+    let mut previous = ' '; // dummy value, will never match
+    for c in s.chars() {
+        match (previous, c) {
+            ('a', 'b') | ('c', 'd') | ('p', 'q') | ('x', 'y') => return false,
+            (_, 'a') | (_, 'e') | (_, 'i') | (_, 'o') | (_, 'u') => vowel_count += 1,
+            _ => (),
         }
         if previous == c {
-            has_double_letter = true;
+            has_double_letter = true
         }
         previous = c;
-    });
+    }
     vowel_count >= 3 && has_double_letter
+}
+
+pub fn is_even_nicer_str(s: &str) -> (bool, bool, HashMap<(char, char), Vec<i32>>) {
+    let mut chars = s.chars();
+    let mut window = [' '; 3];
+    let mut pairs: HashMap<(char, char), Vec<i32>> = HashMap::new();
+    let mut has_wings = false;
+    let mut has_pairs = false;
+    let mut index: i32 = -3;
+    loop {
+        if window[0] == window[2] && window[0] != ' ' {
+            has_wings = true;
+        }
+        if !has_pairs && index >= 0 {
+            pairs
+                .entry((window[0], window[1]))
+                .and_modify(|v: &mut Vec<i32>| {
+                    if v.last().expect("Vec should not be empty") + 1 != index {
+                        has_pairs = true;
+                    }
+                    v.push(index)
+                })
+                .or_insert(vec![index]);
+        }
+        window = [window[1], window[2], chars.next().unwrap_or(' ')];
+        index += 1;
+        if window[2] == ' ' || (has_pairs && has_wings) {
+            break;
+        }
+    }
+    (has_wings, has_pairs, pairs)
 }
 
 pub fn has_pairs(s: &str) -> bool {
@@ -60,16 +88,16 @@ mod tests {
 
     #[test]
     fn nice_string() {
-        assert!(!is_nice_string("aeiouaeiouaeiou")); // cspell:disable-line
-        assert!(!is_nice_string("aei"));
-        assert!(!is_nice_string("xazegov")); // cspell:disable-line
-        assert!(!is_nice_string("xx"));
-        assert!(!is_nice_string("abcdde")); // cspell:disable-line
+        assert!(!is_nice_str("aeiouaeiouaeiou")); // cspell:disable-line
+        assert!(!is_nice_str("aei"));
+        assert!(!is_nice_str("xazegov")); // cspell:disable-line
+        assert!(!is_nice_str("xx"));
+        assert!(!is_nice_str("abcdde")); // cspell:disable-line
     }
 
     #[test]
     fn part_1() {
-        let nice_strings = INPUT.lines().filter(|s| is_nice_string(s)).count();
+        let nice_strings = INPUT.lines().filter(|s| is_nice_str(s)).count();
         assert_eq!(nice_strings, 238);
     }
 
@@ -104,5 +132,21 @@ mod tests {
             .filter(|s| winged_pairs(s) && has_pairs(s))
             .count();
         assert_eq!(nice_strings, 69); // todo: 68 is the wrong answer, the right one is 69
+    }
+
+    #[test]
+    fn part_2_nicer() {
+        let count = INPUT
+            .lines()
+            .filter(|s| {
+                let result = is_even_nicer_str(s);
+                if !result.1 {
+                    println!("{}: {:?}", s, result.1);
+                }
+                result.0 && result.1
+            })
+            .count();
+
+        assert_eq!(count, 69); // todo: 61 is the wrong answer, the right one is 69
     }
 }
