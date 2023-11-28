@@ -1,19 +1,18 @@
 use std::collections::HashMap;
 
-struct Santa {
+pub struct Santa {
     map: HashMap<(isize, isize), isize>,
     last: (isize, isize),
 }
 
-
 impl Santa {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let mut map = HashMap::new();
         map.insert((0, 0), 1);
         Santa { map, last: (0, 0) }
     }
 
-    fn step(&mut self, direction: char) {
+    pub fn step(&mut self, direction: char) {
         let (x, y) = self.last;
         let (x, y) = match direction {
             '^' => (x, y + 1),
@@ -26,13 +25,10 @@ impl Santa {
         *self.map.entry((x, y)).or_insert(0) += 1;
     }
 
-    fn houses(&self) -> usize {
+    pub fn houses(&self) -> usize {
         self.map.len()
     }
 }
-
-
-
 
 #[cfg(test)]
 mod tests {
@@ -65,10 +61,13 @@ mod tests {
     fn part_2() {
         let mut santa = Santa::new();
         let mut robot = Santa::new();
-        INPUT
-            .chars()
-            .enumerate()
-            .for_each(|(i, c)| if i % 2 == 0 { santa.step(c) } else { robot.step(c) });
+        INPUT.chars().enumerate().for_each(|(i, c)| {
+            if i % 2 == 0 {
+                santa.step(c)
+            } else {
+                robot.step(c)
+            }
+        });
         let mut map = HashMap::new();
         map.extend(santa.map);
         map.extend(robot.map);
