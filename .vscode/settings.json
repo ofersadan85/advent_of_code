@@ -5,6 +5,8 @@
         "Deque",
         "Hasher",
         "iproduct",
+        "LSHIFT",
+        "RSHIFT",
         "splitn",
         "Tetris"
     ]
