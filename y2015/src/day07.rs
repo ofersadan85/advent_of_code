@@ -166,9 +166,6 @@ mod tests {
         assert_eq!(circuit.count(), (2, 6));
         circuit.reduce_entropy_once();
         assert_eq!(circuit.count(), (8, 0));
-        for (name, wire) in circuit.wires.iter() {
-            eprintln!("{}: {:?}", name, wire);
-        }
     }
 
     #[test]
@@ -189,9 +186,6 @@ mod tests {
             count = circuit.count();
         }
         assert_eq!(circuit.count(), (8, 0));
-        for (name, wire) in circuit.wires.iter() {
-            eprintln!("{}: {:?}", name, wire);
-        }
     }
 
     #[test]
@@ -202,5 +196,32 @@ mod tests {
             circuit.reduce_entropy_once();
         }
         assert_eq!(circuit.wires.get("a").expect("Wire a").value(), Some(16076));
+    }
+
+    #[test]
+    fn part_2() {
+        let input = include_str!("day07.txt");
+        let mut circuit = Circuit::new(input);
+        while !circuit.wires.get("a").expect("Wire a").has_value() {
+            circuit.reduce_entropy_once();
+        }
+        let saved_a = circuit
+            .wires
+            .get("a")
+            .expect("Wire a")
+            .value()
+            .expect("Wire a value");
+        let mut circuit = Circuit::new(input);
+        circuit.wires.insert(
+            "b".to_string(),
+            Wire::Valued {
+                name: "b".to_string(),
+                value: saved_a,
+            },
+        );
+        while !circuit.wires.get("a").expect("Wire a").has_value() {
+            circuit.reduce_entropy_once();
+        }
+        assert_eq!(circuit.wires.get("a").expect("Wire a").value(), Some(2797));
     }
 }
