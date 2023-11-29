@@ -1,125 +1,151 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-enum LogicGate {
-    PASSTHROUGH,
-    AND,
-    OR,
-    LSHIFT,
-    RSHIFT,
-    NOT,
-}
-
-struct WireInput {
-    op: LogicGate,
-    inputs: [String; 2],
-}
-
-impl WireInput {
-    fn output(&self, wires: &HashMap<String, Wire>) -> u16 {
-        let a = match wires.get(&self.inputs[0]) {
-            Some(w) => w.value(wires),
-            None => self.inputs[0]
-                .parse::<u16>()
-                .expect(format!("Invalid input {}", self.inputs[0]).as_str()),
-        };
-        let b = match wires.get(&self.inputs[1]) {
-            Some(w) => w.value(wires),
-            None => self.inputs[1].parse::<u16>().unwrap_or(0),
-        };
-        match self.op {
-            LogicGate::PASSTHROUGH => a,
-            LogicGate::AND => a & b,
-            LogicGate::OR => a | b,
-            LogicGate::LSHIFT => a << b,
-            LogicGate::RSHIFT => a >> b,
-            LogicGate::NOT => !a,
-        }
-    }
-}
-
-struct Wire {
-    name: String,
-    input: WireInput,
-}
-
-impl TryFrom<&str> for Wire {
-    type Error = String;
-
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        let parts: Vec<&str> = s.split(" -> ").collect();
-        if parts.len() != 2 {
-            return Err(format!("Invalid input {}", s));
-        }
-        let name = parts[1];
-        let parts = parts[0].split(" ").collect::<Vec<&str>>();
-        match parts.as_slice() {
-            ["NOT", a] => Ok(Wire::new(
-                name,
-                WireInput {
-                    op: LogicGate::NOT,
-                    inputs: [a.to_string(), "".to_string()],
-                },
-            )),
-            [a, "AND", b] => Ok(Wire::new(
-                name,
-                WireInput {
-                    op: LogicGate::AND,
-                    inputs: [a.to_string(), b.to_string()],
-                },
-            )),
-            [a, "OR", b] => Ok(Wire::new(
-                name,
-                WireInput {
-                    op: LogicGate::OR,
-                    inputs: [a.to_string(), b.to_string()],
-                },
-            )),
-            [a, "LSHIFT", b] => Ok(Wire::new(
-                name,
-                WireInput {
-                    op: LogicGate::LSHIFT,
-                    inputs: [a.to_string(), b.to_string()],
-                },
-            )),
-            [a, "RSHIFT", b] => Ok(Wire::new(
-                name,
-                WireInput {
-                    op: LogicGate::RSHIFT,
-                    inputs: [a.to_string(), b.to_string()],
-                },
-            )),
-            [a] => Ok(Wire::new(
-                name,
-                WireInput {
-                    op: LogicGate::PASSTHROUGH,
-                    inputs: [a.to_string(), "".to_string()],
-                },
-            )),
-            _ => Err(format!("Invalid input {}", s)),
-        }
-    }
+#[derive(Debug, Clone)]
+enum Wire {
+    Valued { name: String, value: u16 },
+    Gated { name: String, gate: String },
 }
 
 impl Wire {
-    fn new(name: &str, input: WireInput) -> Wire {
-        Wire {
-            name: name.to_string(),
-            input: input,
+    fn evaluate(&self) -> Self {
+        if let Some(value) = self.gate().and_then(|v| v.parse::<u16>().ok()) {
+            return Wire::Valued {
+                name: self.name().to_string(),
+                value,
+            };
+        } else {
+            return self.clone();
         }
     }
 
-    fn value(&self, wires: &HashMap<String, Wire>) -> u16 {
-        self.input.output(wires)
+    fn has_value(&self) -> bool {
+        match self {
+            Wire::Valued { .. } => true,
+            Wire::Gated { .. } => false,
+        }
+    }
+    fn name(&self) -> &str {
+        match self {
+            Wire::Valued { name, .. } => name,
+            Wire::Gated { name, .. } => name,
+        }
+    }
+
+    fn gate(&self) -> Option<&str> {
+        match self {
+            Wire::Gated { gate, .. } => Some(gate),
+            Wire::Valued { .. } => None,
+        }
+    }
+
+    fn value(&self) -> Option<u16> {
+        match self {
+            Wire::Valued { value, .. } => Some(*value),
+            Wire::Gated { .. } => None,
+        }
     }
 }
 
-fn construct_wire_map(input: &str) -> HashMap<String, Wire> {
-    let mut wires = HashMap::new();
-    for line in input.lines() {
-        let wire = Wire::try_from(line.trim()).expect(format!("Invalid input {}", line).as_str());
-        wires.insert(wire.name.clone(), wire);
+impl From<&str> for Wire {
+    fn from(s: &str) -> Self {
+        let mut parts = s.split(" -> ");
+        let gate = parts.next().expect("Wire format (gate)").to_string();
+        let name = parts.next().expect("Wire format (name)").to_string();
+        Wire::Gated { name, gate }
     }
-    wires
+}
+
+struct Circuit {
+    wires: HashMap<String, Wire>,
+}
+
+impl Circuit {
+    fn new(input: &str) -> Self {
+        let mut wires = HashMap::new();
+        for line in input.lines() {
+            let wire = Wire::from(line.trim());
+            wires.insert(wire.name().to_string(), wire);
+        }
+        wires.values_mut().for_each(|wire| match wire {
+            Wire::Valued { .. } => return,
+            Wire::Gated { .. } => {
+                *wire = wire.evaluate();
+            }
+        });
+        Self { wires }
+    }
+
+    fn count(&self) -> (usize, usize) {
+        let mut count_valued = 0;
+        let mut count_gated = 0;
+        self.wires.values().for_each(|wire| match wire {
+            Wire::Valued { .. } => count_valued += 1,
+            Wire::Gated { .. } => count_gated += 1,
+        });
+        (count_valued, count_gated)
+    }
+
+    fn parse_value(&self, value: &str) -> Option<u16> {
+        value
+            .parse::<u16>()
+            .ok()
+            .or_else(|| self.wires.get(value)?.value())
+    }
+
+    fn parse_gate(&self, gate: &str) -> Option<u16> {
+        let mut parts = gate.split_whitespace();
+        match (parts.next(), parts.next(), parts.next()) {
+            (Some(a), Some("AND"), Some(b)) => {
+                let a = self.parse_value(a)?;
+                let b = self.parse_value(b)?;
+                Some(a & b)
+            }
+            (Some(a), Some("OR"), Some(b)) => {
+                let a = self.parse_value(a)?;
+                let b = self.parse_value(b)?;
+                Some(a | b)
+            }
+            (Some(a), Some("LSHIFT"), Some(b)) => {
+                let a = self.parse_value(a)?;
+                let b = self.parse_value(b)?;
+                Some(a << b)
+            }
+            (Some(a), Some("RSHIFT"), Some(b)) => {
+                let a = self.parse_value(a)?;
+                let b = self.parse_value(b)?;
+                Some(a >> b)
+            }
+            (Some("NOT"), Some(a), None) => {
+                let a = self.parse_value(a)?;
+                Some(!a)
+            }
+            (Some(a), None, None) => self.wires.get(a)?.value(),
+            _ => unreachable!("Invalid gate: {}", gate),
+        }
+    }
+
+    fn reduce_entropy_once(&mut self) {
+        let mut new_wires = HashMap::new();
+        for (name, wire) in self.wires.iter() {
+            if wire.has_value() {
+                new_wires.insert(name.to_string(), wire.clone());
+            } else {
+                let gate = wire.gate().expect("Wire has no gate and no value");
+                if let Some(value) = self.parse_gate(gate) {
+                    new_wires.insert(
+                        name.to_string(),
+                        Wire::Valued {
+                            name: name.to_string(),
+                            value,
+                        },
+                    );
+                } else {
+                    new_wires.insert(name.to_string(), wire.clone());
+                }
+            }
+        }
+        self.wires = new_wires;
+    }
 }
 
 #[cfg(test)]
@@ -127,7 +153,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn example_1() {
+    fn test_reduce_entropy_once() {
         let input = "123 -> x
         456 -> y
         x AND y -> d
@@ -136,21 +162,45 @@ mod tests {
         y RSHIFT 2 -> g
         NOT x -> h
         NOT y -> i";
-        let wires = construct_wire_map(input);
-        assert_eq!(wires.get("d").unwrap().value(&wires), 72);
-        assert_eq!(wires.get("e").unwrap().value(&wires), 507);
-        assert_eq!(wires.get("f").unwrap().value(&wires), 492);
-        assert_eq!(wires.get("g").unwrap().value(&wires), 114);
-        assert_eq!(wires.get("h").unwrap().value(&wires), 65412);
-        assert_eq!(wires.get("i").unwrap().value(&wires), 65079);
-        assert_eq!(wires.get("x").unwrap().value(&wires), 123);
-        assert_eq!(wires.get("y").unwrap().value(&wires), 456);
+        let mut circuit = Circuit::new(input);
+        assert_eq!(circuit.count(), (2, 6));
+        circuit.reduce_entropy_once();
+        assert_eq!(circuit.count(), (8, 0));
+        for (name, wire) in circuit.wires.iter() {
+            eprintln!("{}: {:?}", name, wire);
+        }
+    }
+
+    #[test]
+    fn test_reduce_entropy() {
+        let input = "123 -> x
+        456 -> y
+        x AND y -> d
+        x OR y -> e
+        x LSHIFT 2 -> f
+        y RSHIFT 2 -> g
+        NOT x -> h
+        NOT y -> i";
+        let mut circuit = Circuit::new(input);
+        assert_eq!(circuit.count(), (2, 6));
+        let mut count = circuit.count();
+        while count.1 > 0 {
+            circuit.reduce_entropy_once();
+            count = circuit.count();
+        }
+        assert_eq!(circuit.count(), (8, 0));
+        for (name, wire) in circuit.wires.iter() {
+            eprintln!("{}: {:?}", name, wire);
+        }
     }
 
     #[test]
     fn part_1() {
         let input = include_str!("day07.txt");
-        let wires = construct_wire_map(input);
-        assert_eq!(wires.get("a").unwrap().value(&wires), 3176);
+        let mut circuit = Circuit::new(input);
+        while !circuit.wires.get("a").expect("Wire a").has_value() {
+            circuit.reduce_entropy_once();
+        }
+        assert_eq!(circuit.wires.get("a").expect("Wire a").value(), Some(16076));
     }
 }
