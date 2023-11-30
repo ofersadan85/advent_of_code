@@ -1,4 +1,5 @@
-use std::collections::{HashMap, HashSet};
+#![allow(dead_code)]
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 enum Wire {
