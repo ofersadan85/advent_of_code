@@ -7,8 +7,7 @@ pub fn sum_digits(s: &str) -> u32 {
     first * 10 + last
 }
 
-pub fn sum_digit_words(s: &str) -> u32 {
-    let re = Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").expect("regex");
+pub fn sum_digit_words(s: &str, re: &Regex) -> u32 {
     let mut digits = re
         .captures_iter(s)
         .map(|digit| {
@@ -62,18 +61,20 @@ mod tests {
 
     #[test]
     fn test_sum_digit_words() {
-        assert_eq!(sum_digit_words("two1nine"), 29);
-        assert_eq!(sum_digit_words("eightwothree"), 83);
-        assert_eq!(sum_digit_words("abcone2threexyz"), 13);
-        assert_eq!(sum_digit_words("xtwone3four"), 24);
-        assert_eq!(sum_digit_words("4nineeightseven2"), 42);
-        assert_eq!(sum_digit_words("zoneight234"), 14);
-        assert_eq!(sum_digit_words("7pqrstsixteen"), 76);
+        let re = Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").expect("regex");
+        assert_eq!(sum_digit_words("two1nine", &re), 29);
+        assert_eq!(sum_digit_words("eightwothree", &re), 83);
+        assert_eq!(sum_digit_words("abcone2threexyz", &re), 13);
+        assert_eq!(sum_digit_words("xtwone3four", &re), 24);
+        assert_eq!(sum_digit_words("4nineeightseven2", &re), 42);
+        assert_eq!(sum_digit_words("zoneight234", &re), 14);
+        assert_eq!(sum_digit_words("7pqrstsixteen", &re), 76);
     }
 
     #[test]
     fn test_part2() {
-        let result = INPUT.lines().map(sum_digit_words).sum::<u32>();
+        let re = Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").expect("regex");
+        let result = INPUT.lines().map(|s| sum_digit_words(s, &re)).sum::<u32>();
         assert_eq!(result, 54194);
     }
 }
