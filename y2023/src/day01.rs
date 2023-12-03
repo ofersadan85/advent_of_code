@@ -1,4 +1,4 @@
-use regex::Regex;
+use itertools::Itertools;
 
 pub fn sum_digits(s: &str) -> u32 {
     let mut digits = s.chars().filter_map(|c| c.to_digit(10));
@@ -7,37 +7,44 @@ pub fn sum_digits(s: &str) -> u32 {
     first * 10 + last
 }
 
-pub fn sum_digit_words(s: &str, re: &Regex) -> u32 {
-    let mut digits = re
-        .captures_iter(s)
-        .map(|digit| {
-            match digit
-                .get(0)
-                .expect("regex should match at least one digit or word")
-                .as_str()
-            {
-                "one" => "1",
-                "two" => "2",
-                "three" => "3",
-                "four" => "4",
-                "five" => "5",
-                "six" => "6",
-                "seven" => "7",
-                "eight" => "8",
-                "nine" => "9",
-                s => s,
-            }
-        })
-        .filter_map(|s| s.parse::<u32>().ok());
-    // let digits_v = digits.collect::<Vec<_>>();
-    // let digits_s = digits_v.iter().map(|d| d.to_string()).collect::<String>();
-    // let mut digits = digits_v.into_iter();
-    let first = digits.next().unwrap_or(0);
-    let last = digits.last().unwrap_or(first);
-    // if digits_s.len() < 2 {
-    //    eprintln!("s: {s}      digits_s: {digits_s}     {first}{last}");
-    // }
-    first * 10 + last
+const DIGIT_WORDS: [&str; 18] = [
+    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "1", "2", "3", "4",
+    "5", "6", "7", "8", "9",
+];
+
+pub fn word_to_num(s: &str) -> Option<u32> {
+    match s {
+        "one" => Some(1),
+        "two" => Some(2),
+        "three" => Some(3),
+        "four" => Some(4),
+        "five" => Some(5),
+        "six" => Some(6),
+        "seven" => Some(7),
+        "eight" => Some(8),
+        "nine" => Some(9),
+        _ => s.parse::<u32>().ok(),
+    }
+}
+
+pub fn sum_digit_words(s: &str) -> u32 {
+    let found = DIGIT_WORDS
+        .iter()
+        .map(|&word| (word, s.find(word), s.rfind(word)))
+        .collect_vec();
+    let first = found
+        .iter()
+        .filter_map(|(word, first, _)| first.map(|f| (word, f)))
+        .min_by_key(|(_, f)| *f)
+        .expect("At least one word");
+    let last = found
+        .iter()
+        .filter_map(|(word, _, last)| last.map(|l| (word, l)))
+        .max_by_key(|(_, l)| *l)
+        .expect("At least one word");
+    let first_num = word_to_num(first.0).expect("First word is a number");
+    let last_num = word_to_num(last.0).expect("Last word is a number");
+    first_num * 10 + last_num
 }
 
 #[cfg(test)]
@@ -61,20 +68,21 @@ mod tests {
 
     #[test]
     fn test_sum_digit_words() {
-        let re = Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").expect("regex");
-        assert_eq!(sum_digit_words("two1nine", &re), 29);
-        assert_eq!(sum_digit_words("eightwothree", &re), 83);
-        assert_eq!(sum_digit_words("abcone2threexyz", &re), 13);
-        assert_eq!(sum_digit_words("xtwone3four", &re), 24);
-        assert_eq!(sum_digit_words("4nineeightseven2", &re), 42);
-        assert_eq!(sum_digit_words("zoneight234", &re), 14);
-        assert_eq!(sum_digit_words("7pqrstsixteen", &re), 76);
+        assert_eq!(sum_digit_words("two1nine"), 29);
+        assert_eq!(sum_digit_words("eightwothree"), 83);
+        assert_eq!(sum_digit_words("abcone2threexyz"), 13);
+        assert_eq!(sum_digit_words("xtwone3four"), 24);
+        assert_eq!(sum_digit_words("4nineeightseven2"), 42);
+        assert_eq!(sum_digit_words("zoneight234"), 14);
+        assert_eq!(sum_digit_words("7pqrstsixteen"), 76);
+        let all_lines = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen";
+        let result = all_lines.lines().map(|s| sum_digit_words(s)).sum::<u32>();
+        assert_eq!(result, 281);
     }
 
     #[test]
     fn test_part2() {
-        let re = Regex::new(r"\d|one|two|three|four|five|six|seven|eight|nine").expect("regex");
-        let result = INPUT.lines().map(|s| sum_digit_words(s, &re)).sum::<u32>();
-        assert_eq!(result, 54194);
+        let result = INPUT.lines().map(|s| sum_digit_words(s)).sum::<u32>();
+        assert_eq!(result, 54208);
     }
 }
