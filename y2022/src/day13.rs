@@ -23,12 +23,8 @@ struct Packet(Json);
 impl PartialEq for Packet {
     fn eq(&self, other: &Self) -> bool {
         match (&self.0, &other.0) {
-            (Json::Array(_), Json::Number(_)) => {
-                self.eq(&Self(Json::Array(vec![other.0.clone()])))
-            }
-            (Json::Number(_), Json::Array(_)) => {
-                other.eq(&Self(Json::Array(vec![self.0.clone()])))
-            }
+            (Json::Array(_), Json::Number(_)) => self.eq(&Self(Json::Array(vec![other.0.clone()]))),
+            (Json::Number(_), Json::Array(_)) => other.eq(&Self(Json::Array(vec![self.0.clone()]))),
             (a, b) => a.eq(b),
         }
     }
@@ -36,32 +32,28 @@ impl PartialEq for Packet {
 
 impl PartialOrd for Packet {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        match (&self.0, &other.0) {
-            (Json::Number(left), Json::Number(right)) => {
-                left.as_u64()?.partial_cmp(&right.as_u64()?)
-            }
-            (Json::Array(_), Json::Number(_)) => {
-                self.partial_cmp(&Self(Json::Array(vec![other.0.clone()])))
-            }
-            (Json::Number(_), Json::Array(_)) => {
-                Self(Json::Array(vec![self.0.clone()])).partial_cmp(other)
-            }
-            (Json::Array(left), Json::Array(right)) => {
-                for (a, b) in left.iter().zip(right.iter()) {
-                    if Self(a.clone()) != Self(b.clone()) {
-                        return Self(a.clone()).partial_cmp(&Self(b.clone()));
-                    }
-                }
-                Some(left.len().cmp(&right.len()))
-            }
-            _ => panic!("Unexpected values"),
-        }
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for Packet {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        match (&self.0, &other.0) {
+            (Json::Number(left), Json::Number(right)) => left.as_u64().cmp(&right.as_u64()),
+            (Json::Array(_), Json::Number(_)) => {
+                self.cmp(&Self(Json::Array(vec![other.0.clone()])))
+            }
+            (Json::Number(_), Json::Array(_)) => Self(Json::Array(vec![self.0.clone()])).cmp(other),
+            (Json::Array(left), Json::Array(right)) => {
+                for (a, b) in left.iter().zip(right.iter()) {
+                    if Self(a.clone()) != Self(b.clone()) {
+                        return Self(a.clone()).cmp(&Self(b.clone()));
+                    }
+                }
+                left.len().cmp(&right.len())
+            }
+            _ => Ordering::Equal,
+        }
     }
 }
 
