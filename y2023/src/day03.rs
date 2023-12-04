@@ -55,17 +55,18 @@ pub fn numbers_with_neighbors(map: &EngineMap) -> Vec<u32> {
 
 pub fn find_number_neighbors(map: &EngineMap, x: &usize, y: &usize) -> Vec<u32> {
     map.iter()
-        .filter(|((x_n, y_n), part)| match (x_n, y_n, part) {
-            (_, _, EnginePart::Symbol(_)) => false,
-            (x_n, y_n, EnginePart::Number(n)) => {
+        .filter(|((x_n, y_n), part)| {
+            if let EnginePart::Number(n) = part {
                 let x_range = (x_n.saturating_sub(1))..=(x_n + n.to_string().len());
                 let y_range = (y_n.saturating_sub(1))..=(y_n + 1);
                 x_range.contains(x) && y_range.contains(y)
+            } else {
+                false
             }
         })
         .map(|((_, _), part)| match part {
             EnginePart::Number(n) => *n,
-            _ => unreachable!("Symbols are filtered out"),
+            EnginePart::Symbol(_) => unreachable!("Symbols are filtered out"),
         })
         .collect()
 }
@@ -75,7 +76,7 @@ pub fn find_gears(map: &EngineMap) -> Vec<u32> {
         .iter()
         .filter(|(_, part)| match part {
             EnginePart::Symbol(c) => *c == '*',
-            _ => false,
+            EnginePart::Number(_) => false,
         })
         .map(|((x, y), _)| find_number_neighbors(map, x, y))
         .filter(|numbers| numbers.len() == 2)

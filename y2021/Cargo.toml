@@ -3,11 +3,22 @@ name = "advent_of_code_2021"
 version = "0.1.0"
 edition = "2021"
 authors = ["Ofer Sadan"]
-description = "2021 solutions to adventofcode.com in Rust"
+description = "2022 solutions to adventofcode.com in Rust"
 repository = "https://github.com/ofersadan85/advent_of_code"
 publish = false
+categories = ["advent-of-code", "puzzle", "challenge"]
+keywords = ["advent-of-code", "puzzle", "challenge"]
 
 [dependencies]
-advent_of_code_common = { path = "../common" }
+advent_of_code_common = { workspace = true }
+anyhow = { workspace = true }
 euclid = "0.22.9"
-itertools = "0.11.0"
+itertools = { workspace = true }
+md5 = "0.7.0"
+rayon = "1.8.0"
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

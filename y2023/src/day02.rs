@@ -5,27 +5,29 @@ pub struct GameResult {
     pub green: u32,
 }
 
-impl From<&str> for GameResult {
-    fn from(s: &str) -> Self {
+impl TryFrom<&str> for GameResult {
+    type Error = &'static str;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
         let mut red = 0;
         let mut green = 0;
         let mut blue = 0;
         for item in s.trim().split(", ") {
-            let (count, color) = item.split_once(" ").expect("count and color");
+            let (count, color) = item.split_once(' ').expect("count and color");
             let count = count.parse::<u32>().expect("count parse");
             match color {
                 "red" => red = count,
                 "green" => green = count,
                 "blue" => blue = count,
-                _ => panic!("unknown color"),
+                _ => Err("unknown color")?,
             }
         }
-        GameResult { red, blue, green }
+        Ok(Self { red, blue, green })
     }
 }
 
 impl GameResult {
-    pub fn is_possible(&self, another: &GameResult) -> bool {
+    const fn is_possible(&self, another: &Self) -> bool {
         self.red <= another.red && self.blue <= another.blue && self.green <= another.green
     }
 }
@@ -40,16 +42,16 @@ impl From<&str> for Game {
     fn from(s: &str) -> Self {
         let (game_title, results) = s.trim().split_once(": ").expect("game title");
         let index = game_title
-            .split_once(" ")
+            .split_once(' ')
             .expect("game index")
             .1
             .parse::<u32>()
             .expect("game index parse");
         let results = results
             .split("; ")
-            .map(GameResult::from)
+            .filter_map(|line| GameResult::try_from(line).ok())
             .collect::<Vec<GameResult>>();
-        Game { index, results }
+        Self { index, results }
     }
 }
 

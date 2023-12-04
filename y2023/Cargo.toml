@@ -3,12 +3,19 @@ name = "advent_of_code_2023"
 version = "0.1.0"
 edition = "2021"
 authors = ["Ofer Sadan"]
-description = "2023 solutions to adventofcode.com in Rust"
+description = "2022 solutions to adventofcode.com in Rust"
 repository = "https://github.com/ofersadan85/advent_of_code"
 publish = false
+categories = ["advent-of-code", "puzzle", "challenge"]
+keywords = ["advent-of-code", "puzzle", "challenge"]
 
 [dependencies]
-itertools = "0.12.0"
-regex = "1.10.2"
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
+advent_of_code_common = { workspace = true }
+anyhow = { workspace = true }
+itertools = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

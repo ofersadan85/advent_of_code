@@ -1,10 +1,23 @@
 [workspace]
 resolver = "2"
-members = [
-    "common",
-    "y2015",
-    "y2020",
-    "y2021",
-    "y2022",
-    "y2023",
-]
+members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+cargo = "warn"
+nursery = "warn"
+pedantic = "warn"
+unwrap_used = "deny"
+must_use_candidate = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+
+[workspace.dependencies]
+advent_of_code_common = { path = "common" }
+anyhow = "1.0.75"
+itertools = "0.12.0"
+regex = "1.10.2"
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"

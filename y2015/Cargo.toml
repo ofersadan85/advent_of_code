@@ -1,13 +1,23 @@
 [package]
-name = "y2015"
+name = "advent_of_code_2019"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+authors = ["Ofer Sadan"]
+description = "2022 solutions to adventofcode.com in Rust"
+repository = "https://github.com/ofersadan85/advent_of_code"
+publish = false
+categories = ["advent-of-code", "puzzle", "challenge"]
+keywords = ["advent-of-code", "puzzle", "challenge"]
 
 [dependencies]
-advent_of_code_common = { path = "../common" }
-itertools = "0.12.0"
+advent_of_code_common = { workspace = true }
+anyhow = { workspace = true }
+itertools = { workspace = true }
 md5 = "0.7.0"
-rayon = "1.7.0"
-regex = "1.10.2"
+rayon = "1.8.0"
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true
