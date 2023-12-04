@@ -1,7 +1,7 @@
-use std::{collections::HashSet, hash::Hash};
-
 use advent_of_code_common::file::split_lines_trim;
-use itertools::iproduct;
+use anyhow::{Context, Result};
+use itertools::{iproduct, Itertools};
+use std::{collections::HashSet, hash::Hash};
 
 const PATH: &str = "inputs/day14.txt";
 const EXAMPLE: &str = "498,4 -> 498,6 -> 496,6
@@ -13,13 +13,17 @@ struct Point {
     y: usize,
 }
 
-impl Point {
-    fn from_str(s: &str) -> Self {
-        let (x, y) = s.trim().split_once(',').unwrap();
-        Self {
-            x: x.parse().unwrap(),
-            y: y.parse().unwrap(),
-        }
+impl TryFrom<&str> for Point {
+    type Error = &'static str;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        let (x, y) = s
+            .trim()
+            .split(',')
+            .filter_map(|v| v.trim().parse().ok())
+            .collect_tuple()
+            .ok_or("Invalid point")?;
+        Ok(Self { x, y })
     }
 }
 
@@ -59,7 +63,10 @@ struct Rock {
 
 impl Rock {
     fn from_str(s: &str) -> Self {
-        let corners: Vec<Point> = s.split("->").map(Point::from_str).collect();
+        let corners: Vec<Point> = s
+            .split("->")
+            .filter_map(|p| Point::try_from(p).ok())
+            .collect();
         Self {
             lines: corners
                 .windows(2)
@@ -119,19 +126,23 @@ impl Cave {
     }
 }
 
-fn input(example: bool) -> Cave {
+fn input(example: bool) -> Result<Cave> {
     let text = if example {
         EXAMPLE.to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
+        std::fs::read_to_string(PATH).context("Failed to read input file")?
     };
     let rocks: HashSet<_> = split_lines_trim(&text)
         .iter()
         .flat_map(|row| Rock::from_str(row).points())
         .collect();
     let sand = HashSet::new();
-    let max_y = rocks.iter().max_by_key(|p| p.y).unwrap().y;
-    Cave { rocks, sand, max_y }
+    let max_y = rocks
+        .iter()
+        .max_by_key(|p| p.y)
+        .ok_or_else(|| anyhow::anyhow!("No rocks"))?
+        .y;
+    Ok(Cave { rocks, sand, max_y })
 }
 
 fn part_1(cave: &mut Cave) -> usize {
@@ -157,25 +168,25 @@ fn part_2(cave: &mut Cave) -> usize {
 
 #[test]
 fn example_1() {
-    let mut cave = input(true);
+    let mut cave = input(true).unwrap();
     assert_eq!(part_1(&mut cave), 24);
 }
 
 #[test]
 fn task_1() {
-    let mut cave = input(false);
+    let mut cave = input(false).unwrap();
     assert_eq!(part_1(&mut cave), 825);
 }
 
 #[test]
 fn example_2() {
-    let mut cave = input(true);
+    let mut cave = input(true).unwrap();
     assert_eq!(part_2(&mut cave), 93);
 }
 
 #[test]
 #[ignore = "Taking too long, needs alternative math"] // todo
 fn task_2() {
-    let mut cave = input(false);
+    let mut cave = input(false).unwrap();
     assert_eq!(part_2(&mut cave), 26729);
 }

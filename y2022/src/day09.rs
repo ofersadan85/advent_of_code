@@ -1,4 +1,5 @@
 use advent_of_code_common::file::split_lines_trim;
+use anyhow::{Context, Result};
 use std::collections::HashSet;
 
 const PATH: &str = "inputs/day09.txt";
@@ -40,17 +41,24 @@ enum Direction {
     DownRight,
 }
 
-impl Direction {
-    fn from_row(row: &str) -> Vec<Self> {
-        let (dir, i) = row.trim().split_once(' ').unwrap();
-        let direction = match dir {
+impl From<&str> for Direction {
+    fn from(value: &str) -> Self {
+        match value {
             "L" => Self::Left,
             "R" => Self::Right,
             "U" => Self::Up,
             "D" => Self::Down,
             _ => Self::Stay,
-        };
-        (0..i.parse().unwrap()).map(|_| direction).collect()
+        }
+    }
+}
+
+impl Direction {
+    fn from_row(row: &str) -> Result<Vec<Self>> {
+        let (dir, i) = row.trim().split_once(' ').context("Invalid row")?;
+        let direction = Self::from(dir);
+        let i = i.trim().parse::<usize>().context("Invalid row")?;
+        Ok(vec![direction; i])
     }
 
     const fn to_movement(self) -> Movement {
@@ -68,16 +76,19 @@ impl Direction {
     }
 }
 
-fn input(example: bool, part_2: bool) -> Vec<Movement> {
+fn input(example: bool, part_2: bool) -> Result<Vec<Movement>> {
     let data = if example {
         split_lines_trim(if part_2 { EXAMPLE2 } else { EXAMPLE })
     } else {
-        split_lines_trim(&std::fs::read_to_string(PATH).unwrap())
+        split_lines_trim(&std::fs::read_to_string(PATH).context("Failed to read input file")?)
     };
-    data.iter()
-        .flat_map(|row| Direction::from_row(row))
+    let result = data
+        .iter()
+        .filter_map(|row| Direction::from_row(row).ok())
+        .flatten()
         .map(Direction::to_movement)
-        .collect()
+        .collect();
+    Ok(result)
 }
 
 #[allow(clippy::enum_glob_use)]
@@ -114,27 +125,29 @@ fn rope(data: &[Movement], length: usize) -> usize {
             knot_movement(previous, knot);
             previous = *knot;
         }
-        tail_visited.insert(*knots.last().unwrap());
+        if let Some(tail) = knots.last() {
+            tail_visited.insert(*tail);
+        }
     }
     tail_visited.len()
 }
 
 #[test]
 fn example_1() {
-    assert_eq!(rope(&input(true, false), 2), 13);
+    assert_eq!(rope(&input(true, false).unwrap(), 2), 13);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(rope(&input(false, false), 2), 6067);
+    assert_eq!(rope(&input(false, false).unwrap(), 2), 6067);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(rope(&input(true, true), 10), 36);
+    assert_eq!(rope(&input(true, true).unwrap(), 10), 36);
 }
 
 #[test]
 fn task_2() {
-    assert_eq!(rope(&input(false, true), 10), 2471);
+    assert_eq!(rope(&input(false, true).unwrap(), 10), 2471);
 }

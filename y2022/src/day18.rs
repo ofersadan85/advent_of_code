@@ -1,4 +1,4 @@
-use itertools::Itertools;
+use anyhow::{Context, Result};
 use std::collections::HashSet;
 
 pub const PATH: &str = "inputs/day18.txt";
@@ -40,16 +40,16 @@ impl Cube {
     }
 }
 
-fn input(example: bool) -> HashSet<Cube> {
-    if example {
+fn input(example: bool) -> Result<HashSet<Cube>> {
+    let set = if example {
         EXAMPLE.to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
+        std::fs::read_to_string(PATH).context("failed to read input file")?
     }
     .lines()
     .map(|row| {
         row.split(',')
-            .map(|s| s.parse().unwrap())
+            .filter_map(|s| s.parse().ok())
             .collect::<Vec<i32>>()
     })
     .map(|v| Cube {
@@ -57,22 +57,34 @@ fn input(example: bool) -> HashSet<Cube> {
         y: v[1],
         z: v[2],
     })
-    .collect()
+    .collect();
+    Ok(set)
 }
 
-fn part_1(cubes: &HashSet<Cube>) -> i32 {
+fn part_1(cubes: &HashSet<Cube>) -> Result<i32> {
     cubes
         .iter()
         .map(|c| 6 - c.neighbors().intersection(cubes).count())
         .sum::<usize>()
         .try_into()
-        .unwrap()
+        .context("Could not convert to i32")
 }
 
 fn part_2(cubes: &HashSet<Cube>) -> i32 {
-    let (min_x, max_x) = cubes.iter().map(|c| c.x).minmax().into_option().unwrap();
-    let (min_y, max_y) = cubes.iter().map(|c| c.y).minmax().into_option().unwrap();
-    let (min_z, max_z) = cubes.iter().map(|c| c.z).minmax().into_option().unwrap();
+    let mut min_x = i32::MAX;
+    let mut max_x = i32::MIN;
+    let mut min_y = i32::MAX;
+    let mut max_y = i32::MIN;
+    let mut min_z = i32::MAX;
+    let mut max_z = i32::MIN;
+    for c in cubes {
+        min_x = min_x.min(c.x);
+        max_x = max_x.max(c.x);
+        min_y = min_y.min(c.y);
+        max_y = max_y.max(c.y);
+        min_z = min_z.min(c.z);
+        max_z = max_z.max(c.z);
+    }
     let x_range = min_x - 1..max_x + 2;
     let y_range = min_y - 1..max_y + 2;
     let z_range = min_z - 1..max_z + 2;
@@ -106,20 +118,20 @@ fn part_2(cubes: &HashSet<Cube>) -> i32 {
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 64);
+    assert_eq!(part_1(&input(true).unwrap()).unwrap(), 64);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(part_1(&input(false)), 4288);
+    assert_eq!(part_1(&input(false).unwrap()).unwrap(), 4288);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 58);
+    assert_eq!(part_2(&input(true).unwrap()), 58);
 }
 
 #[test]
 fn task_2() {
-    assert_eq!(part_2(&input(false)), 2494);
+    assert_eq!(part_2(&input(false).unwrap()), 2494);
 }

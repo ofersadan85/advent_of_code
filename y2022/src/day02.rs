@@ -1,3 +1,5 @@
+use anyhow::{Context, Result};
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum GameChoice {
     Unknown,
@@ -88,28 +90,30 @@ impl GameResult {
     }
 }
 
-fn input(example: bool) -> Vec<Vec<char>> {
+fn input(example: bool) -> Result<Vec<Vec<char>>> {
     const PATH: &str = "inputs/day02.txt";
-    if example {
+    let s = if example {
         "A Y
         B X
         C Z"
         .to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
-    }
-    .trim()
-    .split('\n')
-    .map(|row| row.trim().chars().collect())
-    .collect()
+        std::fs::read_to_string(PATH).context("Failed to read input file")?
+    };
+    let result = s
+        .trim()
+        .lines()
+        .map(|row| row.trim().chars().collect())
+        .collect();
+    Ok(result)
 }
 
 fn part_1(data: &[Vec<char>]) -> usize {
     data.iter()
-        .map(|row| {
-            let left = GameChoice::new(*row.first().unwrap());
-            let right = GameChoice::new(*row.last().unwrap());
-            GameResult::play(left, right).value()
+        .filter_map(|row| {
+            let left = GameChoice::new(*row.first()?);
+            let right = GameChoice::new(*row.last()?);
+            Some(GameResult::play(left, right).value())
         })
         .sum()
 }
@@ -117,37 +121,36 @@ fn part_1(data: &[Vec<char>]) -> usize {
 fn part_2(data: &[Vec<char>]) -> usize {
     use GameResult::*;
     data.iter()
-        .map(|row| {
+        .filter_map(|row| {
             let left = GameChoice::new(*row.first().unwrap());
             let right = GameChoice::Unknown;
-            match row.last().unwrap() {
-                'X' => LeftWins { left, right },
-                'Y' => Draw { left, right },
-                'Z' => RightWins { left, right },
-                _ => panic!("Can't cheat without knowing the expected result"),
+            match row.last() {
+                Some('X') => Some(LeftWins { left, right }),
+                Some('Y') => Some(Draw { left, right }),
+                Some('Z') => Some(RightWins { left, right }),
+                _ => None, // Can't cheat without knowing the expected result
             }
-            .cheat()
-            .value()
         })
+        .map(|result| result.cheat().value())
         .sum()
 }
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 15);
+    assert_eq!(part_1(&input(true).unwrap()), 15);
 }
 
 #[test]
 fn solution_1() {
-    assert_eq!(part_1(&input(false)), 11841);
+    assert_eq!(part_1(&input(false).unwrap()), 11841);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 12);
+    assert_eq!(part_2(&input(true).unwrap()), 12);
 }
 
 #[test]
 fn solution_2() {
-    assert_eq!(part_2(&input(false)), 13022);
+    assert_eq!(part_2(&input(false).unwrap()), 13022);
 }

@@ -1,15 +1,16 @@
 use advent_of_code_common::file::lines_as_blocks;
+use anyhow::{Context, Result};
 
 pub const PATH: &str = "inputs/day11.txt";
 pub const EXAMPLE: &str = "inputs/day11_example.txt";
 
-pub fn last_number(s: &str) -> u128 {
+pub fn last_number(s: &str) -> Result<u128> {
     s.trim()
         .split_ascii_whitespace()
         .last()
-        .unwrap()
+        .context("Failed to find last number")?
         .parse()
-        .unwrap()
+        .context("Failed to parse last number")
 }
 
 #[derive(Debug, Clone)]
@@ -17,50 +18,54 @@ struct Monkey {
     holding: Vec<u128>,
     operation: String,
     divisor: u128,
-    target_true: usize,
-    target_false: usize,
+    target_true: u128,
+    target_false: u128,
     inspect_count: u128,
 }
 
 impl Monkey {
-    fn from_block(block: &[String]) -> Self {
+    fn from_block(block: &[String]) -> Result<Self> {
         let holding = block[1]
             .replace(',', "")
             .split_ascii_whitespace()
             .filter_map(|s| s.parse().ok())
             .collect();
-        let operation = block[2].split(" = ").last().unwrap().to_string();
-        let divisor = last_number(&block[3]);
-        let target_true = last_number(&block[4]).try_into().unwrap();
-        let target_false = last_number(&block[5]).try_into().unwrap();
+        let operation = block[2]
+            .split(" = ")
+            .last()
+            .context("Failed to find operation in block")?
+            .to_string();
+        let divisor = last_number(&block[3])?;
+        let target_true = last_number(&block[4])?;
+        let target_false = last_number(&block[5])?;
 
-        Self {
+        Ok(Self {
             holding,
             operation,
             divisor,
             target_true,
             target_false,
             inspect_count: 0,
-        }
+        })
     }
 
-    fn inspect(&self, item: u128) -> u128 {
+    fn inspect(&self, item: u128) -> Result<u128> {
         if self.operation == "old * old" {
-            item * item
+            Ok(item * item)
         } else {
-            let number = last_number(&self.operation);
+            let number = last_number(&self.operation)?;
             match &self.operation[4..5] {
-                "+" => item + number,
-                "*" => item * number,
-                _ => panic!("Unknown operation found {}", self.operation),
+                "+" => Ok(item + number),
+                "*" => Ok(item * number),
+                _ => Err(anyhow::anyhow!("Invalid operation {}", self.operation)),
             }
         }
     }
 
-    fn inspect_and_throw(&mut self, worry: bool) -> Vec<(u128, usize)> {
+    fn inspect_and_throw(&mut self, worry: bool) -> Result<Vec<(u128, u128)>> {
         let mut result = Vec::new();
         for item in &self.holding {
-            let mut new_item = self.inspect(*item);
+            let mut new_item = self.inspect(*item)?;
             if !worry {
                 new_item /= 3;
             };
@@ -73,71 +78,77 @@ impl Monkey {
             result.push((new_item, target));
         }
         self.holding = Vec::new();
-        result
+        Ok(result)
     }
 }
 
-fn input(example: bool) -> Vec<Monkey> {
+fn input(example: bool) -> Result<Vec<Monkey>> {
     let path = if example { EXAMPLE } else { PATH };
-    lines_as_blocks(&std::fs::read_to_string(path).unwrap())
-        .iter()
-        .map(|b| Monkey::from_block(b))
-        .collect()
+    let result =
+        lines_as_blocks(&std::fs::read_to_string(path).context("Failed to read input file")?)
+            .iter()
+            .filter_map(|b| Monkey::from_block(b).ok())
+            .collect();
+    Ok(result)
 }
 
-fn throwing_round(monkeys: &mut [Monkey], worry: bool, max_div: u128) {
+fn throwing_round(monkeys: &mut [Monkey], worry: bool, max_div: u128) -> Result<()> {
     for i in 0..monkeys.len() {
-        for (item, target) in monkeys[i].inspect_and_throw(worry) {
+        for (item, target) in monkeys[i].inspect_and_throw(worry)? {
             let item = item % max_div;
-            monkeys[target].holding.push(item);
+            let target_index: usize = target.try_into().context("Invalid target")?;
+            monkeys[target_index].holding.push(item);
         }
     }
+    Ok(())
 }
 
-fn part_1(monkeys: &mut [Monkey]) -> u128 {
+fn part_1(monkeys: &mut [Monkey]) -> Result<u128> {
     let max_div: u128 = monkeys.iter().map(|m| m.divisor).product();
     for _ in 0..20 {
-        throwing_round(monkeys, false, max_div);
+        throwing_round(monkeys, false, max_div)?;
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
     inspect_counts.sort_unstable();
-    inspect_counts[(monkeys.len() - 2)..monkeys.len()]
+    let result = inspect_counts[(monkeys.len() - 2)..monkeys.len()]
         .iter()
-        .product()
+        .product();
+    Ok(result)
 }
 
-fn part_2(monkeys: &mut [Monkey]) -> u128 {
+fn part_2(monkeys: &mut [Monkey]) -> Result<u128> {
     let max_div: u128 = monkeys.iter().map(|m| m.divisor).product();
     for _ in 0..10000 {
-        throwing_round(monkeys, true, max_div);
+        throwing_round(monkeys, true, max_div)?;
     }
     let mut inspect_counts: Vec<_> = monkeys.iter().map(|m| m.inspect_count).collect();
     inspect_counts.sort_unstable();
-    inspect_counts[(monkeys.len() - 2)..monkeys.len()]
+    let result = inspect_counts[(monkeys.len() - 2)..monkeys.len()]
         .iter()
-        .product()
+        .product();
+    Ok(result)
 }
 
 #[test]
 fn example_1() {
-    let mut monkeys = input(true);
-    assert_eq!(part_1(&mut monkeys), 10605);
+    let mut monkeys = input(true).unwrap();
+    assert_eq!(part_1(&mut monkeys).unwrap(), 10605);
 }
 
 #[test]
 fn task_1() {
-    let mut monkeys = input(false);
-    assert_eq!(part_1(&mut monkeys), 62491);
+    let mut monkeys = input(false).unwrap();
+    assert_eq!(part_1(&mut monkeys).unwrap(), 62491);
 }
 
 #[test]
 fn example_2() {
-    let mut monkeys = input(true);
-    assert_eq!(part_2(&mut monkeys), 2_713_310_158);
+    let mut monkeys = input(true).unwrap();
+    assert_eq!(part_2(&mut monkeys).unwrap(), 2_713_310_158);
 }
 
 #[test]
 fn task_2() {
-    let mut monkeys = input(false);
-    assert_eq!(part_2(&mut monkeys), 17_408_399_184);
+    let mut monkeys = input(false).unwrap();
+    assert_eq!(part_2(&mut monkeys).unwrap(), 17_408_399_184);
 }

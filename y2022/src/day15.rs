@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use itertools::iproduct;
 use regex::Regex;
 use std::collections::HashSet;
@@ -12,20 +13,28 @@ struct Sensor {
     distance: i64,
 }
 
-impl Sensor {
-    fn from_row(row: &str) -> Self {
-        let re = Regex::new(r"(-?\d+)").unwrap();
+impl TryFrom<&str> for Sensor {
+    type Error = &'static str;
+
+    fn try_from(row: &str) -> Result<Self, Self::Error> {
+        let re = Regex::new(r"(-?\d+)").map_err(|_| "invalid regex")?;
         let caps: Vec<i64> = re
             .captures_iter(row)
-            .map(|cap| cap[1].parse().unwrap())
+            .filter_map(|cap| cap.get(1)?.as_str().parse().ok())
             .collect();
-        Self {
-            x: caps[0],
-            y: caps[1],
-            distance: (caps[0] - caps[2]).abs() + (caps[1] - caps[3]).abs(),
+        if caps.len() == 4 {
+            Ok(Self {
+                x: caps[0],
+                y: caps[1],
+                distance: (caps[0] - caps[2]).abs() + (caps[1] - caps[3]).abs(),
+            })
+        } else {
+            Err("invalid row")
         }
     }
+}
 
+impl Sensor {
     fn points_in_row(&self, y: i64, min_x: i64, max_x: i64) -> HashSet<(i64, i64)> {
         if (self.y - y).abs() > self.distance {
             return HashSet::new();
@@ -44,29 +53,26 @@ impl Sensor {
     }
 }
 
-fn input(example: bool) -> Vec<Sensor> {
+fn input(example: bool) -> Result<Vec<Sensor>> {
     let path = if example { EXAMPLE } else { PATH };
-    std::fs::read_to_string(path)
-        .unwrap()
+    let sensors = std::fs::read_to_string(path)
+        .context("Error reading input file")?
         .lines()
-        .map(Sensor::from_row)
-        .collect()
+        .filter_map(|row| Sensor::try_from(row).ok())
+        .collect();
+    Ok(sensors)
 }
 
-fn part_1(sensors: &[Sensor], y: i64) -> i64 {
+fn part_1(sensors: &[Sensor], y: i64) -> Result<i64> {
     let points: HashSet<_> = sensors
         .iter()
         .flat_map(|s| s.points_in_row(y, i64::MIN, i64::MAX))
         .collect();
-    points
-        .iter()
-        .filter(|(_, yi)| *yi == y)
-        .count()
-        .try_into()
-        .unwrap()
+    let result = points.iter().filter(|(_, yi)| *yi == y).count().try_into();
+    Ok(result?)
 }
 
-fn part_2(sensors: &[Sensor]) -> i64 {
+fn part_2(sensors: &[Sensor]) -> Result<i64> {
     let n2 = sensors.len() * 2;
     let positive_lines: Vec<_> = sensors
         .iter()
@@ -89,28 +95,31 @@ fn part_2(sensors: &[Sensor]) -> i64 {
     let (x, y) = iproduct!(p_options, n_options)
         .map(|(p, n)| ((p + n) / 2, (p - n).abs() / 2))
         .find(|(x, y)| sensors.iter().all(|s| !s.can_detect(*x, *y)))
-        .unwrap();
+        .ok_or_else(|| anyhow::anyhow!("No solution found"))?;
 
-    x * 4_000_000 + y
+    Ok(x * 4_000_000 + y)
 }
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true), 10) - 1, 26);
+    assert_eq!(part_1(&input(true).unwrap(), 10).unwrap() - 1, 26);
 }
 
 #[test]
 #[ignore = "Takes too long"]
 fn task_1() {
-    assert_eq!(part_1(&input(false), 2_000_000) - 1, 5_716_881);
+    assert_eq!(
+        part_1(&input(false).unwrap(), 2_000_000).unwrap() - 1,
+        5_716_881
+    );
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 56_000_011);
+    assert_eq!(part_2(&input(true).unwrap()).unwrap(), 56_000_011);
 }
 
 #[test]
 fn task_2() {
-    assert_eq!(part_2(&input(false)), 10_852_583_132_904);
+    assert_eq!(part_2(&input(false).unwrap()).unwrap(), 10_852_583_132_904);
 }

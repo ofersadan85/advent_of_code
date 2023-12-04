@@ -11,12 +11,14 @@ struct SupplyStacks {
     move_orders: Vec<MoveOrder>,
 }
 
-impl SupplyStacks {
-    fn new(data: &str) -> Self {
+impl TryFrom<&str> for SupplyStacks {
+    type Error = &'static str;
+
+    fn try_from(data: &str) -> Result<Self, Self::Error> {
         let mut columns_data = vec![];
         let mut rows = data.split('\n').map(String::from);
         loop {
-            let row = rows.next().unwrap();
+            let row = rows.next().ok_or("Invalid row")?;
             if row.trim().is_empty() {
                 break;
             }
@@ -26,9 +28,9 @@ impl SupplyStacks {
         let mut columns = vec![];
         let n_columns: usize = columns_data[0]
             .split_ascii_whitespace()
-            .map(|s| s.parse().unwrap())
+            .filter_map(|s| s.parse().ok())
             .max()
-            .unwrap();
+            .ok_or("Invalid row")?;
         for _ in 0..n_columns {
             columns.push(vec![]);
         }
@@ -53,14 +55,14 @@ impl SupplyStacks {
             })
             .collect();
 
-        Self {
+        Ok(Self {
             columns,
             move_orders,
-        }
+        })
     }
 }
 
-fn input(example: bool) -> SupplyStacks {
+fn input(example: bool) -> Result<SupplyStacks, &'static str> {
     const PATH: &str = "inputs/day05.txt";
     let data = if example {
         "    [D]    
@@ -74,58 +76,48 @@ move 2 from 2 to 1
 move 1 from 1 to 2"
             .to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
+        std::fs::read_to_string(PATH).map_err(|_| "Failed to read input file")?
     };
-    SupplyStacks::new(&data)
+    SupplyStacks::try_from(data.as_ref()).map_err(|_| "Failed to parse input file")
 }
 
 fn part_1(stack: &mut SupplyStacks) -> String {
     for move_order in &stack.move_orders {
-        for _ in 0..move_order.amount {
-            let moving_cargo = stack.columns[move_order.src].pop().unwrap();
-            stack.columns[move_order.dst].push(moving_cargo);
-        }
+        let additional_cargo: Vec<_> = (0..move_order.amount)
+            .filter_map(|_| stack.columns[move_order.src].pop())
+            .collect();
+        stack.columns[move_order.dst].extend(additional_cargo);
     }
-    stack
-        .columns
-        .iter()
-        .map(|col| col.last().unwrap())
-        .collect()
+    stack.columns.iter().filter_map(|col| col.last()).collect()
 }
 
 fn part_2(stack: &mut SupplyStacks) -> String {
     for move_order in &stack.move_orders {
-        let mut temp_storage = vec![];
-        for _ in 0..move_order.amount {
-            let moving_cargo = stack.columns[move_order.src].pop().unwrap();
-            temp_storage.push(moving_cargo);
-        }
+        let mut temp_storage: Vec<_> = (0..move_order.amount)
+            .filter_map(|_| stack.columns[move_order.src].pop())
+            .collect();
         temp_storage.reverse();
         stack.columns[move_order.dst].append(&mut temp_storage);
     }
-    stack
-        .columns
-        .iter()
-        .map(|col| col.last().unwrap())
-        .collect()
+    stack.columns.iter().filter_map(|col| col.last()).collect()
 }
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&mut input(true)), "CMZ");
+    assert_eq!(part_1(&mut input(true).unwrap()), "CMZ");
 }
 
 #[test]
 fn solution_1() {
-    assert_eq!(part_1(&mut input(false)), "TBVFVDZPN");
+    assert_eq!(part_1(&mut input(false).unwrap()), "TBVFVDZPN");
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&mut input(true)), "MCD");
+    assert_eq!(part_2(&mut input(true).unwrap()), "MCD");
 }
 
 #[test]
 fn solution_2() {
-    assert_eq!(part_2(&mut input(false)), "VLCWHTDSZ");
+    assert_eq!(part_2(&mut input(false).unwrap()), "VLCWHTDSZ");
 }

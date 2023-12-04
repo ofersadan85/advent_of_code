@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use std::collections::HashMap;
 
 use regex::Regex;
@@ -22,42 +23,53 @@ struct Valve {
     open_time: Option<usize>,
 }
 
-impl Valve {
-    fn from_row(row: &str) -> Self {
-        let re = Regex::new(r"Valve (\w+) has flow rate=(\d+); .*valves? (\w+.*)").unwrap();
-        let captures = re.captures(row).unwrap();
-        Self {
-            name: captures.get(1).unwrap().as_str().to_string(),
-            flow_rate: captures.get(2).unwrap().as_str().parse().unwrap(),
-            distance: captures
-                .get(3)
-                .unwrap()
-                .as_str()
-                .split(", ")
-                .map(|c| (c.to_string(), 1))
-                .collect(),
+impl TryFrom<&str> for Valve {
+    type Error = &'static str;
+
+    fn try_from(row: &str) -> Result<Self, Self::Error> {
+        let re = Regex::new(r"Valve (\w+) has flow rate=(\d+); .*valves? (\w+.*)")
+            .map_err(|_| "invalid regex")?;
+        let captures = re.captures(row).ok_or("invalid row")?;
+        let name = captures.get(1).ok_or("invalid row")?.as_str().to_string();
+        let flow_rate = captures
+            .get(2)
+            .ok_or("invalid row")?
+            .as_str()
+            .parse()
+            .map_err(|_| "invalid row")?;
+        let distance = captures
+            .get(3)
+            .ok_or("invalid row")?
+            .as_str()
+            .split(", ")
+            .map(|c| (c.to_string(), 1))
+            .collect();
+        Ok(Self {
+            name,
+            flow_rate,
+            distance,
             open_time: None,
-        }
+        })
     }
 }
 
-fn input(example: bool) -> HashMap<String, Valve> {
+fn input(example: bool) -> Result<HashMap<String, Valve>> {
     let text = if example {
         EXAMPLE.to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
+        std::fs::read_to_string(PATH).context("Error reading input file")?
     };
-    text.lines()
-        .map(|row| {
-            let valve = Valve::from_row(row);
-            (valve.name.clone(), valve)
-        })
-        .collect()
+    let map = text
+        .lines()
+        .filter_map(|row| Valve::try_from(row).ok())
+        .map(|valve| (valve.name.clone(), valve))
+        .collect();
+    Ok(map)
 }
 
 #[test]
 fn test_input() {
-    let input = input(true);
+    let input = input(true).unwrap();
     assert_eq!(input.len(), 10);
     println!("{:?}", input["AA"]);
     assert_eq!(input["AA"].name, "AA");

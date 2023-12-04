@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use itertools::Itertools;
 use std::{collections::VecDeque, fmt::Display};
 
@@ -224,11 +225,11 @@ impl Game {
     }
 }
 
-fn input(example: bool) -> String {
+fn input(example: bool) -> Result<String> {
     if example {
-        EXAMPLE.to_string()
+        Ok(EXAMPLE.to_string())
     } else {
-        std::fs::read_to_string(PATH).unwrap()
+        std::fs::read_to_string(PATH).context("Error reading input file")
     }
 }
 
@@ -249,25 +250,25 @@ fn part_2(directions: &str, r_cycle: usize, shapes: usize) -> usize {
 
 #[test]
 fn example_1() {
-    assert_eq!(play(&input(true), 2022), 3068);
+    assert_eq!(play(&input(true).unwrap(), 2022), 3068);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(play(&input(false), 2022), 3188);
+    assert_eq!(play(&input(false).unwrap(), 2022), 3188);
 }
 
 #[test]
 fn example_2() {
     let r_cycle = 35; // Measured the repeats by hand //todo: automate
     let shapes = 1_000_000_000_000;
-    assert_eq!(part_2(&input(true), r_cycle, shapes), 1_514_285_714_288);
+    assert_eq!(part_2(&input(true).unwrap(), r_cycle, shapes), 1_514_285_714_288);
 }
 
 #[test]
 fn task_2() {
     let r_cycle = 2778; // Measured the repeats by hand //todo: automate
     let shapes = 1_000_000_000_000;
-    assert_eq!(part_2(&input(false), r_cycle, shapes), 0);
+    assert_eq!(part_2(&input(false).unwrap(), r_cycle, shapes), 0);
     todo!("This is not the right answer, but it's the right order of magnitude. I'm not sure what's wrong. :(")
 }

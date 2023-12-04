@@ -6,6 +6,7 @@
         "Hasher",
         "iproduct",
         "LSHIFT",
+        "minmax",
         "RSHIFT",
         "splitn",
         "Tetris"

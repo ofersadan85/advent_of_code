@@ -1,4 +1,5 @@
 use advent_of_code_common::file::lines_as_blocks;
+use anyhow::{Context, Result};
 use serde_json::Value as Json;
 use std::cmp::Ordering;
 
@@ -57,23 +58,27 @@ impl Ord for Packet {
     }
 }
 
-impl Packet {
-    fn from_str(s: &str) -> Self {
-        Self(serde_json::from_str(s).unwrap())
+impl TryFrom<&str> for Packet {
+    type Error = serde_json::Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Ok(Self(serde_json::from_str(s)?))
     }
 }
 
-fn input(example: bool) -> Vec<PacketPair> {
+fn input(example: bool) -> Result<Vec<PacketPair>> {
     let path = if example { EXAMPLE } else { PATH };
-    let text = std::fs::read_to_string(path).unwrap();
+    let text = std::fs::read_to_string(path).context("Failed to read input file")?;
     let blocks = lines_as_blocks(&text);
-    blocks
+    let result = blocks
         .iter()
-        .map(|b| PacketPair {
-            left: Packet::from_str(&b[0]),
-            right: Packet::from_str(&b[1]),
+        .filter_map(|b| {
+            let left = Packet::try_from(b[0].as_str()).ok()?;
+            let right = Packet::try_from(b[1].as_str()).ok()?;
+            Some(PacketPair { left, right })
         })
-        .collect()
+        .collect();
+    Ok(result)
 }
 
 fn part_1(data: &[PacketPair]) -> usize {
@@ -86,8 +91,8 @@ fn part_1(data: &[PacketPair]) -> usize {
 
 fn part_2(data: &[PacketPair]) -> usize {
     let dividers = PacketPair {
-        left: Packet::from_str("[[2]]"),
-        right: Packet::from_str("[[6]]"),
+        left: Packet::try_from("[[2]]").expect("Known to be valid"),
+        right: Packet::try_from("[[6]]").expect("Known to be valid"),
     };
     let mut data = data.to_vec();
     data.push(dividers.clone());
@@ -106,20 +111,20 @@ fn part_2(data: &[PacketPair]) -> usize {
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 13);
+    assert_eq!(part_1(&input(true).unwrap()), 13);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(part_1(&input(false)), 5529);
+    assert_eq!(part_1(&input(false).unwrap()), 5529);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 140);
+    assert_eq!(part_2(&input(true).unwrap()), 140);
 }
 
 #[test]
 fn task_2() {
-    assert_eq!(part_2(&input(false)), 27690);
+    assert_eq!(part_2(&input(false).unwrap()), 27690);
 }

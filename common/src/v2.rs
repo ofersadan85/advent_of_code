@@ -5,10 +5,6 @@ use num::{Integer, One, Zero};
 pub type V2<T> = Vec<Vec<T>>;
 
 /// Flips the axis of 2d Vectors
-///
-/// # Panics
-///
-/// Will panic if inner vectors have different lengths
 pub fn transpose<T>(v: V2<T>) -> V2<T> {
     if v.is_empty() {
         return v;
@@ -16,7 +12,7 @@ pub fn transpose<T>(v: V2<T>) -> V2<T> {
     let len = v[0].len();
     let mut iters: Vec<_> = v.into_iter().map(IntoIterator::into_iter).collect();
     (0..len)
-        .map(|_| iters.iter_mut().map(|n| n.next().unwrap()).collect())
+        .map(|_| iters.iter_mut().filter_map(|n| n.next()).collect())
         .collect()
 }
 

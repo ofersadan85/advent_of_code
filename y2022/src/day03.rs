@@ -1,10 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
+use anyhow::{Context, Result};
 use itertools::Itertools;
 
-fn input(example: bool) -> Vec<String> {
+fn input(example: bool) -> Result<Vec<String>> {
     const PATH: &str = "inputs/day03.txt";
-    if example {
+    let s = if example {
         "vJrwpWtwJgWrhcsFMMfFFhFp
         jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
         PmmdzqPrVvPwwTWBwg
@@ -13,12 +14,10 @@ fn input(example: bool) -> Vec<String> {
         CrZsJsPPZsGzwwsLwLmpwMDw"
             .to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
-    }
-    .trim()
-    .split('\n')
-    .map(String::from)
-    .collect()
+        std::fs::read_to_string(PATH).context("Failed to read input file")?
+    };
+    let result = s.trim().lines().map(String::from).collect();
+    Ok(result)
 }
 
 fn part_1(data: &[String]) -> usize {
@@ -71,20 +70,20 @@ fn part_2(data: &[String]) -> usize {
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 157);
+    assert_eq!(part_1(&input(true).unwrap()), 157);
 }
 
 #[test]
 fn solution_1() {
-    assert_eq!(part_1(&input(false)), 7428);
+    assert_eq!(part_1(&input(false).unwrap()), 7428);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 70);
+    assert_eq!(part_2(&input(true).unwrap()), 70);
 }
 
 #[test]
 fn solution_2() {
-    assert_eq!(part_2(&input(false)), 2650);
+    assert_eq!(part_2(&input(false).unwrap()), 2650);
 }

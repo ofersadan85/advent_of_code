@@ -1,4 +1,5 @@
 use advent_of_code_common::{file::lines_as_digits, v2::V2};
+use anyhow::{Context, Result};
 use itertools::iproduct;
 
 const PATH: &str = "inputs/day08.txt";
@@ -8,13 +9,12 @@ const EXAMPLE: &str = "30373
 33549
 35390";
 
-fn input(example: bool) -> V2<u32> {
+fn input(example: bool) -> Result<V2<u32>> {
     if example {
         lines_as_digits(EXAMPLE)
     } else {
-        lines_as_digits(&std::fs::read_to_string(PATH).unwrap())
+        lines_as_digits(&std::fs::read_to_string(PATH).context("Failed to read input file")?)
     }
-    .unwrap()
 }
 
 fn is_visible(data: &V2<u32>, x: usize, y: usize) -> bool {
@@ -69,30 +69,30 @@ fn part_1(data: &V2<u32>) -> usize {
         .count()
 }
 
-fn part_2(data: &V2<u32>) -> usize {
+fn part_2(data: &V2<u32>) -> Result<usize> {
     let (h, w) = (data.len(), data[0].len());
     let (best_y, best_x) = iproduct!(0..h, 0..w)
         .max_by_key(|&(y, x)| view_distance(data, x, y))
-        .unwrap();
-    view_distance(data, best_x, best_y)
+        .context("Failed to find best position")?;
+    Ok(view_distance(data, best_x, best_y))
 }
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 21);
+    assert_eq!(part_1(&input(true).unwrap()), 21);
 }
 
 #[test]
 fn solution_1() {
-    assert_eq!(part_1(&input(false)), 1736);
+    assert_eq!(part_1(&input(false).unwrap()), 1736);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 8);
+    assert_eq!(part_2(&input(true).unwrap()).unwrap(), 8);
 }
 
 #[test]
 fn solution_2() {
-    assert_eq!(part_2(&input(false)), 268_800);
+    assert_eq!(part_2(&input(false).unwrap()).unwrap(), 268_800);
 }

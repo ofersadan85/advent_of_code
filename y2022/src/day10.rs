@@ -1,4 +1,5 @@
 use advent_of_code_common::file::split_lines_trim;
+use anyhow::{Context, Result};
 
 const PATH: &str = "inputs/day10.txt";
 const EXAMPLE: &str = "inputs/day10_example.txt";
@@ -15,9 +16,10 @@ const EXPECTED_PART_2: &str = "###...##..###..#..#.####.#..#.####...##.
 .....#..#.#....#.#..#....#.#..#....#..#.
 .....#..#.#....#..#.#....#..#.####..##.."; // PAPKFKEJ
 
-fn input(example: bool) -> Vec<String> {
+fn input(example: bool) -> Result<Vec<String>> {
     let path = if example { EXAMPLE } else { PATH };
-    split_lines_trim(&std::fs::read_to_string(path).unwrap())
+    let s = std::fs::read_to_string(path).context("Failed to read input file")?;
+    Ok(split_lines_trim(&s))
 }
 
 #[allow(clippy::cast_sign_loss)] // TODO: Find a better alternative
@@ -31,9 +33,9 @@ fn calc_sprite_position(data: &[String]) -> [usize; 240] {
             cycles[i + count] = row
                 .split_ascii_whitespace()
                 .last()
-                .unwrap()
+                .unwrap_or_default()
                 .parse()
-                .unwrap();
+                .unwrap_or_default();
         }
     }
     let mut result: [usize; 240] = [0; 240];
@@ -72,21 +74,21 @@ fn part_2(data: &[String]) -> String {
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 13140);
+    assert_eq!(part_1(&input(true).unwrap()), 13140);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(part_1(&input(false)), 14060);
+    assert_eq!(part_1(&input(false).unwrap()), 14060);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), EXPECTED_EXAMPLE);
+    assert_eq!(part_2(&input(true).unwrap()), EXPECTED_EXAMPLE);
 }
 
 #[test]
 fn task_2() {
-    let output = part_2(&input(false));
+    let output = part_2(&input(false).unwrap());
     assert_eq!(output, EXPECTED_PART_2, "\n{output}\n");
 }

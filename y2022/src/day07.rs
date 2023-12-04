@@ -1,4 +1,5 @@
 use advent_of_code_common::file::split_lines_trim;
+use anyhow::{Context, Result};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 type FolderMap = HashMap<String, Folder>;
@@ -59,11 +60,11 @@ impl Folder {
     }
 }
 
-fn input(example: bool) -> FolderRef {
+fn input(example: bool) -> Result<FolderRef> {
     let lines = if example {
         split_lines_trim(EXAMPLE)
     } else {
-        split_lines_trim(&std::fs::read_to_string(PATH).unwrap())
+        split_lines_trim(&std::fs::read_to_string(PATH).context("Failed to read input file")?)
     };
     let root = Folder::root();
     let mut current_folder = root.clone();
@@ -78,7 +79,11 @@ fn input(example: bool) -> FolderRef {
                 .clone()
                 .unwrap_or_else(|| root.clone())
         } else if row.starts_with("$ cd") {
-            let next_folder = row.split_ascii_whitespace().last().unwrap().to_string();
+            let next_folder = row
+                .split_ascii_whitespace()
+                .last()
+                .context("Invalid row")?
+                .to_string();
             current_folder
                 .borrow_mut()
                 .folders
@@ -94,22 +99,25 @@ fn input(example: bool) -> FolderRef {
         } else if row.starts_with('$') {
             read_output = false;
         } else if read_output && row.starts_with("dir") {
-            let next_folder = row.split_ascii_whitespace().last().unwrap().to_string();
+            let next_folder = row
+                .split_ascii_whitespace()
+                .last()
+                .context("Invalid row")?
+                .to_string();
             current_folder
                 .borrow_mut()
                 .folders
                 .entry(next_folder.clone())
                 .or_insert_with(|| Folder::new(&next_folder, Some(current_folder.clone())));
         } else {
-            let (file_size, file_name) = row.split_once(' ').unwrap();
+            let (file_size, file_name) = row.split_once(' ').context("Invalid row")?;
             current_folder
                 .borrow_mut()
                 .files
                 .insert(file_name.to_string(), file_size.parse().unwrap_or_default());
         }
     }
-
-    root
+    Ok(root)
 }
 
 fn part_1(root: &FolderRef) -> u32 {
@@ -141,27 +149,27 @@ fn get_big_folders(root: &FolderRef, min_size: u32) -> Vec<u32> {
     big_folders
 }
 
-fn part_2(root: &FolderRef) -> u32 {
+fn part_2(root: &FolderRef) -> Option<u32> {
     let min_size = root.borrow().size() - 40_000_000;
-    *get_big_folders(root, min_size).iter().min().unwrap()
+    get_big_folders(root, min_size).iter().min().copied()
 }
 
 #[test]
 fn example_1() {
-    assert_eq!(part_1(&input(true)), 95437);
+    assert_eq!(part_1(&input(true).unwrap()), 95437);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(part_1(&input(false)), 1_182_909);
+    assert_eq!(part_1(&input(false).unwrap()), 1_182_909);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(part_2(&input(true)), 24_933_642);
+    assert_eq!(part_2(&input(true).unwrap()), Some(24_933_642));
 }
 
 #[test]
 fn task_2() {
-    assert_eq!(part_2(&input(false)), 2_832_508);
+    assert_eq!(part_2(&input(false).unwrap()), Some(2_832_508));
 }

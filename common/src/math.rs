@@ -23,7 +23,7 @@ where
     T: Into<f64>,
 {
     let (a, b, c): (f64, f64, f64) = (a.into(), b.into(), c.into());
-    let two: f64 = NumCast::from(2).unwrap();
+    let two: f64 = NumCast::from(2).expect("Casting 2");
     let discriminant = b.mul_add(b, -two * two * a * c); // b * b - two * two * a * c;
     if a == Zero::zero() {
         return Err(Error::DivisionByZero);
@@ -41,7 +41,7 @@ where
 /// Sums the series [1, 2, .., n]
 #[allow(clippy::missing_panics_doc)] // False positive - will never panic
 pub fn simple_series_sum<T: Integer + NumCast + Copy>(n: T) -> T {
-    (n * n + n) / NumCast::from(2).unwrap()
+    (n * n + n) / NumCast::from(2).expect("Casting 2")
 }
 
 /// Sums the series [n.., m] in steps
@@ -52,7 +52,7 @@ where
 {
     let real_end = end - (end % step);
     let steps = (real_end - start) / step + One::one();
-    steps * (start + real_end) / NumCast::from(2).unwrap()
+    steps * (start + real_end) / NumCast::from(2).expect("Casting 2")
 }
 
 /// Calculate the prime factors of positive integers
@@ -61,7 +61,7 @@ pub fn prime_factors<T>(n: &T) -> Vec<T>
 where
     T: PrimInt + Unsigned + NumCast + Copy,
 {
-    let two = NumCast::from(2).unwrap();
+    let two = NumCast::from(2).expect("Casting 2");
     let mut n = *n;
     let mut div = two;
     let mut result: Vec<T> = Vec::new();

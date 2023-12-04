@@ -1,6 +1,6 @@
+use anyhow::{Context, Result};
 use num::Integer;
 use std::fmt::Debug;
-use std::num::IntErrorKind;
 use std::str::FromStr;
 
 use crate::v2::V2;
@@ -40,16 +40,12 @@ where
 /// # Errors
 ///
 /// Will return `Err` if lines cannot be parsed as the required type
-///
-/// # Panics
-///
-/// Will panic if there's an error reading the file
 #[allow(clippy::module_name_repetitions)]
-pub fn parse_file<T, E, F>(path: &str, f: F) -> Result<Vec<T>, E>
+pub fn parse_file<T, F>(path: &str, f: F) -> Result<Vec<T>>
 where
-    F: Fn(&str) -> Result<Vec<T>, E>,
+    F: Fn(&str) -> Result<Vec<T>>,
 {
-    let lines = std::fs::read_to_string(path).unwrap();
+    let lines = std::fs::read_to_string(path)?;
     f(&lines)
 }
 
@@ -71,7 +67,7 @@ where
 /// # Errors
 ///
 /// Will return `Err` if characters are not valid digits under given radix
-pub fn lines_as_digits_radix<T>(lines: &str, radix: u32) -> Result<V2<T>, IntErrorKind>
+pub fn lines_as_digits_radix<T>(lines: &str, radix: u32) -> Result<V2<T>>
 where
     T: From<u32>,
 {
@@ -79,7 +75,12 @@ where
     for row in split_lines_trim(lines) {
         let mut row_vec = vec![];
         for c in row.chars() {
-            row_vec.push(c.to_digit(radix).ok_or(IntErrorKind::InvalidDigit)?.into());
+            row_vec.push(
+                c.to_digit(radix)
+                    .context("Invalid digit")?
+                    .try_into()
+                    .context("Couldn't convert digit to type")?,
+            );
         }
         result.push(row_vec);
     }
@@ -91,7 +92,7 @@ where
 /// # Errors
 ///
 /// Will return `Err` if characters are not valid digits under given radix
-pub fn lines_as_digits<T>(lines: &str) -> Result<V2<T>, IntErrorKind>
+pub fn lines_as_digits<T>(lines: &str) -> Result<V2<T>>
 where
     T: From<u32>,
 {

@@ -1,6 +1,7 @@
 use advent_of_code_common::algorithms::dijkstra::{dijkstra, Graph};
 use advent_of_code_common::file::{lines_as_digits, parse_file};
 use advent_of_code_common::v2::{get_neighbors, V2};
+use anyhow::Result;
 use std::collections::BTreeMap;
 
 const PATH: &str = "inputs/day15.txt";
@@ -95,13 +96,13 @@ fn lowest_risk_path(data: &V2<u32>) -> u32 {
     dijkstra(&graph, &end).get(&start).unwrap().unwrap().1
 }
 
-fn input(example: bool) -> V2<u32> {
-    if example {
-        lines_as_digits(EXAMPLE)
+fn input(example: bool) -> Result<V2<u32>> {
+    let result = if example {
+        lines_as_digits(EXAMPLE)?
     } else {
-        parse_file(PATH, lines_as_digits)
-    }
-    .unwrap()
+        parse_file(PATH, lines_as_digits)?
+    };
+    Ok(result)
 }
 
 fn enlarged_risk_path(data: &V2<u32>) -> u32 {
@@ -113,23 +114,23 @@ fn enlarged_risk_path(data: &V2<u32>) -> u32 {
 
 #[test]
 fn example_1() {
-    assert_eq!(lowest_risk_path(&input(true)), 40);
+    assert_eq!(lowest_risk_path(&input(true).unwrap()), 40);
 }
 
 #[test]
 fn example_2() {
-    assert_eq!(enlarged_risk_path(&input(true)), 315);
+    assert_eq!(enlarged_risk_path(&input(true).unwrap()), 315);
 }
 
 #[test]
 fn task_1() {
-    assert_eq!(lowest_risk_path(&input(false)), 403);
+    assert_eq!(lowest_risk_path(&input(false).unwrap()), 403);
 }
 
 #[test]
 #[ignore = "Takes too long"]
 fn task_2() {
-    assert_eq!(enlarged_risk_path(&input(true)), 2840);
+    assert_eq!(enlarged_risk_path(&input(true).unwrap()), 2840);
 }
 
 #[test]

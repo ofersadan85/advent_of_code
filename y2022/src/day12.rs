@@ -1,5 +1,6 @@
 use advent_of_code_common::file::lines_as_digits_radix;
 use advent_of_code_common::v2::{get_neighbors, V2};
+use anyhow::{Context, Result, anyhow};
 use itertools::iproduct;
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -50,15 +51,15 @@ struct Maze {
     end: Node,
 }
 
-fn input(example: bool) -> Maze {
+fn input(example: bool) -> Result<Maze> {
     let data_str = if example {
         EXAMPLE.to_string()
     } else {
-        std::fs::read_to_string(PATH).unwrap()
+        std::fs::read_to_string(PATH).context("failed to read input file")?
     }
     .replace('S', "9")
     .replace('E', "1");
-    let data_int: V2<u32> = lines_as_digits_radix(&data_str, 36).unwrap();
+    let data_int: V2<u32> = lines_as_digits_radix(&data_str, 36).map_err(|_| anyhow!("Invalid input"))?;
     let (height, width) = (data_int.len(), data_int[0].len());
     let mut data: V2<Node> = data_int
         .iter()
@@ -73,15 +74,15 @@ fn input(example: bool) -> Maze {
     let end = iproduct!(0..height, 0..width)
         .find(|&(y, x)| data_int[y][x] == 9)
         .map(|(y, x)| Node::new(x, y, 9))
-        .unwrap();
+        .with_context(|| "No end found")?;
     let start = iproduct!(0..height, 0..width)
         .find(|&(y, x)| data_int[y][x] == 1)
         .map(|(y, x)| Node::new(x, y, 36))
-        .unwrap();
+        .with_context(|| "No start found")?;
     data[end.y][end.x] = end;
     data[start.y][start.x] = start;
 
-    Maze { data, start, end }
+    Ok(Maze { data, start, end })
 }
 
 fn update_distances(data: &V2<Node>, end: &Node) -> V2<Node> {
@@ -115,24 +116,15 @@ fn update_distances(data: &V2<Node>, end: &Node) -> V2<Node> {
 
 #[test]
 fn example_1() {
-    let mut maze = input(true);
+    let mut maze = input(true).unwrap();
     maze.data = update_distances(&maze.data, &maze.start);
     maze.end = maze.data[maze.end.y][maze.end.x];
-
-    // for row in maze.data.iter() {
-    //     println!("{}", row.iter().map(|n| n.value.to_string()).join(" "));
-    // }
-    // println!("***************");
-    // for row in maze.data {
-    //     println!("{}", row.iter().map(|n| n.distance.to_string()).join(" "));
-    // }
-
     assert_eq!(maze.end.distance, 31);
 }
 
 #[test]
 fn task_1() {
-    let mut maze = input(false);
+    let mut maze = input(false).unwrap();
     for _ in 0..47 {
         // todo: No idea why this takes 47 iterations to get the right answer, but it works
         maze.data = update_distances(&maze.data, &maze.start);
@@ -143,7 +135,7 @@ fn task_1() {
 
 #[test]
 fn example_2() {
-    let mut maze = input(true);
+    let mut maze = input(true).unwrap();
     maze.data = update_distances(&maze.data, &maze.start);
     let closest = maze
         .data
@@ -158,7 +150,7 @@ fn example_2() {
 
 #[test]
 fn task_2() {
-    let mut maze = input(false);
+    let mut maze = input(false).unwrap();
     for _ in 0..47 {
         // todo: No idea why this takes 47 iterations to get the right answer, but it works
         maze.data = update_distances(&maze.data, &maze.start);
