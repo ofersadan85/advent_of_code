@@ -63,7 +63,7 @@ where
     T: Integer + FromStr<Err = E>,
     <T as FromStr>::Err: Debug,
 {
-    parse_lines(lines, |s| s.parse())
+    parse_lines(lines, str::parse)
 }
 
 /// Convert lines of strings to 2d Vector of digits

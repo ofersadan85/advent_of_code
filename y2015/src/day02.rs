@@ -1,9 +1,9 @@
 pub fn wrapper(x: usize, y: usize, z: usize) -> usize {
-    let w = 2 * x * y;
-    let h = 2 * y * z;
-    let l = 2 * x * z;
-    let min = w.min(h).min(l);
-    w + h + l + min / 2
+    let width = 2 * x * y;
+    let height = 2 * y * z;
+    let length = 2 * x * z;
+    let min = width.min(height).min(length);
+    width + height + length + min / 2
 }
 
 pub fn ribbon(x: usize, y: usize, z: usize) -> usize {

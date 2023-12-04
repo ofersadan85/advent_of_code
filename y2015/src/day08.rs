@@ -16,7 +16,7 @@ fn str_unescape(s: &str) -> usize {
                         let (_, first) = chars.next().expect("Hex char");
                         let (_, second) = chars.next().expect("Hex char");
                         // Convert hex to char
-                        let hex = format!("{}{}", first, second);
+                        let hex = format!("{first}{second}");
                         if let Ok(c) = u8::from_str_radix(hex.as_str(), 16) {
                             result.push(c as char);
                         } else {
@@ -38,8 +38,7 @@ fn str_unescape(s: &str) -> usize {
 fn str_escape(s: &str) -> usize {
     s.chars()
         .map(|c| match c {
-            '\\' => 2,
-            '"' => 2,
+            '\\' | '"' => 2,
             _ => 1,
         })
         .sum::<usize>()

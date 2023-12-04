@@ -44,8 +44,7 @@ start-RW";
 fn visit_caves(graph: &Undirected, allow_double: bool) -> usize {
     let mut known_paths = vec![vec!["start".to_string()]];
     let mut result: Vec<Vec<String>> = vec![];
-    while !known_paths.is_empty() {
-        let path = known_paths.pop().unwrap();
+    while let Some(path) = known_paths.pop() {
         if path.last().unwrap() == "end" {
             result.push(path);
             continue;

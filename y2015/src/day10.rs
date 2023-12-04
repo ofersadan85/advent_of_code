@@ -27,9 +27,10 @@ pub fn look_and_say(numbers: &mut Vec<u8>) {
 }
 
 pub fn look_and_say_many(s: &str, n: usize) -> String {
+    #[allow(clippy::cast_possible_truncation)] // c is always a single digit
     let mut numbers = s
         .chars()
-        .filter_map(|c| u8::from_str_radix(&c.to_string(), 10).ok())
+        .filter_map(|c| c.to_digit(10).map(|d| d as u8))
         .collect();
     for _ in 0..n {
         look_and_say(&mut numbers);

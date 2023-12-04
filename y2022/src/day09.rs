@@ -53,7 +53,7 @@ impl Direction {
         (0..i.parse().unwrap()).map(|_| direction).collect()
     }
 
-    fn to_movement(self) -> Movement {
+    const fn to_movement(self) -> Movement {
         match self {
             Self::Left => Movement { x: -1, y: 0 },
             Self::Right => Movement { x: 1, y: 0 },

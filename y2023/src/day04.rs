@@ -26,7 +26,6 @@ impl TryFrom<&str> for Card {
             .filter_map(|part| part.trim_matches(':').parse::<usize>().ok())
             .collect_vec();
         let id = id
-            .trim()
             .split_whitespace()
             .last()
             .ok_or("No id")?
@@ -70,19 +69,16 @@ pub fn card_explosion(cards: &mut Vec<Card>) {
     let last_index = cards.len() - 1;
     loop {
         let card = cards.get(index).cloned();
-        match card {
-            Some(card) => {
-                let lookup_start = index + 1;
-                let lookup_end = (index + card.count()).min(last_index);
-                let lookup_range = lookup_start..=lookup_end;
-                for other_index in lookup_range {
-                    cards
-                        .get_mut(other_index)
-                        .expect("We know the index exists")
-                        .copies += card.copies;
-                }
+        if let Some(card) = card {
+            let lookup_start = index + 1;
+            let lookup_end = (index + card.count()).min(last_index);
+            let lookup_range = lookup_start..=lookup_end;
+            for other_index in lookup_range {
+                cards
+                    .get_mut(other_index)
+                    .expect("We know the index exists")
+                    .copies += card.copies;
             }
-            None => {}
         }
         index += 1;
         if index >= last_index {

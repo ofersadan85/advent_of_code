@@ -34,7 +34,6 @@ struct BingoBoard {
 }
 
 #[derive(Debug)]
-
 struct BingoGame {
     guesses: Vec<usize>,
     boards: Vec<BingoBoard>,
@@ -68,7 +67,7 @@ impl BingoBoard {
                     .collect()
             })
             .collect();
-        BingoBoard {
+        Self {
             cells,
             has_won: false,
         }

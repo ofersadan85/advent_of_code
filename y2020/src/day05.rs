@@ -60,7 +60,7 @@ impl BoardingPass {
         Self { row, column }
     }
 
-    fn seat_id(&self) -> usize {
+    const fn seat_id(&self) -> usize {
         self.row as usize * 8 + self.column as usize
     }
 }

@@ -14,9 +14,9 @@ enum Pixel {
 impl Display for Pixel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Pixel::Empty => write!(f, "."),
-            Pixel::Moving => write!(f, "@"),
-            Pixel::Full => write!(f, "#"),
+            Self::Empty => write!(f, "."),
+            Self::Moving => write!(f, "@"),
+            Self::Full => write!(f, "#"),
         }
     }
 }
@@ -101,7 +101,7 @@ impl Display for Game {
 }
 
 impl Game {
-    fn new(width: usize) -> Self {
+    const fn new(width: usize) -> Self {
         Self {
             board: VecDeque::new(),
             width,
@@ -116,8 +116,7 @@ impl Game {
         for _ in 0..3 {
             self.board.push_front(vec![Pixel::Empty; self.width]);
         }
-        while !shape.is_empty() {
-            let row = shape.pop().unwrap();
+        while let Some(row) = shape.pop() {
             self.board.push_front(row);
         }
         self.top_of_mover = 0;

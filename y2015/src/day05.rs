@@ -7,11 +7,11 @@ pub fn is_nice_str(s: &str) -> bool {
     for c in s.chars() {
         match (previous, c) {
             ('a', 'b') | ('c', 'd') | ('p', 'q') | ('x', 'y') => return false,
-            (_, 'a') | (_, 'e') | (_, 'i') | (_, 'o') | (_, 'u') => vowel_count += 1,
+            (_, 'a' | 'e' | 'i' | 'o' | 'u') => vowel_count += 1,
             _ => (),
         }
         if previous == c {
-            has_double_letter = true
+            has_double_letter = true;
         }
         previous = c;
     }
@@ -36,9 +36,9 @@ pub fn is_even_nicer_str(s: &str) -> (bool, bool, HashMap<(char, char), Vec<i32>
                     if v.last().expect("Vec should not be empty") + 1 != index {
                         has_pairs = true;
                     }
-                    v.push(index)
+                    v.push(index);
                 })
-                .or_insert(vec![index]);
+                .or_insert_with(|| vec![index]);
         }
         window = [window[1], window[2], chars.next().unwrap_or(' ')];
         index += 1;
@@ -56,7 +56,7 @@ pub fn has_pairs(s: &str) -> bool {
         let next = s.chars().nth(i + 1).unwrap_or(' ');
         let triple = next == c && c == previous;
         if previous != ' ' && !triple {
-            let pair = format!("{}{}", previous, c);
+            let pair = format!("{previous}{c}");
             *pairs.entry(pair).or_insert(0) += 1;
         }
         previous = c;
@@ -65,20 +65,16 @@ pub fn has_pairs(s: &str) -> bool {
 }
 
 pub fn winged_pairs(s: &str) -> bool {
-    (1..s.len())
-        .find(|i| s.chars().nth(i - 1).unwrap_or('*') == s.chars().nth(i + 1).unwrap_or('?'))
-        .is_some()
+    (1..s.len()).any(|i| s.chars().nth(i - 1).unwrap_or('*') == s.chars().nth(i + 1).unwrap_or('?'))
 }
 
 pub fn has_triple(s: &str) -> bool {
-    (1..s.len())
-        .find(|i| {
-            let previous = s.chars().nth(i - 1).unwrap_or('*');
-            let current = s.chars().nth(i + 0).unwrap_or('?');
-            let next = s.chars().nth(i + 1).unwrap_or('$');
-            previous == next && previous == current
-        })
-        .is_some()
+    (1..s.len()).any(|i| {
+        let previous = s.chars().nth(i - 1).unwrap_or('*');
+        let current = s.chars().nth(i).unwrap_or('?');
+        let next = s.chars().nth(i + 1).unwrap_or('$');
+        previous == next && previous == current
+    })
 }
 
 #[cfg(test)]

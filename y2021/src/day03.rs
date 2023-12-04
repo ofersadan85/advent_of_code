@@ -57,8 +57,8 @@ fn filter_v2d(data: &V2<bool>, i: usize, common: bool) -> V2<bool> {
         counter.get(&i).unwrap_or(&0) * 2 < data.len()
     };
     data.iter()
+        .filter(|&row| row[i] == common_test)
         .cloned()
-        .filter(|row| row[i] == common_test)
         .collect()
 }
 

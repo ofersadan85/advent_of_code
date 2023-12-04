@@ -24,7 +24,7 @@ where
 {
     let (a, b, c): (f64, f64, f64) = (a.into(), b.into(), c.into());
     let two: f64 = NumCast::from(2).unwrap();
-    let discriminant = b * b - two * two * a * c;
+    let discriminant = b.mul_add(b, -two * two * a * c); // b * b - two * two * a * c;
     if a == Zero::zero() {
         return Err(Error::DivisionByZero);
     }

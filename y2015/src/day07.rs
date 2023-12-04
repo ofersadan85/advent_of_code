@@ -9,40 +9,38 @@ enum Wire {
 
 impl Wire {
     fn evaluate(&self) -> Self {
-        if let Some(value) = self.gate().and_then(|v| v.parse::<u16>().ok()) {
-            return Wire::Valued {
+        self.gate().and_then(|v| v.parse::<u16>().ok()).map_or_else(
+            || self.clone(),
+            |value| Self::Valued {
                 name: self.name().to_string(),
                 value,
-            };
-        } else {
-            return self.clone();
-        }
+            },
+        )
     }
 
-    fn has_value(&self) -> bool {
+    const fn has_value(&self) -> bool {
         match self {
-            Wire::Valued { .. } => true,
-            Wire::Gated { .. } => false,
+            Self::Valued { .. } => true,
+            Self::Gated { .. } => false,
         }
     }
     fn name(&self) -> &str {
         match self {
-            Wire::Valued { name, .. } => name,
-            Wire::Gated { name, .. } => name,
+            Self::Valued { name, .. } | Self::Gated { name, .. } => name,
         }
     }
 
     fn gate(&self) -> Option<&str> {
         match self {
-            Wire::Gated { gate, .. } => Some(gate),
-            Wire::Valued { .. } => None,
+            Self::Gated { gate, .. } => Some(gate),
+            Self::Valued { .. } => None,
         }
     }
 
-    fn value(&self) -> Option<u16> {
+    const fn value(&self) -> Option<u16> {
         match self {
-            Wire::Valued { value, .. } => Some(*value),
-            Wire::Gated { .. } => None,
+            Self::Valued { value, .. } => Some(*value),
+            Self::Gated { .. } => None,
         }
     }
 }
@@ -52,7 +50,7 @@ impl From<&str> for Wire {
         let mut parts = s.split(" -> ");
         let gate = parts.next().expect("Wire format (gate)").to_string();
         let name = parts.next().expect("Wire format (name)").to_string();
-        Wire::Gated { name, gate }
+        Self::Gated { name, gate }
     }
 }
 
@@ -68,7 +66,7 @@ impl Circuit {
             wires.insert(wire.name().to_string(), wire);
         }
         wires.values_mut().for_each(|wire| match wire {
-            Wire::Valued { .. } => return,
+            Wire::Valued { .. } => {}
             Wire::Gated { .. } => {
                 *wire = wire.evaluate();
             }
@@ -127,7 +125,7 @@ impl Circuit {
 
     fn reduce_entropy_once(&mut self) {
         let mut new_wires = HashMap::new();
-        for (name, wire) in self.wires.iter() {
+        for (name, wire) in &self.wires {
             if wire.has_value() {
                 new_wires.insert(name.to_string(), wire.clone());
             } else {

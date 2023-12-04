@@ -24,15 +24,15 @@ struct Cube {
 }
 
 impl Cube {
-    fn neighbors(&self) -> HashSet<Cube> {
+    fn neighbors(&self) -> HashSet<Self> {
         let (x, y, z) = (self.x, self.y, self.z);
         [
-            Cube { x, y, z: z + 1 },
-            Cube { x, y: y + 1, z },
-            Cube { x: x + 1, y, z },
-            Cube { x: x - 1, y, z },
-            Cube { x, y: y - 1, z },
-            Cube { x, y, z: z - 1 },
+            Self { x, y, z: z + 1 },
+            Self { x, y: y + 1, z },
+            Self { x: x + 1, y, z },
+            Self { x: x - 1, y, z },
+            Self { x, y: y - 1, z },
+            Self { x, y, z: z - 1 },
         ]
         .iter()
         .copied()
@@ -84,8 +84,7 @@ fn part_2(cubes: &HashSet<Cube>) -> i32 {
     let mut unvisited = vec![first_water];
     let mut water = HashSet::new();
     let mut result = 0;
-    while !unvisited.is_empty() {
-        let cube = unvisited.pop().unwrap();
+    while let Some(cube) = unvisited.pop() {
         if !water.contains(&cube) {
             water.insert(cube);
             let neighbors = cube.neighbors();

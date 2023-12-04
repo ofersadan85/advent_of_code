@@ -17,7 +17,7 @@ impl GameChoice {
         }
     }
 
-    fn value(self) -> usize {
+    const fn value(self) -> usize {
         use GameChoice::*;
         match self {
             Unknown => 0,
@@ -78,7 +78,7 @@ impl GameResult {
         }
     }
 
-    fn value(&self) -> usize {
+    const fn value(&self) -> usize {
         use GameResult::*;
         match self {
             LeftWins { left: _, right } => right.value(),

@@ -74,7 +74,7 @@ impl Line {
         result
     }
 
-    fn is_diagonal(&self) -> bool {
+    const fn is_diagonal(&self) -> bool {
         self.start.x != self.end.x && self.start.y != self.end.y
     }
 }

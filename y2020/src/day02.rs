@@ -13,7 +13,7 @@ impl Password {
         let min: usize = range.next().unwrap().parse().unwrap();
         let max: usize = range.next().unwrap().parse().unwrap();
         let letter = split.next().unwrap().chars().next().unwrap();
-        Password {
+        Self {
             min,
             max,
             letter,

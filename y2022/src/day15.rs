@@ -39,7 +39,7 @@ impl Sensor {
             .collect()
     }
 
-    fn can_detect(&self, x: i64, y: i64) -> bool {
+    const fn can_detect(&self, x: i64, y: i64) -> bool {
         (self.x - x).abs() + (self.y - y).abs() <= self.distance
     }
 }

@@ -5,11 +5,17 @@ pub struct Santa {
     last: (isize, isize),
 }
 
+impl Default for Santa {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Santa {
     pub fn new() -> Self {
         let mut map = HashMap::new();
         map.insert((0, 0), 1);
-        Santa { map, last: (0, 0) }
+        Self { map, last: (0, 0) }
     }
 
     pub fn step(&mut self, direction: char) {

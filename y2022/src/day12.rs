@@ -33,7 +33,7 @@ impl Hash for Node {
 }
 
 impl Node {
-    fn new(x: usize, y: usize, value: u32) -> Self {
+    const fn new(x: usize, y: usize, value: u32) -> Self {
         Self {
             x,
             y,
@@ -92,8 +92,7 @@ fn update_distances(data: &V2<Node>, end: &Node) -> V2<Node> {
     let mut visited = HashSet::new();
     let mut visit_next = vec![(end.x, end.y)];
 
-    while !visit_next.is_empty() {
-        let (current_x, current_y) = visit_next.pop().unwrap();
+    while let Some((current_x, current_y)) = visit_next.pop() {
         if !visited.contains(&(current_x, current_y)) {
             let current = data[current_y][current_x];
             let next_neighbors: Vec<_> = get_neighbors(current_x, current_y, w, h, false)

@@ -11,7 +11,7 @@ enum CustomError {
 
 impl From<ParseIntError> for CustomError {
     fn from(_: ParseIntError) -> Self {
-        CustomError::ParseIntError
+        Self::ParseIntError
     }
 }
 
@@ -34,7 +34,7 @@ impl TryFrom<&str> for Point {
             Some(y) => y.parse()?,
             None => return Err(CustomError::InvalidPoint),
         };
-        Ok(Point { x, y })
+        Ok(Self { x, y })
     }
 }
 
@@ -61,7 +61,7 @@ impl TryFrom<&str> for Rect {
             Some(x) => Point::try_from(x)?,
             None => return Err(CustomError::InvalidPoint),
         };
-        Ok(Rect {
+        Ok(Self {
             top_left,
             bottom_right,
         })
@@ -69,7 +69,7 @@ impl TryFrom<&str> for Rect {
 }
 
 struct GridOnOff {
-    lights: [[bool; 1000]; 1000],
+    lights: Vec<Vec<bool>>,
 }
 
 trait LightGrid {
@@ -93,8 +93,8 @@ trait LightGrid {
 
 impl LightGrid for GridOnOff {
     fn new() -> Self {
-        GridOnOff {
-            lights: [[false; 1000]; 1000],
+        Self {
+            lights: vec![vec![false; 1000]; 1000], // TODO: Check if this allocates more than necessary
         }
     }
 
@@ -149,9 +149,9 @@ impl TryFrom<&str> for Action {
         };
         let rest = words.collect::<Vec<_>>().join(" ");
         match action {
-            "toggle" => Ok(Action::Toggle(Rect::try_from(rest.as_str())?)),
-            "on" => Ok(Action::TurnUp(Rect::try_from(rest.as_str())?)),
-            "off" => Ok(Action::TurnDown(Rect::try_from(rest.as_str())?)),
+            "toggle" => Ok(Self::Toggle(Rect::try_from(rest.as_str())?)),
+            "on" => Ok(Self::TurnUp(Rect::try_from(rest.as_str())?)),
+            "off" => Ok(Self::TurnDown(Rect::try_from(rest.as_str())?)),
             _ => unknown_error,
         }
     }
@@ -160,13 +160,13 @@ impl TryFrom<&str> for Action {
 struct GridBrightness {
     // TODO: Convert to another type that can be used with adding 2 * 300 times
     // u8 seems to be enough by chance
-    lights: [[u8; 1000]; 1000],
+    lights: Vec<Vec<u8>>,
 }
 
 impl LightGrid for GridBrightness {
     fn new() -> Self {
-        GridBrightness {
-            lights: [[0; 1000]; 1000],
+        Self {
+            lights: vec![vec![0; 1000]; 1000], // TODO: Check if this allocates more than necessary
         }
     }
 

@@ -24,10 +24,10 @@ impl PartialEq for Packet {
     fn eq(&self, other: &Self) -> bool {
         match (&self.0, &other.0) {
             (Json::Array(_), Json::Number(_)) => {
-                self.eq(&Packet(Json::Array(vec![other.0.clone()])))
+                self.eq(&Self(Json::Array(vec![other.0.clone()])))
             }
             (Json::Number(_), Json::Array(_)) => {
-                other.eq(&Packet(Json::Array(vec![self.0.clone()])))
+                other.eq(&Self(Json::Array(vec![self.0.clone()])))
             }
             (a, b) => a.eq(b),
         }
@@ -41,15 +41,15 @@ impl PartialOrd for Packet {
                 left.as_u64()?.partial_cmp(&right.as_u64()?)
             }
             (Json::Array(_), Json::Number(_)) => {
-                self.partial_cmp(&Packet(Json::Array(vec![other.0.clone()])))
+                self.partial_cmp(&Self(Json::Array(vec![other.0.clone()])))
             }
             (Json::Number(_), Json::Array(_)) => {
-                Packet(Json::Array(vec![self.0.clone()])).partial_cmp(other)
+                Self(Json::Array(vec![self.0.clone()])).partial_cmp(other)
             }
             (Json::Array(left), Json::Array(right)) => {
                 for (a, b) in left.iter().zip(right.iter()) {
-                    if Packet(a.clone()) != Packet(b.clone()) {
-                        return Packet(a.clone()).partial_cmp(&Packet(b.clone()));
+                    if Self(a.clone()) != Self(b.clone()) {
+                        return Self(a.clone()).partial_cmp(&Self(b.clone()));
                     }
                 }
                 Some(left.len().cmp(&right.len()))

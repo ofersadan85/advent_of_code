@@ -15,8 +15,8 @@ pub struct Directed {
 }
 
 impl Graph for Directed {
-    fn new() -> Directed {
-        Directed {
+    fn new() -> Self {
+        Self {
             adjacency_table: HashMap::new(),
         }
     }
@@ -33,8 +33,8 @@ pub struct Undirected {
 }
 
 impl Graph for Undirected {
-    fn new() -> Undirected {
-        Undirected {
+    fn new() -> Self {
+        Self {
             adjacency_table: HashMap::new(),
         }
     }
@@ -94,10 +94,7 @@ pub trait Graph {
     ///
     /// Will return `UnconnectedNode` if the node is not in the graph
     fn neighbors(&self, node: &str) -> Result<&Vec<(String, i32)>, UnconnectedNode> {
-        match self.adjacency_table().get(node) {
-            None => Err(UnconnectedNode),
-            Some(i) => Ok(i),
-        }
+        self.adjacency_table().get(node).ok_or(UnconnectedNode)
     }
 
     fn contains(&self, node: &str) -> bool {
