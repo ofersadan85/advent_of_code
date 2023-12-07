@@ -1,8 +1,18 @@
 use num::{Num, One};
 use std::ops::{AddAssign, RangeInclusive, SubAssign};
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct MultiRange<T> {
     ranges: Vec<RangeInclusive<T>>,
+}
+
+impl<T> IntoIterator for MultiRange<T> {
+    type Item = RangeInclusive<T>;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.ranges.into_iter()
+    }
 }
 
 impl<T> AddAssign<&RangeInclusive<T>> for MultiRange<T>
@@ -94,6 +104,19 @@ where
             .cloned()
             .collect();
         self.ranges.sort_unstable_by_key(|r| *r.start());
+    }
+}
+
+impl<T> FromIterator<RangeInclusive<T>> for MultiRange<T>
+where
+    T: Num + Ord + Copy,
+{
+    fn from_iter<I: IntoIterator<Item = RangeInclusive<T>>>(iter: I) -> Self {
+        let mut m = Self::new();
+        for r in iter {
+            m += &r;
+        }
+        m
     }
 }
 

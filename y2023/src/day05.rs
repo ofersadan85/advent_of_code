@@ -1,3 +1,4 @@
+use advent_of_code_common::range::MultiRange;
 use anyhow::{Context, Result};
 
 #[derive(Debug, Clone)]
@@ -96,7 +97,6 @@ pub struct SeedLocationMapping {
 }
 
 impl SeedLocationMapping {
-
     /// Applies the mapping to the given seed value,
     /// all the way to the location value
     pub fn apply(&self, value: &i64) -> i64 {
@@ -155,6 +155,95 @@ impl SeedLocationMapping {
             index += 2;
         }
         false
+    }
+
+    fn reduce_with_multi_range(&self) -> MultiRange<i64> {
+        let mut index = 0;
+        let mut ranges = vec![];
+        while index < self.seeds.len() {
+            let range_start = self.seeds[index];
+            let range_end = self.seeds[index] + self.seeds[index + 1] - 1;
+            let range = range_start..=range_end;
+            ranges.push(range);
+            index += 2;
+        }
+        let mut multi_range = MultiRange::from_iter(ranges);
+        dbg!(&multi_range);
+        for r in &self.to_soil.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(&multi_range);
+        for r in &self.to_fertilizer.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(&multi_range);
+        for r in &self.to_water.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(&multi_range);
+        for r in &self.to_light.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(&multi_range);
+        for r in &self.to_temperature.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(&multi_range);
+        for r in &self.to_humidity.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(&multi_range);
+        for r in &self.to_location.mappings {
+            dbg!(r);
+            let mut cloned = multi_range.clone();
+            cloned -= &(r.src_start..=r.src_end);
+            if cloned != multi_range {
+                cloned += &(r.dst_start..=r.dst_end);
+            }
+            multi_range = cloned;
+        }
+        dbg!(multi_range)
+    }
+
+    pub fn minimal_location(&self) -> Option<i64> {
+        let multi_range = self.reduce_with_multi_range();
+        multi_range.into_iter().flatten().next()
     }
 }
 
@@ -333,6 +422,14 @@ mod tests {
         let example = include_str!("day05_example.txt");
         let seed_mapping = input_parse(example).unwrap();
         let result = (0..).find(|loc| seed_mapping.contains(&seed_mapping.apply_reverse(loc)));
+        assert_eq!(result, Some(46));
+    }
+
+    #[test]
+    fn test_example_part2_reduce() {
+        let example = include_str!("day05_example.txt");
+        let seed_mapping = input_parse(example).unwrap();
+        let result = seed_mapping.minimal_location();
         assert_eq!(result, Some(46));
     }
 }
