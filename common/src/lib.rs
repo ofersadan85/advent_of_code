@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
 pub mod algorithms;
+pub mod cards;
 pub mod file;
 pub mod math;
 pub mod range;
