@@ -13,9 +13,11 @@ pub struct Race {
 }
 
 impl Race {
-    // v^2 + vt - self.distance > 0
+    #[allow(clippy::float_cmp)]
+    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation)]
     pub fn ways_to_win(&self) -> usize {
-        let discriminant = self.time * self.time - 4.0 * self.distance;
+        let discriminant = self.time.mul_add(self.time, -4.0 * self.distance);
         if discriminant < 0.0 {
             return 0;
         }
@@ -23,7 +25,6 @@ impl Race {
         let low = ((self.time - discriminant) / 2.0).ceil();
         let high = ((self.time + discriminant) / 2.0).floor();
         let mut count = high - low + 1.0;
-        dbg!(low, high, count, self.time, self.distance);
         if high * (self.time - high) == self.distance {
             count -= 1.0; // high is a solution, but not a win
         }
@@ -46,6 +47,7 @@ pub fn parse_input1(s: &str) -> Result<Vec<Race>> {
         .context("No distance line")?
         .split_whitespace()
         .filter_map(|s| s.parse::<usize>().ok());
+    #[allow(clippy::cast_precision_loss)]
     let races = times
         .zip(distances)
         .map(|(time, distance)| Race {

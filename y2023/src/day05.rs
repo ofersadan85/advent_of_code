@@ -44,16 +44,16 @@ impl TryFrom<&str> for RawMapping {
 }
 
 impl RawMapping {
-    fn apply(&self, value: &i64) -> Option<i64> {
-        if (self.src_start..=self.src_end).contains(value) {
+    fn apply(&self, value: i64) -> Option<i64> {
+        if (self.src_start..=self.src_end).contains(&value) {
             Some(value + self.difference)
         } else {
             None
         }
     }
 
-    fn apply_reverse(&self, value: &i64) -> Option<i64> {
-        if (self.dst_start..=self.dst_end).contains(value) {
+    fn apply_reverse(&self, value: i64) -> Option<i64> {
+        if (self.dst_start..=self.dst_end).contains(&value) {
             Some(value - self.difference)
         } else {
             None
@@ -67,20 +67,18 @@ struct MultiMapping {
 }
 
 impl MultiMapping {
-    fn apply(&self, value: &i64) -> i64 {
+    fn apply(&self, value: i64) -> i64 {
         self.mappings
             .iter()
-            .filter_map(|mapping| mapping.apply(value))
-            .next()
-            .unwrap_or(*value)
+            .find_map(|mapping| mapping.apply(value))
+            .unwrap_or(value)
     }
 
-    fn apply_reverse(&self, value: &i64) -> i64 {
+    fn apply_reverse(&self, value: i64) -> i64 {
         self.mappings
             .iter()
-            .filter_map(|mapping| mapping.apply_reverse(value))
-            .next()
-            .unwrap_or(*value)
+            .find_map(|mapping| mapping.apply_reverse(value))
+            .unwrap_or(value)
     }
 }
 
@@ -99,26 +97,26 @@ pub struct SeedLocationMapping {
 impl SeedLocationMapping {
     /// Applies the mapping to the given seed value,
     /// all the way to the location value
-    pub fn apply(&self, value: &i64) -> i64 {
+    pub fn apply(&self, value: i64) -> i64 {
         let mut value = self.to_soil.apply(value);
-        value = self.to_fertilizer.apply(&value);
-        value = self.to_water.apply(&value);
-        value = self.to_light.apply(&value);
-        value = self.to_temperature.apply(&value);
-        value = self.to_humidity.apply(&value);
-        self.to_location.apply(&value)
+        value = self.to_fertilizer.apply(value);
+        value = self.to_water.apply(value);
+        value = self.to_light.apply(value);
+        value = self.to_temperature.apply(value);
+        value = self.to_humidity.apply(value);
+        self.to_location.apply(value)
     }
 
     /// Applies the mapping to the given location value,
     /// all the way to the seed value
-    pub fn apply_reverse(&self, value: &i64) -> i64 {
+    pub fn apply_reverse(&self, value: i64) -> i64 {
         let mut value = self.to_location.apply_reverse(value);
-        value = self.to_humidity.apply_reverse(&value);
-        value = self.to_temperature.apply_reverse(&value);
-        value = self.to_light.apply_reverse(&value);
-        value = self.to_water.apply_reverse(&value);
-        value = self.to_fertilizer.apply_reverse(&value);
-        self.to_soil.apply_reverse(&value)
+        value = self.to_humidity.apply_reverse(value);
+        value = self.to_temperature.apply_reverse(value);
+        value = self.to_light.apply_reverse(value);
+        value = self.to_water.apply_reverse(value);
+        value = self.to_fertilizer.apply_reverse(value);
+        self.to_soil.apply_reverse(value)
     }
 
     /// Returns an iterator over all possible seed values
@@ -266,17 +264,12 @@ pub fn input_parse(s: &str) -> Result<SeedLocationMapping> {
     where
         I: Iterator<Item = &'a str>,
     {
-        let mut mappings = vec![];
-        loop {
-            let line = lines.next().unwrap_or_default();
-            if line.is_empty() {
-                break;
-            }
-            if let Ok(mapping) = RawMapping::try_from(line) {
-                mappings.push(mapping);
-            }
+        MultiMapping {
+            mappings: lines
+                .take_while(|line| !line.is_empty())
+                .filter_map(|line| RawMapping::try_from(line).ok())
+                .collect(),
         }
-        MultiMapping { mappings }
     }
 
     let to_soil = extract_mappings(&mut lines);
@@ -311,16 +304,16 @@ mod tests {
             .filter_map(|line| RawMapping::try_from(line).ok())
             .collect_vec();
         dbg!(&mappings[0]);
-        assert_eq!(mappings[0].apply(&0), None, "0");
-        assert_eq!(mappings[0].apply(&1), None, "1");
-        assert_eq!(mappings[0].apply(&98), Some(50), "98");
-        assert_eq!(mappings[0].apply(&99), Some(51), "99");
-        assert_eq!(mappings[0].apply(&100), None, "100");
+        assert_eq!(mappings[0].apply(0), None, "0");
+        assert_eq!(mappings[0].apply(1), None, "1");
+        assert_eq!(mappings[0].apply(98), Some(50), "98");
+        assert_eq!(mappings[0].apply(99), Some(51), "99");
+        assert_eq!(mappings[0].apply(100), None, "100");
         dbg!(&mappings[1]);
         for i in 50..=97 {
-            assert_eq!(mappings[1].apply(&i), Some(i + 2), "{i}");
+            assert_eq!(mappings[1].apply(i), Some(i + 2), "{i}");
         }
-        assert_eq!(mappings[1].apply(&98), None, "98");
+        assert_eq!(mappings[1].apply(98), None, "98");
     }
 
     #[test]
@@ -331,16 +324,16 @@ mod tests {
             .filter_map(|line| RawMapping::try_from(line).ok())
             .collect_vec();
         dbg!(&mappings[0]);
-        assert_eq!(mappings[0].apply_reverse(&0), None, "0");
-        assert_eq!(mappings[0].apply_reverse(&1), None, "1");
-        assert_eq!(mappings[0].apply_reverse(&50), Some(98), "50");
-        assert_eq!(mappings[0].apply_reverse(&51), Some(99), "51");
-        assert_eq!(mappings[0].apply_reverse(&52), None, "52");
+        assert_eq!(mappings[0].apply_reverse(0), None, "0");
+        assert_eq!(mappings[0].apply_reverse(1), None, "1");
+        assert_eq!(mappings[0].apply_reverse(50), Some(98), "50");
+        assert_eq!(mappings[0].apply_reverse(51), Some(99), "51");
+        assert_eq!(mappings[0].apply_reverse(52), None, "52");
         dbg!(&mappings[1]);
         for i in 52..=99 {
-            assert_eq!(mappings[1].apply_reverse(&i), Some(i - 2), "{i}");
+            assert_eq!(mappings[1].apply_reverse(i), Some(i - 2), "{i}");
         }
-        assert_eq!(mappings[1].apply_reverse(&100), None, "100");
+        assert_eq!(mappings[1].apply_reverse(100), None, "100");
     }
 
     #[test]
@@ -354,16 +347,16 @@ mod tests {
             mappings: mappings[0..2].to_vec(),
         };
         for i in 0..50 {
-            assert_eq!(full_mapping.apply(&i), i, "{i}");
+            assert_eq!(full_mapping.apply(i), i, "{i}");
         }
         for i in 50..98 {
-            assert_eq!(full_mapping.apply(&i), i + 2, "{i}");
+            assert_eq!(full_mapping.apply(i), i + 2, "{i}");
         }
         for i in 98..100 {
-            assert_eq!(full_mapping.apply(&i), i - 48, "{i}");
+            assert_eq!(full_mapping.apply(i), i - 48, "{i}");
         }
         for i in 100..110 {
-            assert_eq!(full_mapping.apply(&i), i, "{i}");
+            assert_eq!(full_mapping.apply(i), i, "{i}");
         }
     }
 
@@ -375,7 +368,7 @@ mod tests {
         let results = seed_mapping
             .seeds
             .iter()
-            .map(|seed| seed_mapping.apply(seed))
+            .map(|seed| seed_mapping.apply(*seed))
             .collect_vec();
         assert_eq!(results, vec![82, 43, 86, 35]);
         assert_eq!(results.iter().min(), Some(&35));
@@ -389,7 +382,7 @@ mod tests {
         assert_eq!(seed_mapping.seeds, vec![79, 14, 55, 13]);
         let results = locations
             .iter()
-            .map(|loc| seed_mapping.apply_reverse(loc))
+            .map(|loc| seed_mapping.apply_reverse(*loc))
             .collect_vec();
         assert_eq!(results, seed_mapping.seeds);
     }
@@ -401,7 +394,7 @@ mod tests {
         let results = seed_mapping
             .seeds
             .iter()
-            .map(|seed| seed_mapping.apply(seed))
+            .map(|seed| seed_mapping.apply(*seed))
             .min();
         assert_eq!(results, Some(265018614));
     }
@@ -412,7 +405,7 @@ mod tests {
         let seed_mapping = input_parse(example).unwrap();
         let results = seed_mapping
             .seed_iter()
-            .map(|seed| seed_mapping.apply(&seed))
+            .map(|seed| seed_mapping.apply(seed))
             .min();
         assert_eq!(results, Some(46));
     }
@@ -421,7 +414,7 @@ mod tests {
     fn test_example_part2_reverse() {
         let example = include_str!("day05_example.txt");
         let seed_mapping = input_parse(example).unwrap();
-        let result = (0..).find(|loc| seed_mapping.contains(&seed_mapping.apply_reverse(loc)));
+        let result = (0..).find(|loc| seed_mapping.contains(&seed_mapping.apply_reverse(*loc)));
         assert_eq!(result, Some(46));
     }
 

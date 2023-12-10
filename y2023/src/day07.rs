@@ -13,16 +13,15 @@ impl FromStr for BidHand {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split_whitespace();
-        let mut hand = split.next().ok_or("Invalid hand")?.parse()?;
+        let hand = split.next().ok_or("Invalid hand")?.parse()?;
         let bid = split
-            .filter_map(|s| s.parse::<usize>().ok())
-            .next()
+            .find_map(|s| s.parse::<usize>().ok())
             .ok_or("Invalid bid")?;
-        Ok(BidHand { hand, bid })
+        Ok(Self { hand, bid })
     }
 }
 
-fn jokers_for_jacks(input: Vec<BidHand>) -> Vec<BidHand> {
+fn jokers_for_jacks(input: &[BidHand]) -> Vec<BidHand> {
     input
         .iter()
         .map(|h| {
@@ -47,7 +46,7 @@ fn jokers_for_jacks(input: Vec<BidHand>) -> Vec<BidHand> {
 pub fn parse_input(s: &str, jokers: bool) -> Vec<BidHand> {
     let input = s.lines().filter_map(|line| line.parse().ok()).collect_vec();
     if jokers {
-        jokers_for_jacks(input)
+        jokers_for_jacks(&input)
     } else {
         input
     }
