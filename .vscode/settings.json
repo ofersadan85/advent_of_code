@@ -3,10 +3,12 @@
         "adventofcode",
         "Banas",
         "Deque",
+        "graphmap",
         "Hasher",
         "iproduct",
         "LSHIFT",
         "minmax",
+        "petgraph",
         "RSHIFT",
         "splitn",
         "Tetris"
