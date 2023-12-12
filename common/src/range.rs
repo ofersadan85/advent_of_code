@@ -97,12 +97,7 @@ where
             }
             index += 1;
         }
-        self.ranges = self
-            .ranges
-            .iter()
-            .filter(|r| r.start() <= r.end())
-            .cloned()
-            .collect();
+        self.ranges.retain(|r| r.start() <= r.end());
         self.ranges.sort_unstable_by_key(|r| *r.start());
     }
 }
@@ -121,7 +116,7 @@ where
 }
 
 impl<T> MultiRange<T> {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self { ranges: vec![] }
     }
 }

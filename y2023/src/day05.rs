@@ -246,6 +246,17 @@ impl SeedLocationMapping {
 }
 
 pub fn input_parse(s: &str) -> Result<SeedLocationMapping> {
+    fn extract_mappings<'a, I>(lines: &mut I) -> MultiMapping
+    where
+        I: Iterator<Item = &'a str>,
+    {
+        MultiMapping {
+            mappings: lines
+                .take_while(|line| !line.is_empty())
+                .filter_map(|line| RawMapping::try_from(line).ok())
+                .collect(),
+        }
+    }
     let mut lines = s.lines();
     let seeds = lines
         .next()
@@ -257,18 +268,6 @@ pub fn input_parse(s: &str) -> Result<SeedLocationMapping> {
         let line = lines.next().unwrap_or_default();
         if line.starts_with("seed-to-soil") {
             break;
-        }
-    }
-
-    fn extract_mappings<'a, I>(lines: &mut I) -> MultiMapping
-    where
-        I: Iterator<Item = &'a str>,
-    {
-        MultiMapping {
-            mappings: lines
-                .take_while(|line| !line.is_empty())
-                .filter_map(|line| RawMapping::try_from(line).ok())
-                .collect(),
         }
     }
 

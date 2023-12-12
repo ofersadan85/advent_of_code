@@ -27,20 +27,20 @@ pub enum CardValue {
 impl Display for CardValue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CardValue::Joker => write!(f, "*"),
-            CardValue::Two => write!(f, "2"),
-            CardValue::Three => write!(f, "3"),
-            CardValue::Four => write!(f, "4"),
-            CardValue::Five => write!(f, "5"),
-            CardValue::Six => write!(f, "6"),
-            CardValue::Seven => write!(f, "7"),
-            CardValue::Eight => write!(f, "8"),
-            CardValue::Nine => write!(f, "9"),
-            CardValue::Ten => write!(f, "T"),
-            CardValue::Jack => write!(f, "J"),
-            CardValue::Queen => write!(f, "Q"),
-            CardValue::King => write!(f, "K"),
-            CardValue::Ace => write!(f, "A"),
+            Self::Joker => write!(f, "*"),
+            Self::Two => write!(f, "2"),
+            Self::Three => write!(f, "3"),
+            Self::Four => write!(f, "4"),
+            Self::Five => write!(f, "5"),
+            Self::Six => write!(f, "6"),
+            Self::Seven => write!(f, "7"),
+            Self::Eight => write!(f, "8"),
+            Self::Nine => write!(f, "9"),
+            Self::Ten => write!(f, "T"),
+            Self::Jack => write!(f, "J"),
+            Self::Queen => write!(f, "Q"),
+            Self::King => write!(f, "K"),
+            Self::Ace => write!(f, "A"),
         }
     }
 }
@@ -50,20 +50,20 @@ impl TryFrom<char> for CardValue {
 
     fn try_from(c: char) -> Result<Self, Self::Error> {
         match c {
-            '0' | '*' => Ok(CardValue::Joker),
-            '2' => Ok(CardValue::Two),
-            '3' => Ok(CardValue::Three),
-            '4' => Ok(CardValue::Four),
-            '5' => Ok(CardValue::Five),
-            '6' => Ok(CardValue::Six),
-            '7' => Ok(CardValue::Seven),
-            '8' => Ok(CardValue::Eight),
-            '9' => Ok(CardValue::Nine),
-            'T' => Ok(CardValue::Ten),
-            'J' => Ok(CardValue::Jack),
-            'K' => Ok(CardValue::King),
-            'Q' => Ok(CardValue::Queen),
-            'A' => Ok(CardValue::Ace),
+            '0' | '*' => Ok(Self::Joker),
+            '2' => Ok(Self::Two),
+            '3' => Ok(Self::Three),
+            '4' => Ok(Self::Four),
+            '5' => Ok(Self::Five),
+            '6' => Ok(Self::Six),
+            '7' => Ok(Self::Seven),
+            '8' => Ok(Self::Eight),
+            '9' => Ok(Self::Nine),
+            'T' => Ok(Self::Ten),
+            'J' => Ok(Self::Jack),
+            'K' => Ok(Self::King),
+            'Q' => Ok(Self::Queen),
+            'A' => Ok(Self::Ace),
             _ => Err("Invalid card value"),
         }
     }
@@ -80,10 +80,10 @@ pub enum CardSuit {
 impl Display for CardSuit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CardSuit::Clubs => write!(f, "♣"),
-            CardSuit::Diamonds => write!(f, "♦"),
-            CardSuit::Hearts => write!(f, "♥"),
-            CardSuit::Spades => write!(f, "♠"),
+            Self::Clubs => write!(f, "♣"),
+            Self::Diamonds => write!(f, "♦"),
+            Self::Hearts => write!(f, "♥"),
+            Self::Spades => write!(f, "♠"),
         }
     }
 }
@@ -93,10 +93,10 @@ impl TryFrom<char> for CardSuit {
 
     fn try_from(c: char) -> Result<Self, Self::Error> {
         match c {
-            'C' | 'c' | '♣' => Ok(CardSuit::Clubs),
-            'D' | 'd' | '♦' => Ok(CardSuit::Diamonds),
-            'H' | 'h' | '♥' => Ok(CardSuit::Hearts),
-            'S' | 's' | '♠' => Ok(CardSuit::Spades),
+            'C' | 'c' | '♣' => Ok(Self::Clubs),
+            'D' | 'd' | '♦' => Ok(Self::Diamonds),
+            'H' | 'h' | '♥' => Ok(Self::Hearts),
+            'S' | 's' | '♠' => Ok(Self::Spades),
             _ => Err("Invalid card suit"),
         }
     }
@@ -119,7 +119,7 @@ impl FromStr for Card {
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         let mut chars = value.chars();
-        Ok(Card {
+        Ok(Self {
             value: chars.next().ok_or("Invalid card")?.try_into()?,
             suit: chars.next().ok_or("Invalid card")?.try_into()?,
         })
@@ -162,6 +162,7 @@ pub enum ValuedHand {
 }
 
 impl Display for ValuedHand {
+    #[allow(clippy::many_single_char_names)]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::HighCard(a, b, c, d, e) => {
@@ -184,29 +185,29 @@ impl Display for ValuedHand {
     }
 }
 
-impl Into<u8> for ValuedHand {
-    fn into(self) -> u8 {
-        match self {
-            Self::HighCard(..) => 1,
-            Self::Pair(..) => 2,
-            Self::TwoPair(..) => 3,
-            Self::ThreeOfAKind(..) => 4,
-            Self::Straight(..) => 5,
-            Self::Flush(..) => 6,
-            Self::FullHouse(..) => 7,
-            Self::FourOfAKind(..) => 8,
-            Self::StraightFlush(..) => 9,
-            Self::RoyalFlush(..) => 10,
-            Self::FiveOfAKind(..) => 11,
-            Self::FiveOfAKindFlush(..) => 12,
+impl From<ValuedHand> for u8 {
+    fn from(value: ValuedHand) -> Self {
+        match value {
+            ValuedHand::HighCard(..) => 1,
+            ValuedHand::Pair(..) => 2,
+            ValuedHand::TwoPair(..) => 3,
+            ValuedHand::ThreeOfAKind(..) => 4,
+            ValuedHand::Straight(..) => 5,
+            ValuedHand::Flush(..) => 6,
+            ValuedHand::FullHouse(..) => 7,
+            ValuedHand::FourOfAKind(..) => 8,
+            ValuedHand::StraightFlush(..) => 9,
+            ValuedHand::RoyalFlush(..) => 10,
+            ValuedHand::FiveOfAKind(..) => 11,
+            ValuedHand::FiveOfAKindFlush(..) => 12,
         }
     }
 }
 
 impl ValuedHand {
-    fn cmp_hand_type(&self, other: &Self) -> Ordering {
-        let self_value: u8 = (*self).into();
-        let other_value: u8 = (*other).into();
+    fn cmp_hand_type(self, other: Self) -> Ordering {
+        let self_value: u8 = (self).into();
+        let other_value: u8 = (other).into();
         self_value.cmp(&other_value)
     }
 }
@@ -218,62 +219,56 @@ impl PartialOrd for ValuedHand {
 }
 
 impl Ord for ValuedHand {
+    #[allow(clippy::many_single_char_names)]
     fn cmp(&self, other: &Self) -> Ordering {
         match (self, other) {
-            (Self::HighCard(a, b, c, d, e), Self::HighCard(f, g, h, i, j)) => vec![a, b, c, d, e]
+            (Self::HighCard(a, b, c, d, e), Self::HighCard(f, g, h, i, j)) => [a, b, c, d, e]
                 .iter()
-                .zip(vec![f, g, h, i, j].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([f, g, h, i, j])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::Pair(a, b, c, d), Self::Pair(e, f, g, h)) => vec![a, b, c, d]
+            (Self::Pair(a, b, c, d), Self::Pair(e, f, g, h)) => [a, b, c, d]
                 .iter()
-                .zip(vec![e, f, g, h].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([e, f, g, h])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::TwoPair(a, b, c), Self::TwoPair(d, e, f)) => vec![a, b, c]
+            (Self::TwoPair(a, b, c), Self::TwoPair(d, e, f)) => [a, b, c]
                 .iter()
-                .zip(vec![d, e, f].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([d, e, f])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::ThreeOfAKind(a, b, c), Self::ThreeOfAKind(d, e, f)) => vec![a, b, c]
+            (Self::ThreeOfAKind(a, b, c), Self::ThreeOfAKind(d, e, f)) => [a, b, c]
                 .iter()
-                .zip(vec![d, e, f].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([d, e, f])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::Straight(a), Self::Straight(b)) => a.cmp(b),
-            (Self::Flush(_, a, b, c, d, e), Self::Flush(_, f, g, h, i, j)) => vec![a, b, c, d, e]
+            (Self::Flush(_, a, b, c, d, e), Self::Flush(_, f, g, h, i, j)) => [a, b, c, d, e]
                 .iter()
-                .zip(vec![f, g, h, i, j].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([f, g, h, i, j])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::FullHouse(a, b), Self::FullHouse(c, d)) => vec![a, b]
+            (Self::FullHouse(a, b), Self::FullHouse(c, d)) => [a, b]
                 .iter()
-                .zip(vec![c, d].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([c, d])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::FourOfAKind(a, b), Self::FourOfAKind(c, d)) => vec![a, b]
+            (Self::FourOfAKind(a, b), Self::FourOfAKind(c, d)) => [a, b]
                 .iter()
-                .zip(vec![c, d].iter())
-                .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
+                .zip([c, d])
+                .map(|(a, b)| a.cmp(&b))
+                .find(|o| *o != Ordering::Equal)
                 .unwrap_or(Ordering::Equal),
-            (Self::StraightFlush(_, a), Self::StraightFlush(_, b)) => a.cmp(b),
+            (Self::Straight(a), Self::Straight(b))
+            | (Self::StraightFlush(_, a), Self::StraightFlush(_, b))
+            | (Self::FiveOfAKind(a), Self::FiveOfAKind(b)) => a.cmp(b),
             (Self::RoyalFlush(_), Self::RoyalFlush(_)) => Ordering::Equal,
-            (Self::FiveOfAKind(a), Self::FiveOfAKind(b)) => a.cmp(b),
-            _ => self.cmp_hand_type(other),
+            _ => self.cmp_hand_type(*other),
         }
     }
 }
@@ -288,10 +283,10 @@ impl FromStr for Hand5 {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let cards = if s.len() == 5 {
-            let suits = "HDSCC"; // Just to make sure we don't guarantee a flush
+            let suits = "HDSCC"; // Just to make sure we don't guarantee a flush // cspell:disable-line
             s.chars()
                 .zip(suits.chars())
-                .filter_map(|(value, suit)| Some(format!("{value}{suit}").parse::<Card>().ok()?))
+                .filter_map(|(value, suit)| format!("{value}{suit}").parse::<Card>().ok())
                 .collect_vec()
         } else {
             s.split_whitespace()
@@ -309,7 +304,7 @@ impl FromStr for Hand5 {
 
 impl Hand5 {
     fn flush_suit(&self) -> Option<CardSuit> {
-        let suits: HashSet<CardSuit> = HashSet::from_iter(self.cards.iter().map(|c| c.suit));
+        let suits: HashSet<CardSuit> = self.cards.iter().map(|c| c.suit).collect();
         if suits.len() == 1 {
             suits.iter().next().copied()
         } else {
@@ -325,20 +320,18 @@ impl Hand5 {
             .all(|w| w[0].value as u8 + 1 == w[1].value as u8);
         match (flush_suit, is_straight, sorted_cards.last()) {
             (Some(suit), true, Some(card)) if card.value == CardValue::Ace => {
-                return ValuedHand::RoyalFlush(suit)
+                ValuedHand::RoyalFlush(suit)
             }
-            (Some(suit), true, Some(card)) => return ValuedHand::StraightFlush(suit, card.value),
-            (None, true, Some(card)) => return ValuedHand::Straight(card.value),
-            (Some(suit), false, _) => {
-                return ValuedHand::Flush(
-                    suit,
-                    sorted_cards[0].value,
-                    sorted_cards[1].value,
-                    sorted_cards[2].value,
-                    sorted_cards[3].value,
-                    sorted_cards[4].value,
-                )
-            }
+            (Some(suit), true, Some(card)) => ValuedHand::StraightFlush(suit, card.value),
+            (None, true, Some(card)) => ValuedHand::Straight(card.value),
+            (Some(suit), false, _) => ValuedHand::Flush(
+                suit,
+                sorted_cards[0].value,
+                sorted_cards[1].value,
+                sorted_cards[2].value,
+                sorted_cards[3].value,
+                sorted_cards[4].value,
+            ),
             _ => self.evaluate_non_flush(),
         }
     }
@@ -348,7 +341,7 @@ impl Hand5 {
             FiveOfAKind, FourOfAKind, FullHouse, HighCard, Pair, ThreeOfAKind, TwoPair,
         };
         let mut counter: HashMap<CardValue, u8> = HashMap::new();
-        for card in self.cards.iter() {
+        for card in &self.cards {
             *counter.entry(card.value).or_insert(0) += 1;
         }
         let sorted_vec = counter
@@ -357,14 +350,14 @@ impl Hand5 {
             .rev()
             .take(5)
             .collect_vec();
-        let hand_type = match sorted_vec.as_slice() {
-            &[(c, 5)] => FiveOfAKind(*c),
-            &[(c1, 4), c2] => FourOfAKind(*c1, *c2.0),
-            &[(c1, 3), (c2, 2)] => FullHouse(*c1, *c2),
-            &[(c1, 3), c2, c3] => ThreeOfAKind(*c1, *c2.0, *c3.0),
-            &[(c1, 2), (c2, 2), c3] => TwoPair(*c1, *c2, *c3.0),
-            &[(c1, 2), c2, c3, c4] => Pair(*c1, *c2.0, *c3.0, *c4.0),
-            &[c1, c2, c3, c4, c5] => HighCard(*c1.0, *c2.0, *c3.0, *c4.0, *c5.0),
+        let hand_type = match *sorted_vec.as_slice() {
+            [(c, 5)] => FiveOfAKind(*c),
+            [(c1, 4), c2] => FourOfAKind(*c1, *c2.0),
+            [(c1, 3), (c2, 2)] => FullHouse(*c1, *c2),
+            [(c1, 3), c2, c3] => ThreeOfAKind(*c1, *c2.0, *c3.0),
+            [(c1, 2), (c2, 2), c3] => TwoPair(*c1, *c2, *c3.0),
+            [(c1, 2), c2, c3, c4] => Pair(*c1, *c2.0, *c3.0, *c4.0),
+            [c1, c2, c3, c4, c5] => HighCard(*c1.0, *c2.0, *c3.0, *c4.0, *c5.0),
             _ => unreachable!("Invalid hand"),
         };
         hand_type
@@ -373,27 +366,27 @@ impl Hand5 {
     pub fn cmp_hand_type(&self, other: &Self) -> Ordering {
         let self_value = self.joker_swap().evaluate();
         let other_value = other.joker_swap().evaluate();
-        self_value.cmp_hand_type(&other_value)
+        self_value.cmp_hand_type(other_value)
     }
 
     pub fn cmp_with_order(&self, other: &Self) -> Ordering {
-        let cmp_type = self.cmp_hand_type(other);
-        if cmp_type != Ordering::Equal {
-            return cmp_type;
-        } else {
-            self.cards
+        match self.cmp_hand_type(other) {
+            Ordering::Equal => self
+                .cards
                 .iter()
                 .zip(other.cards.iter())
                 .map(|(a, b)| a.cmp(b))
-                .filter(|o| *o != Ordering::Equal)
-                .next()
-                .unwrap_or(Ordering::Equal)
+                .find(|o| *o != Ordering::Equal)
+                .unwrap_or(Ordering::Equal),
+            Ordering::Greater => Ordering::Greater,
+            Ordering::Less => Ordering::Less,
         }
     }
 
+    #[must_use]
     pub fn replace_value(&self, old: CardValue, new: CardValue) -> Self {
         let mut cards = self.cards;
-        for card in cards.iter_mut() {
+        for card in &mut cards {
             if card.value == old {
                 card.value = new;
             }
@@ -404,16 +397,17 @@ impl Hand5 {
     /// Find the ideal joker swap for this hand
     /// This is the swap that gives the highest valued hand
     ///
+    #[must_use]
     pub fn joker_swap(&self) -> Self {
         let mut counter: HashMap<CardValue, u8> = HashMap::new();
-        for card in self.cards.iter() {
+        for card in &self.cards {
             *counter.entry(card.value).or_insert(0) += 1;
         }
         match counter.get(&CardValue::Joker) {
-            Some(0) | None => return *self,
-            Some(1) | Some(2) => return self.joker_swap_straight(),
+            Some(0) | None => *self,
+            Some(1 | 2) => self.joker_swap_straight(),
             // 3 Jokers or higher are always better swapped for the highest card
-            Some(_) => return self.joker_swap_highest(),
+            Some(_) => self.joker_swap_highest(),
         }
     }
 
@@ -424,12 +418,11 @@ impl Hand5 {
             .filter(|c| c.value != CardValue::Joker)
             .minmax()
             .into_option()
-            .map(|(min, max)| max.value as u8 - min.value as u8 <= 4)
-            .unwrap_or(false);
+            .is_some_and(|(min, max)| max.value as u8 - min.value as u8 <= 4);
         if !straight_possible {
             return self.joker_swap_highest();
         }
-        
+
         todo!("Implement joker swap straight")
     }
 

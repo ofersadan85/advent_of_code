@@ -12,7 +12,7 @@ pub fn transpose<T>(v: V2<T>) -> V2<T> {
     let len = v[0].len();
     let mut iters: Vec<_> = v.into_iter().map(IntoIterator::into_iter).collect();
     (0..len)
-        .map(|_| iters.iter_mut().filter_map(|n| n.next()).collect())
+        .map(|_| iters.iter_mut().filter_map(std::iter::Iterator::next).collect())
         .collect()
 }
 
