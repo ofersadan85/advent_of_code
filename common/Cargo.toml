@@ -11,10 +11,12 @@ publish = false
 anyhow = { workspace = true }
 integer-sqrt = "0.1.5"
 itertools = { workspace = true }
-num = { version = "0.4.1", features = ["rand", "num-bigint"] }
+num = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [lints]
 workspace = true

@@ -237,3 +237,71 @@ mod tests {
         assert_eq!(lengths, 7716);
     }
 }
+
+// pub fn vec_into_tuples(vec: &Vec<usize>) -> Vec<(usize, usize, usize)> {
+//     (0..vec.len())
+//         .map(|index| {
+//             let (before, after) = vec.split_at(index);
+//             let (value, after) = after.split_first().unwrap_or((&0, &[]));
+//             (
+//                 before.iter().copied().sum::<usize>() + before.len(),
+//                 *value,
+//                 after.iter().copied().sum::<usize>() + after.len(),
+//             )
+//         })
+//         .collect()
+// }
+
+// pub fn match_option(option: (usize, usize, usize), target: usize) -> Vec<usize> {
+//     let mut result = vec![];
+//     // length = minimal bit representation of target
+//     let mut length = 1;
+//     while 1 << length < target {
+//         length += 1;
+//     }
+//     let (before, value, after) = option;
+//     let all_digits = before + value + after;
+//     if target == 0 || length < all_digits {
+//         return result;
+//     }
+//     let diff = length - all_digits;
+//     let mut shifted = (2 << value) - 1; // 2 << 2 = 0100, 0100 - 1 = 0011
+//     shifted <<= after; // 0011 << 2 = 1100 (starting position)
+//     for _ in 0..=diff {
+//         shifted <<= 1; // 0000_1100 << 2 = 0011_0000
+//         if target & shifted == shifted {
+//             // 0011_0000 & 0011_0111 == 0011_0000 Is a match
+//             result.push(shifted);
+//         }
+//     }
+//     result
+// }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+
+//     #[test]
+//     fn test_vec_into_tuples() {
+//         assert_eq!(
+//             vec_into_tuples(&vec![1, 2, 3]),
+//             vec![(0, 1, 7), (2, 2, 4), (5, 3, 0)]
+//         );
+//         assert_eq!(
+//             vec_into_tuples(&vec![1, 2, 3, 4]),
+//             vec![(0, 1, 12), (2, 2, 9), (5, 3, 5), (9, 4, 0)]
+//         );
+//     }
+
+//     #[test]
+//     fn match_options() {
+//         assert_eq!(match_option((0, 2, 2), 0b1100), vec![0b1100]);
+//         let m = match_option((2, 1, 2), 0b1100);
+//         let m_str = m
+//             .iter()
+//             .map(|&x| format!("{:04b}", x))
+//             .collect::<Vec<String>>()
+//             .join(", ");
+//         assert_eq!(m, vec![0b1100], "m = {:?}", m_str);
+//     }
+// }
