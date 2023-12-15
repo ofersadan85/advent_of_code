@@ -1,9 +1,6 @@
-// use anyhow::{anyhow, Result, Context};
-
-use std::fmt::Debug;
-
 use itertools::Itertools;
-use tracing::{debug, info, instrument};
+use std::fmt::Debug;
+use tracing::{info, instrument};
 
 pub const EXAMPLE: &str = "O....#....
 O.OO#....#
@@ -132,13 +129,21 @@ fn push_rocks(rocks: &[Rock], direction: Direction, max: usize) -> Vec<Rock> {
         }
     }
     match direction {
-        North | West => {
-            no_move.sort_unstable_by(|a: &Rock, b| b.y.cmp(&a.y).then(b.x.cmp(&a.x)));
-            to_move.sort_unstable_by(|a, b| b.y.cmp(&a.y).then(b.x.cmp(&a.x)));
+        North => {
+            no_move.sort_unstable_by(|a: &Rock, b| b.y.cmp(&a.y));
+            to_move.sort_unstable_by(|a, b| b.y.cmp(&a.y));
         }
-        South | East => {
-            no_move.sort_unstable_by(|b: &Rock, a| b.y.cmp(&a.y).then(b.x.cmp(&a.x)));
-            to_move.sort_unstable_by(|b, a| b.y.cmp(&a.y).then(b.x.cmp(&a.x)));
+        South => {
+            no_move.sort_unstable_by(|b: &Rock, a| b.y.cmp(&a.y));
+            to_move.sort_unstable_by(|b, a| b.y.cmp(&a.y));
+        }
+        West => {
+            no_move.sort_unstable_by(|a: &Rock, b| b.x.cmp(&a.x));
+            to_move.sort_unstable_by(|a, b| b.x.cmp(&a.x));
+        }
+        East => {
+            no_move.sort_unstable_by(|b: &Rock, a| b.x.cmp(&a.x));
+            to_move.sort_unstable_by(|b, a| b.x.cmp(&a.x));
         }
     }
 
@@ -158,29 +163,24 @@ fn push_rocks(rocks: &[Rock], direction: Direction, max: usize) -> Vec<Rock> {
             });
         let target_y = match (minmax, direction) {
             (NoElements, North) => 0,
-            (_, East) | (_, West) => current_rock.y,
+            (_, East | West) => current_rock.y,
             (NoElements, South) => max - 1,
-            (OneElement(r), North) | (MinMax(_, r), North) => r.y + 1,
-            (OneElement(r), South) | (MinMax(r, _), South) => r.y - 1,
+            (OneElement(r) | MinMax(_, r), North) => r.y + 1,
+            (OneElement(r) | MinMax(r, _), South) => r.y - 1,
         };
         let target_x = match (minmax, direction) {
             (NoElements, East) => max - 1,
-            (_, North) | (_, South) => current_rock.x,
+            (_, North | South) => current_rock.x,
             (NoElements, West) => 0,
-            (OneElement(r), East) | (MinMax(r, _), East) => r.x - 1,
-            (OneElement(r), West) | (MinMax(_, r), West) => r.x + 1,
+            (OneElement(r) | MinMax(r, _), East) => r.x - 1,
+            (OneElement(r) | MinMax(_, r), West) => r.x + 1,
         };
         let target = Rock {
             shape: current_rock.shape,
             x: target_x,
             y: target_y,
         };
-        if current_rock == target {
-            debug!("{:?} OK", current_rock);
-        } else {
-            debug!("{:?} => {:?}", current_rock, target);
-        }
-        no_move.push(target)
+        no_move.push(target);
     }
     no_move
 }
@@ -198,47 +198,31 @@ pub fn push_rocks_north(input: &str) -> usize {
 
 fn cycle(rocks: &mut Vec<Rock>, width: usize, height: usize) {
     *rocks = push_rocks(rocks, Direction::North, height);
-    *rocks = push_rocks(&rocks, Direction::West, width);
-    *rocks = push_rocks(&rocks, Direction::South, height);
-    *rocks = push_rocks(&rocks, Direction::East, width);
+    *rocks = push_rocks(rocks, Direction::West, width);
+    *rocks = push_rocks(rocks, Direction::South, height);
+    *rocks = push_rocks(rocks, Direction::East, width);
 }
 
 #[instrument(skip_all, level = "info")]
 pub fn cycle_detect_repeats(input: &str, target: usize) -> usize {
-    let width = input.lines().next().unwrap().len();
+    let width = input.lines().next().unwrap_or_default().len();
     let height = input.lines().count();
     let mut rocks = parse_input(input);
     let mut previous_results = vec![];
     let mut repeat_len = usize::MAX;
-    let mut repeat1 = 0;
-    let mut repeat2 = 0;
-    for i in 0.. {
+    for i in 1.. {
         cycle(&mut rocks, width, height);
         rocks.sort_unstable_by(|a, b| b.y.cmp(&a.y).then(b.x.cmp(&a.x)));
-        match previous_results.iter().position(|r| *r == rocks) {
-            Some(last_repeat) => {
-                info!("Found repeat at {i}, last repeat at {last_repeat}");
-                repeat_len = i - last_repeat;
-                repeat1 = i - repeat_len;
-                repeat2 = i;
-                break;
-            }
-            None => {}
+        if let Some(last_repeat) = previous_results.iter().position(|r| *r == rocks) {
+            repeat_len = i - last_repeat - 1;
+            info!("Repeat {repeat_len} {i} ==> {}", last_repeat + 1);
+            break;
         }
         previous_results.push(rocks.clone());
     }
-    let slice = &previous_results[repeat1..repeat2];
-    info!("slice len: {}", slice.len());
-    for (i, r) in slice.iter().enumerate() {
-        info!(
-            "{i} {}",
-            r.iter()
-                .filter(|r| r.shape == RockShape::Round)
-                .map(|r| height - r.y)
-                .sum::<usize>()
-        );
-    }
-    slice[(target - 1) % repeat_len]
+    let first_repeat = previous_results.len() - repeat_len + 1;
+    let index = (target - first_repeat) % repeat_len + first_repeat - 1;
+    previous_results[index]
         .iter()
         .filter(|r| r.shape == RockShape::Round)
         .map(|r| height - r.y)
@@ -288,7 +272,7 @@ mod tests {
     #[test]
     fn cycles() {
         let mut rocks = parse_input(EXAMPLE);
-        let width = EXAMPLE.lines().next().unwrap().len();
+        let width = EXAMPLE.lines().next().unwrap_or_default().len();
         let height = EXAMPLE.lines().count();
         cycle(&mut rocks, width, height);
         let output_str = fmt_output(&rocks, width, height);
@@ -315,14 +299,14 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        init_tracing();
         assert_eq!(cycle_detect_repeats(EXAMPLE, 1_000_000_000), 64);
     }
 
     #[test]
-    #[ignore]
+    // #[ignore]
     fn part2() {
+        init_tracing();
         let input = include_str!("day14.txt");
-        assert_ne!(cycle_detect_repeats(input, 1_000_000_000), 101146);
+        assert_eq!(cycle_detect_repeats(input, 1_000_000_000), 108404);
     }
 }
