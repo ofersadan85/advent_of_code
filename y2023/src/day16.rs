@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, HashSet}, path::Display};
+use std::collections::{HashMap, HashSet};
 use tracing::{info, instrument};
 
 pub const EXAMPLE: &str = r#".|...\....
@@ -117,10 +117,9 @@ pub fn parse_input(input: &str) -> Grid {
 }
 
 #[instrument(skip_all, level = "info")]
-pub fn energize(grid: &Grid, width: usize, height: usize) -> HashSet<(usize, usize)> {
+pub fn energize(grid: &Grid, width: usize, height: usize) -> HashSet<((usize, usize), Direction)> {
     use Direction::{Down, Left, Right, Up};
     let mut visited = HashSet::new();
-    let mut visited_mirrors = HashSet::new();
     let first_direction = grid
         .get(&(0, 0))
         .map(|m| match m {
@@ -132,72 +131,71 @@ pub fn energize(grid: &Grid, width: usize, height: usize) -> HashSet<(usize, usi
         .unwrap_or(Right);
     let mut queue = vec![((0, 0), first_direction)];
     while let Some((pos, dir)) = queue.pop() {
-        if visited_mirrors.contains(&(pos, dir)) {
+        if visited.contains(&(pos, dir)) {
             // info!("Already visited {:?}, {:?}", pos, dir);
             continue;
         }
 
         // info!("Visiting {:?}, {:?}", pos, dir);
-        visited.insert(pos);
-        visited_mirrors.insert((pos, dir));
+        visited.insert((pos, dir));
         let (x, y) = pos;
         let next_pos = closest_mirror(x, y, grid, dir);
-        // info!("Next pos: {:?}", next_pos);
         let (next_x, next_y) = next_pos.unwrap_or_else(|| match dir {
             Up => (x, 0),
             Down => (x, height - 1),
             Left => (0, y),
             Right => (width - 1, y),
         });
-        let next_pos: HashSet<(usize, usize)> = match dir {
-            Up => (next_y..=y).map(|y| (x, y)).collect(),
-            Down => (y..=next_y).map(|y| (x, y)).collect(),
-            Left => (next_x..=x).map(|x| (x, y)).collect(),
-            Right => (x..=next_x).map(|x| (x, y)).collect(),
+        let next_pos: HashSet<((usize, usize), Direction)> = match dir {
+            Up => (next_y..=y).map(|y| ((x, y), dir)).collect(),
+            Down => (y..=next_y).map(|y| ((x, y), dir)).collect(),
+            Left => (next_x..=x).map(|x| ((x, y), dir)).collect(),
+            Right => (x..=next_x).map(|x| ((x, y), dir)).collect(),
         };
         // info!("Next pos: {:?}", next_pos);
         visited.extend(next_pos);
         if let Some(next_mirror) = grid.get(&(next_x, next_y)) {
             let (new_dir, new_dir2) = next_mirror.split_light(dir);
             queue.push(((next_x, next_y), new_dir));
+            if new_dir == dir && (next_x, next_y) != (x, y) {
+                visited.remove(&((next_x, next_y), new_dir));
+            }
             // info!("Splitting light: {:?}, {:?}", new_dir, new_dir2);
             if let Some(new_dir2) = new_dir2 {
                 queue.push(((next_x, next_y), new_dir2));
             }
         }
-        // print_grid(&visited, width, height);
-        // println!("press enter to continue");
+        // print_grid(&visited, &visited, grid, width, height);
+        // println!("Now at {:?} press enter to continue", pos);
         // let mut input = String::new();
         // std::io::stdin().read_line(&mut input).unwrap();
     }
-    print_grid(&visited, &visited_mirrors, grid, width, height);
+    print_grid(&visited, grid, width, height);
     visited
 }
 
 fn print_grid(
-    map: &HashSet<(usize, usize)>,
     mirrors: &HashSet<((usize, usize), Direction)>,
     grid: &Grid,
     width: usize,
     height: usize,
 ) {
     for y in 0..height {
+        // print!("{:03} ", y);
         for x in 0..width {
             if let Some((_, dir)) = mirrors
                 .iter()
                 .find(|((x_m, y_m), _)| *x_m == x && *y_m == y)
             {
-                if let Some(_) = grid.get(&(x, y)) {
-                    print!("{}{}{}", "\x1b[1;31m", dir, "\x1b[0m");
+                if let Some(mirror) = grid.get(&(x, y)) {
+                    print!("{}{}{}", "\x1b[1;31m", mirror, "\x1b[0m");
                 } else {
-                    print!("{}*{}", "\x1b[1;31m", "\x1b[0m");
+                    print!("{}{}{}", "\x1b[1;32m", dir, "\x1b[0m");
                 }
-            } else if grid.contains_key(&(x, y)) {
-                print!("{}", grid[&(x, y)]);
-            } else if map.contains(&(x, y)) {
-                print!("#");
+            // } else if grid.contains_key(&(x, y)) {
+            //     print!("{}", grid[&(x, y)]);
             } else {
-                print!(" ");
+                print!(".");
             }
         }
         println!();
@@ -212,15 +210,21 @@ mod tests {
     #[test]
     // #[ignore]
     fn example1() {
-        // init_tracing();
+        init_tracing();
         let grid = parse_input(EXAMPLE);
         let width = EXAMPLE.lines().next().unwrap().len();
         let height = EXAMPLE.lines().count();
-        let energized = energize(&grid, width, height);
+        let mut energized = energize(&grid, width, height);
+        energized = energized
+            .iter()
+            .map(|((x, y), _)| ((*x, *y), Direction::Up))
+            .collect();
+        println!("Width: {}, Height: {}", width, height);
         assert_eq!(energized.len(), 46);
     }
 
     #[test]
+    #[ignore]
     fn part1() {
         init_tracing();
         let input = include_str!("day16.txt");
@@ -228,13 +232,9 @@ mod tests {
         let width = input.lines().next().unwrap().len();
         let height = input.lines().count();
         let energized = energize(&grid, width, height);
-        for (x, y) in &energized {
-            if *y >= height || *x >= width {
-                println!("({}, {})", x, y);
-            }
-        }
         println!("Width: {}, Height: {}", width, height);
         assert_ne!(energized.len(), 7156); // Too high
         assert_ne!(energized.len(), 7386); // Too high
+        assert_ne!(energized.len(), 7219);
     }
 }
