@@ -1,5 +1,5 @@
 use anyhow::Result;
-use std::collections::HashSet;
+use geo::{area::Area, Coord, LineString, Polygon};
 
 pub const EXAMPLE: &str = "R 6 (#70c710)
 D 5 (#0dc571)
@@ -16,8 +16,7 @@ U 3 (#a77fa3)
 L 2 (#015232)
 U 2 (#7a21e3)";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Direction {
+pub enum Direction {
     Up,
     Down,
     Left,
@@ -25,177 +24,78 @@ enum Direction {
 }
 
 impl TryFrom<char> for Direction {
-    type Error = String;
+    type Error = &'static str;
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
-            'U' => Ok(Direction::Up),
-            'D' => Ok(Direction::Down),
-            'L' => Ok(Direction::Left),
-            'R' => Ok(Direction::Right),
-            _ => Err(format!("Invalid direction: {}", value)),
+            'U' => Ok(Self::Up),
+            'D' => Ok(Self::Down),
+            'L' => Ok(Self::Left),
+            'R' => Ok(Self::Right),
+            _ => Err("Invalid direction"),
         }
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
-struct Vec2 {
-    x: i32,
-    y: i32,
-}
-
-impl From<Direction> for Vec2 {
+impl From<Direction> for Coord {
     fn from(direction: Direction) -> Self {
         match direction {
-            Direction::Up => Self { x: 0, y: 1 },
-            Direction::Down => Self { x: 0, y: -1 },
-            Direction::Left => Self { x: -1, y: 0 },
-            Direction::Right => Self { x: 1, y: 0 },
+            Direction::Up => Self { x: 0.0, y: 1.0 },
+            Direction::Down => Self { x: 0.0, y: -1.0 },
+            Direction::Left => Self { x: -1.0, y: 0.0 },
+            Direction::Right => Self { x: 1.0, y: 0.0 },
         }
     }
 }
 
-impl std::ops::Add<Self> for Vec2 {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
+pub fn line_parser_1(s: &str) -> Option<(Direction, f64)> {
+    let mut parts = s.split_whitespace();
+    let direction = parts
+        .next()
+        .and_then(|s| s.chars().next())
+        .and_then(|c| Direction::try_from(c).ok())?;
+    let distance: f64 = parts.next().and_then(|s| s.parse().ok())?;
+    Some((direction, distance))
 }
 
-impl std::ops::Sub<Self> for Vec2 {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Self {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
-    }
+pub fn line_parser_2(s: &str) -> Option<(Direction, f64)> {
+    let (hex, dir) = s.split_once('#')?.1.split_at(5);
+    let distance = f64::from(u32::from_str_radix(hex, 16).ok()?);
+    let direction = dir.chars().next().and_then(|c| match c {
+        '0' => Some(Direction::Right),
+        '1' => Some(Direction::Down),
+        '2' => Some(Direction::Left),
+        '3' => Some(Direction::Up),
+        _ => None,
+    })?;
+    Some((direction, distance))
 }
 
-type Path = Vec<(Vec2, String)>;
-
-fn parse_input(input: &str) -> Result<(Path, Vec<Vec2>, Vec<Vec2>)> {
-    use Direction::{Down, Left, Right, Up};
-    let mut path = Path::new();
-    let mut a = Vec::new();
-    let mut b = Vec::new();
-    input
-        .lines()
-        .filter_map(|line| {
-            let mut parts = line.split_whitespace();
-            let direction = parts.next()?.chars().next()?;
-            let direction = Direction::try_from(direction).ok()?;
-            let distance = parts.next()?.parse::<i32>().ok()?;
-            let color = parts.next()?;
-            Some((direction, distance, color))
-        })
-        .for_each(|(direction, distance, color)| {
-            let mut distance = distance;
-            let direction_v: Vec2 = direction.into();
-            while distance > 0 {
-                let last_point = path.last().map(|(pos, _)| *pos).unwrap_or_default();
-                let next_point = last_point + direction_v;
-                let (other_a, other_b) = match direction {
-                    Up => (next_point + Left.into(), next_point + Right.into()),
-                    Down => (next_point + Right.into(), next_point + Left.into()),
-                    Left => (next_point + Down.into(), next_point + Up.into()),
-                    Right => (next_point + Up.into(), next_point + Down.into()),
-                };
-                path.push((next_point, color.to_string()));
-                a.push(other_a);
-                b.push(other_b);
-                distance -= 1;
-            }
+#[allow(clippy::float_cmp)] // We're not doing any floating point math here, other that the assert_eq! below
+#[allow(clippy::cast_sign_loss)] // We know the result is always positive
+#[allow(clippy::cast_possible_truncation)] // We're checking that the result is an integer
+pub fn polygon_area<F>(s: &str, line_parser: F) -> usize
+where
+    F: Fn(&str) -> Option<(Direction, f64)>,
+{
+    let mut points: Vec<Coord> = vec![Coord { x: 0.0, y: 0.0 }];
+    let mut perimeter = 0.0;
+    s.lines()
+        .filter_map(line_parser)
+        .for_each(|(direction, distance)| {
+            let prev_point = points.last().copied().expect("There are always points");
+            let travel = Coord::from(direction) * distance;
+            let next_point = prev_point + travel;
+            perimeter += distance;
+            points.push(next_point);
         });
-    Ok((path, a, b))
-}
-
-fn flood_fill_sides(path: &Path, a: &[Vec2], b: &[Vec2], print: bool) -> usize {
-    use Direction::{Down, Left, Right, Up};
-    let mut visited_a: HashSet<Vec2> = path.iter().map(|(pos, _)| *pos).collect();
-    let mut queue_a: Vec<Vec2> = a.iter().copied().collect();
-    let mut visited_b: HashSet<Vec2> = path.iter().map(|(pos, _)| *pos).collect();
-    let mut queue_b: Vec<Vec2> = b.iter().copied().collect();
-    loop {
-        if let Some(a) = queue_a.pop() {
-            if !visited_a.contains(&a) {
-                visited_a.insert(a);
-                let a_neighbors = [
-                    a + Up.into(),
-                    a + Down.into(),
-                    a + Left.into(),
-                    a + Right.into(),
-                ];
-                for neighbor in &a_neighbors {
-                    if !visited_a.contains(neighbor) {
-                        queue_a.push(*neighbor);
-                    }
-                }
-            }
-        } else {
-            break;
-        }
-
-        if let Some(b) = queue_b.pop() {
-            if !visited_b.contains(&b) {
-                visited_b.insert(b);
-                let b_neighbors = [
-                    b + Up.into(),
-                    b + Down.into(),
-                    b + Left.into(),
-                    b + Right.into(),
-                ];
-                for neighbor in &b_neighbors {
-                    if !visited_b.contains(neighbor) {
-                        queue_b.push(*neighbor);
-                    }
-                }
-            }
-        } else {
-            break;
-        }
-    }
-    if print {
-        print_path(&path, &visited_a, &visited_b);
-    }
-    if queue_a.is_empty() {
-        visited_a.len()
-    } else {
-        visited_b.len()
-    }
-}
-
-fn print_path(path: &Path, a: &HashSet<Vec2>, b: &HashSet<Vec2>) {
-    let min_x = path.iter().map(|(pos, _)| pos.x).min().unwrap_or_default();
-    let max_x = path.iter().map(|(pos, _)| pos.x).max().unwrap_or_default();
-    let min_y = path.iter().map(|(pos, _)| pos.y).min().unwrap_or_default();
-    let max_y = path.iter().map(|(pos, _)| pos.y).max().unwrap_or_default();
-    for y in (min_y..=max_y).rev() {
-        for x in min_x..=max_x {
-            let pos = Vec2 { x, y };
-            if let Some(_) = path.iter().find(|(p, _)| *p == pos) {
-                print!("#");
-            } else if a.contains(&pos) {
-                print!("A");
-            } else if b.contains(&pos) {
-                print!("B");
-            } else {
-                print!(".");
-            }
-        }
-        println!();
-    }
-}
-
-pub fn loop_area(input: &str) -> Result<usize> {
-    let (path, a, b) = parse_input(input)?;
-    let result = flood_fill_sides(&path, &a, &b, false);
-    Ok(result)
+    let polygon = Polygon::new(LineString(points), vec![]);
+    let area = polygon.unsigned_area();
+    // Pick's theorem: A = i + b/2 - 1  (https://en.wikipedia.org/wiki/Pick%27s_theorem)
+    // However in our case, i = A + P/2 + 1 where P is the perimeter of the polygon
+    let inner_points = area + perimeter / 2.0 + 1.0;
+    assert_eq!(inner_points, inner_points.floor()); // This should always be an integer
+    inner_points as usize
 }
 
 #[cfg(test)]
@@ -204,14 +104,27 @@ mod tests {
 
     #[test]
     fn example1() {
-        let result = loop_area(EXAMPLE).unwrap();
+        let result = polygon_area(EXAMPLE, line_parser_1);
         assert_eq!(result, 62);
     }
 
     #[test]
     fn part1() {
         let input = include_str!("day18.txt");
-        let result = loop_area(input).unwrap();
+        let result = polygon_area(input, line_parser_1);
         assert_eq!(result, 62500);
+    }
+
+    #[test]
+    fn example2() {
+        let result = polygon_area(EXAMPLE, line_parser_2);
+        assert_eq!(result, 952408144115);
+    }
+
+    #[test]
+    fn part2() {
+        let input = include_str!("day18.txt");
+        let result = polygon_area(input, line_parser_2);
+        assert_eq!(result, 122109860712709);
     }
 }
