@@ -232,7 +232,6 @@ pub fn cycle_detect_repeats(input: &str, target: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::init_tracing;
 
     fn fmt_output(rocks: &[Rock], width: usize, height: usize) -> String {
         let mut output = String::new();
@@ -303,9 +302,7 @@ mod tests {
     }
 
     #[test]
-    // #[ignore]
     fn part2() {
-        init_tracing();
         let input = include_str!("day14.txt");
         assert_eq!(cycle_detect_repeats(input, 1_000_000_000), 108404);
     }

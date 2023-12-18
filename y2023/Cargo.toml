@@ -10,9 +10,9 @@ categories = ["advent-of-code", "puzzle", "challenge"]
 keywords = ["advent-of-code", "puzzle", "challenge"]
 
 [dependencies]
-advent_of_code_common = { workspace = true }
 anyhow = { workspace = true }
 geo = { workspace = true }
+integer-sqrt = { workspace = true }
 itertools = { workspace = true }
 num = { workspace = true }
 petgraph = { workspace = true }

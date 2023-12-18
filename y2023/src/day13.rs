@@ -148,7 +148,6 @@ pub fn mirrors(input: &str, smudged: bool) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    pub use advent_of_code_common::init_tracing;
 
     #[test]
     fn horizontal() {

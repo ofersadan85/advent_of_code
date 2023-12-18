@@ -1,5 +1,5 @@
-use advent_of_code_common::math::prime_factors;
 use anyhow::{Context, Result};
+use integer_sqrt::IntegerSquareRoot;
 use std::collections::{HashMap, HashSet};
 
 pub const EXAMPLE1: &str = "RL
@@ -29,6 +29,25 @@ pub const EXAMPLE3: &str = "LR
 22Z = (22B, 22B)
 XXX = (XXX, XXX)";
 
+fn prime_factors(n: &u128) -> Vec<u128> {
+    let mut n = *n;
+    let mut div = 2;
+    let mut result = Vec::new();
+    let max_div = n.integer_sqrt();
+    while n > 1 {
+        if div > max_div {
+            result.push(n);
+            break;
+        } else if n % div == 0 {
+            result.push(div);
+            n = n / div;
+            div = 2;
+        } else {
+            div = div + 1;
+        }
+    }
+    result
+}
 fn parse_line(s: &str) -> Result<(&str, (&str, &str))> {
     let mut parts = s.split(" = ");
     let key = parts.next().context("no key")?;

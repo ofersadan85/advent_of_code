@@ -9,7 +9,7 @@ publish = false
 
 [dependencies]
 anyhow = { workspace = true }
-integer-sqrt = "0.1.5"
+integer-sqrt = { workspace = true }
 itertools = { workspace = true }
 num = { workspace = true }
 regex = { workspace = true }
