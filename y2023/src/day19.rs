@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context, Result};
-use std::{cmp::Ordering, collections::HashMap, str::FromStr};
+use std::{cmp::Ordering, collections::HashMap, iter::once, str::FromStr};
 
 pub const EXAMPLE_RULE_LINE: &str = "ex{x>10:one,m<20:two,a>30:R,A}";
 pub const EXAMPLE_PART_LINE: &str = "{x=787,m=2655,a=1222,s=2876}";
@@ -20,6 +20,10 @@ hdj{m>838:A,pv}
 {x=2036,m=264,a=79,s=2244}
 {x=2461,m=1339,a=466,s=291}
 {x=2127,m=1623,a=2188,s=1013}";
+
+type AllRules<'a> = HashMap<&'a str, RuleSet>;
+type RangeMap = HashMap<(usize, usize), String>;
+type ConditionRanges = (Option<(usize, usize)>, Option<(usize, usize)>);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Part {
@@ -54,6 +58,35 @@ impl FromStr for Part {
             s: numbers[3],
             state: "in".to_string(), // Initial state
         })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct RangedPart {
+    x: RangeMap,
+    m: RangeMap,
+    a: RangeMap,
+    s: RangeMap,
+}
+
+impl Default for RangedPart {
+    fn default() -> Self {
+        let initial_map = RangeMap::from_iter(once(((1, 4000), "in".to_string())));
+        Self {
+            x: initial_map.clone(),
+            m: initial_map.clone(),
+            a: initial_map.clone(),
+            s: initial_map.clone(),
+        }
+    }
+}
+
+impl RangedPart {
+    fn is_finished(&self) -> bool {
+        self.x.values().all(|target| target == "R" || target == "A")
+            && self.m.values().all(|target| target == "R" || target == "A")
+            && self.a.values().all(|target| target == "R" || target == "A")
+            && self.s.values().all(|target| target == "R" || target == "A")
     }
 }
 
@@ -95,6 +128,48 @@ impl Rule {
             Field::A => self.op == p.a.cmp(&self.value),
             Field::S => self.op == p.s.cmp(&self.value),
         }
+    }
+
+    fn eval_range(&self, start: usize, end: usize) -> ConditionRanges {
+        use Ordering::{Equal, Greater, Less};
+        match (self.op, start.cmp(&self.value), end.cmp(&self.value)) {
+            (Equal, _, _) => unreachable!("Equal is not a valid operator"),
+            (Greater, Greater, _) | (Less, _, Less) => (Some((start, end)), None),
+            (Greater, _, Equal | Less) | (Less, Equal | Greater, _) => (None, Some((start, end))),
+            (Less, Less, Equal | Greater) => {
+                (Some((start, self.value - 1)), Some((self.value + 1, end)))
+            }
+            (Greater, Equal | Less, Greater) => {
+                (Some((self.value + 1, end)), Some((start, self.value - 1)))
+            }
+        }
+    }
+
+    fn eval_range_for_field(&self, part: &mut RangedPart) -> Option<(usize, usize)> {
+        let current_ranges = match self.field {
+            Field::X => part.x.iter(),
+            Field::M => part.m.iter(),
+            Field::A => part.a.iter(),
+            Field::S => part.s.iter(),
+        };
+        let mut new_ranges = HashMap::new();
+        let mut result = None;
+        for ((start, end), _) in current_ranges {
+            let (condition_true, condition_false) = self.eval_range(*start, *end);
+            if let Some((start_true, end_true)) = condition_true {
+                new_ranges.insert((start_true, end_true), self.target.clone());
+            }
+            if let Some(_) = condition_false {
+                result = condition_false;
+            }
+        }
+        match self.field {
+            Field::X => part.x = new_ranges,
+            Field::M => part.m = new_ranges,
+            Field::A => part.a = new_ranges,
+            Field::S => part.s = new_ranges,
+        }
+        result
     }
 }
 
@@ -142,6 +217,23 @@ impl RuleSet {
         }
         self.final_target.clone()
     }
+
+    fn eval_range(&self, part: &mut RangedPart) {
+        let mut last_ranges = None;
+        for rule in self.rules.iter() {
+            last_ranges = rule.eval_range_for_field(part);
+        }
+        if let Some((start, end)) = last_ranges {
+            if let Some(last_rule) = self.rules.last() {
+                match last_rule.field {
+                    Field::X => part.x.insert((start, end), last_rule.target.clone()),
+                    Field::M => part.m.insert((start, end), last_rule.target.clone()),
+                    Field::A => part.a.insert((start, end), last_rule.target.clone()),
+                    Field::S => part.s.insert((start, end), last_rule.target.clone()),
+                };
+            }
+        }
+    }
 }
 
 fn parse_rule_set(s: &str) -> Result<(&str, RuleSet)> {
@@ -164,7 +256,7 @@ fn parse_rule_set(s: &str) -> Result<(&str, RuleSet)> {
     ))
 }
 
-pub fn parse_input(input: &str) -> Result<(HashMap<&str, RuleSet>, Vec<Part>)> {
+pub fn parse_input(input: &str) -> Result<(AllRules, Vec<Part>)> {
     let double_line_end = if input.contains('\r') {
         "\r\n\r\n"
     } else {
@@ -173,7 +265,7 @@ pub fn parse_input(input: &str) -> Result<(HashMap<&str, RuleSet>, Vec<Part>)> {
     let (rules_str, parts_str) = input
         .split_once(double_line_end)
         .context("No double line break")?;
-    let machine: HashMap<&str, RuleSet> = rules_str
+    let machine: AllRules = rules_str
         .lines()
         .filter_map(|line| parse_rule_set(line).ok())
         .collect();
@@ -207,9 +299,42 @@ where
     Ok(total_accepted)
 }
 
+pub fn machine_process_ranges<H>(machine: &HashMap<&str, RuleSet, H>) -> Result<usize>
+where
+    H: std::hash::BuildHasher,
+{
+    let mut part = RangedPart::default();
+    while !part.is_finished() {
+        for rule_set in machine.values() {
+            rule_set.eval_range(&mut part);
+            dbg!(&part);
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).unwrap();
+        }
+    }
+    dbg!(&part);
+    let result = [part.x, part.m, part.a, part.s]
+        .iter()
+        .map(|field_map| {
+            field_map
+                .iter()
+                .map(|((start, end), _)| end - start + 1)
+                .sum::<usize>()
+        })
+        .product();
+    Ok(result)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn part2_example() {
+        let (machine, _) = parse_input(EXAMPLE_FULL).unwrap();
+        let total_accepted = machine_process_ranges(&machine).unwrap();
+        assert_eq!(total_accepted, 167409079868000);
+    }
 
     #[test]
     fn part1_example() {
@@ -270,5 +395,12 @@ mod tests {
             target: "one".to_string(),
         };
         assert_eq!(rule, expected);
+    }
+
+    #[test]
+    fn rule_eval_range() {
+        let rule = Rule::from_str("x>10:one").unwrap();
+        let range_result = rule.eval_range(1, 4000);
+        assert_eq!(range_result, (Some((11, 4000)), Some((1, 9))));
     }
 }
