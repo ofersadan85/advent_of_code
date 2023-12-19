@@ -40,10 +40,10 @@ fn prime_factors(n: &u128) -> Vec<u128> {
             break;
         } else if n % div == 0 {
             result.push(div);
-            n = n / div;
+            n /= div;
             div = 2;
         } else {
-            div = div + 1;
+            div += 1;
         }
     }
     result

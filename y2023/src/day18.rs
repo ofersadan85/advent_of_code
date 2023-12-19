@@ -93,6 +93,7 @@ where
     let area = polygon.unsigned_area();
     // Pick's theorem: A = i + b/2 - 1  (https://en.wikipedia.org/wiki/Pick%27s_theorem)
     // However in our case, i = A + P/2 + 1 where P is the perimeter of the polygon
+    // This is because the result we want is i + P, not just i
     let inner_points = area + perimeter / 2.0 + 1.0;
     assert_eq!(inner_points, inner_points.floor()); // This should always be an integer
     inner_points as usize
