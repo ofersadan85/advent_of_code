@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use anyhow::{anyhow, Context, Result};
-use geo::Coord;
 use petgraph::{algo::dijkstra, graphmap::UnGraphMap};
+use std::collections::HashMap;
+use tracing::instrument;
 
 pub const EXAMPLE: &str = "...........
 .....###.#.
@@ -23,25 +22,6 @@ pub enum Tile {
     Start,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl From<Direction> for Coord<i32> {
-    fn from(val: Direction) -> Self {
-        match val {
-            Direction::Up => Self { x: 0, y: -1 },
-            Direction::Down => Self { x: 0, y: 1 },
-            Direction::Left => Self { x: -1, y: 0 },
-            Direction::Right => Self { x: 1, y: 0 },
-        }
-    }
-}
-
 impl TryFrom<char> for Tile {
     type Error = &'static str;
 
@@ -55,71 +35,52 @@ impl TryFrom<char> for Tile {
     }
 }
 
-pub fn neighbors(coord: Coord<i32>, width: i32, height: i32) -> Vec<Coord<i32>> {
-    use Direction::{Down, Left, Right, Up};
-    let mut neighbors = Vec::new();
-    if coord.x > 0 {
-        neighbors.push(coord + Left.into());
-    }
-    if coord.x < width - 1 {
-        neighbors.push(coord + Right.into());
-    }
-    if coord.y > 0 {
-        neighbors.push(coord + Up.into());
-    }
-    if coord.y < height - 1 {
-        neighbors.push(coord + Down.into());
-    }
-    neighbors
-}
-
 pub type Maze = UnGraphMap<(i32, i32), u8>;
-pub type MazeMap = HashMap<Coord<i32>, Tile>;
+pub type MazeMap = HashMap<(i32, i32), Tile>;
 
-pub fn parse_input(s: &str) -> Result<(Coord<i32>, Maze)> {
-    let mut graph = Maze::new();
+#[instrument(skip_all, level = "info")]
+pub fn parse_input(s: &str) -> Result<((i32, i32), Maze)> {
     let width = i32::try_from(s.lines().next().context("No lines")?.len())?;
     let height = i32::try_from(s.lines().count())?;
-    let mut map = MazeMap::new();
-    s.lines()
+    let map: MazeMap = s
+        .lines()
         .enumerate()
         .flat_map(|(y, line)| {
             line.chars().enumerate().filter_map(move |(x, c)| {
-                let tile = Tile::try_from(c).ok()?;
                 Some((
-                    Coord {
-                        x: i32::try_from(x).ok()?,
-                        y: i32::try_from(y).ok()?,
-                    },
-                    tile,
+                    (i32::try_from(x).ok()?, i32::try_from(y).ok()?),
+                    Tile::try_from(c).ok()?,
                 ))
             })
         })
-        .for_each(|(coord, tile)| {
-            map.insert(coord, tile);
-        });
-    for (coord, tile) in &map {
-        if *tile == Tile::Rock {
-            continue;
-        }
-        neighbors(*coord, width, height)
-            .iter()
-            .filter(|n| map.get(n) == Some(&Tile::Grass))
-            .for_each(|n| {
-                graph.add_edge(coord.x_y(), n.x_y(), 1);
-            });
-    }
-    let start = map
+        .collect();
+    let graph = Maze::from_edges(
+        map.iter()
+            .filter(|(_, tile)| tile != &&Tile::Rock)
+            .flat_map(|((x, y), _)| {
+                let x = *x;
+                let y = *y;
+                [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+                    .iter()
+                    .filter(|(x, y)| *x >= 0 && *x < width && *y >= 0 && *y < height) // Valid neighbor coordinates
+                    .filter(|n| {
+                        map.get(n) == Some(&Tile::Grass) || map.get(n) == Some(&Tile::Start)
+                    }) // Valid tiles
+                    .map(|(n_x, n_y)| ((x, y), (*n_x, *n_y), 1))
+                    .collect::<Vec<_>>() // As edge
+            }),
+    );
+    let (start, _tile) = map
         .iter()
         .find(|(_, tile)| **tile == Tile::Start)
-        .map(|(coord, _)| *coord)
         .ok_or_else(|| anyhow!("No start found"))?;
     // print_distance_map(start, &graph);
-    Ok((start, graph))
+    Ok((*start, graph))
 }
 
-pub fn print_distance_map(start: Coord<i32>, graph: &Maze) {
-    let distances = dijkstra(graph, start.x_y(), None, |(_, _, w)| *w);
+#[instrument(skip_all, level = "info")]
+pub fn print_distance_map(start: (i32, i32), graph: &Maze) {
+    let distances = dijkstra(graph, start, None, |(_, _, w)| *w);
     let width = distances
         .iter()
         .max_by_key(|((x, _), _)| x)
@@ -128,36 +89,63 @@ pub fn print_distance_map(start: Coord<i32>, graph: &Maze) {
         .iter()
         .max_by_key(|((_, y), _)| y)
         .map_or(0, |((_, y), _)| y + 1);
+    let red_color = "\x1b[31m";
+    let green_color = "\x1b[32m";
+    let reset_color = "\x1b[0m";
     for y in 0..height {
         for x in 0..width {
-            let distance = distances.get(&(x, y)).unwrap_or(&0);
-            print!("{distance:3} ");
+            if let Some(distance) = distances.get(&(x, y)) {
+                if distance == &10 {
+                    print!("{}{:3}{}", red_color, distance, reset_color);
+                } else if distance == &20 {
+                    print!("{}{:3}{}", green_color, distance, reset_color);
+                } else {
+                    print!("{:3}", distance);
+                }
+            } else {
+                print!("   ");
+            }
         }
         println!();
     }
 }
 
-pub fn find_even_steps(start: Coord<i32>, graph: &Maze, max: i32) -> usize {
-    let distances = dijkstra(graph, start.x_y(), None, |_| 1);
-    dbg!(&distances[&(0, 4)]);
-    distances
-        .iter()
-        .filter(|(_, &distance)| distance % 2 == 0 && distance <= max)
+#[instrument(skip_all, level = "info")]
+pub fn find_even_steps(start: (i32, i32), graph: &Maze, max: i32) -> usize {
+    dijkstra(graph, start, None, |_| 1)
+        .values()
+        .filter(|&&distance| distance % 2 == 0 && distance <= max)
         .count()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use tracing_subscriber::{fmt, fmt::format::FmtSpan};
+    static TRACING_INIT: AtomicBool = AtomicBool::new(false);
+
+    fn init_tracing() {
+        let tracing =
+            TRACING_INIT.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst);
+        if let Ok(false) = tracing {
+            fmt()
+                .with_line_number(true)
+                .with_span_events(FmtSpan::CLOSE)
+                .init();
+        }
+    }
 
     #[test]
     fn example() {
+        init_tracing();
         let (start, graph) = parse_input(EXAMPLE).unwrap();
         assert_eq!(find_even_steps(start, &graph, 6), 16);
     }
 
     #[test]
     fn part1() {
+        init_tracing();
         let (start, graph) = parse_input(include_str!("day21.txt")).unwrap();
         assert_eq!(find_even_steps(start, &graph, 64), 3729);
     }
