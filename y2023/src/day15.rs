@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let input = include_str!("day15.txt");
+        let input = include_str!("../../inputs/2023/day15.txt");
         let hashes: usize = input.split(',').map(|s| hash(s) as usize).sum();
         assert_eq!(hashes, 505427);
     }
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn part2() {
-        let input = include_str!("day15.txt");
+        let input = include_str!("../../inputs/2023/day15.txt");
         let boxes = parse_input(input);
         let result = sum_boxes(&boxes);
         assert_eq!(result, 243747);

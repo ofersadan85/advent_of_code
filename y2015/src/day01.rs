@@ -17,7 +17,7 @@ pub fn count_parentheses(s: &str) -> (i32, usize) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const INPUT: &str = include_str!("day01.txt");
+    const INPUT: &str = include_str!("../../inputs/2015/day01.txt");
 
     #[test]
     fn examples_1() {

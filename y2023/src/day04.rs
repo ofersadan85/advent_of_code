@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let result: usize = include_str!("day04.txt")
+        let result: usize = include_str!("../../inputs/2023/day04.txt")
             .lines()
             .filter_map(|line| Card::try_from(line).ok())
             .map(|card| card.score())
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_2() {
-        let mut cards = include_str!("day04.txt")
+        let mut cards = include_str!("../../inputs/2023/day04.txt")
             .lines()
             .filter_map(|line| Card::try_from(line).ok())
             .collect_vec();

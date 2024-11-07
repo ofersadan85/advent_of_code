@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        let input = include_str!("day07.txt");
+        let input = include_str!("../../inputs/2015/day07.txt");
         let mut circuit = Circuit::new(input);
         while !circuit.wires.get("a").expect("Wire a").has_value() {
             circuit.reduce_entropy_once();
@@ -199,7 +199,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        let input = include_str!("day07.txt");
+        let input = include_str!("../../inputs/2015/day07.txt");
         let mut circuit = Circuit::new(input);
         while !circuit.wires.get("a").expect("Wire a").has_value() {
             circuit.reduce_entropy_once();

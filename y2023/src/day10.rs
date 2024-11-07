@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let input = include_str!("day10.txt");
+        let input = include_str!("../../inputs/2023/day10.txt");
         assert_eq!(furthest_node(input).unwrap(), 6812);
     }
 
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn part2() {
-        let input = include_str!("day10.txt");
+        let input = include_str!("../../inputs/2023/day10.txt");
         let result = inner_area(input).unwrap();
         assert_eq!(result, 527);
     }

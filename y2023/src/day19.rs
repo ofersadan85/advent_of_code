@@ -345,7 +345,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let (machine, parts) = parse_input(include_str!("day19.txt")).unwrap();
+        let (machine, parts) = parse_input(include_str!("../../inputs/2023/day19.txt")).unwrap();
         let total_accepted = machine_process(&machine, parts).unwrap();
         assert_eq!(total_accepted, 362930);
     }

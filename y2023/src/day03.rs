@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let map = create_engine_map(include_str!("day03.txt"));
+        let map = create_engine_map(include_str!("../../inputs/2023/day03.txt"));
         let numbers = numbers_with_neighbors(&map);
         let result: u32 = numbers.iter().sum();
         assert_eq!(result, 522726);
@@ -129,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        let map = create_engine_map(include_str!("day03.txt"));
+        let map = create_engine_map(include_str!("../../inputs/2023/day03.txt"));
         let result: u32 = find_gears(&map).iter().sum();
         assert_eq!(result, 81721933);
     }

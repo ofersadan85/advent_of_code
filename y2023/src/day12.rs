@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let lengths: usize = include_str!("day12.txt")
+        let lengths: usize = include_str!("../../inputs/2023/day12.txt")
             .lines()
             .filter_map(|line| line.trim().parse::<Row>().ok())
             .map(|row| row.solutions().len())

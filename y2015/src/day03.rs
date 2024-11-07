@@ -39,7 +39,7 @@ impl Santa {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const INPUT: &str = include_str!("day03.txt");
+    const INPUT: &str = include_str!("../../inputs/2015/day03.txt");
 
     #[test]
     fn example_1() {

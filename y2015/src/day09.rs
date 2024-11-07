@@ -55,13 +55,13 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let input = include_str!("day09.txt");
+        let input = include_str!("../../inputs/2015/day09.txt");
         let result = brute_force_path(input, true);
         assert_eq!(result, 141);
     }
     #[test]
     fn test_part_2() {
-        let input = include_str!("day09.txt");
+        let input = include_str!("../../inputs/2015/day09.txt");
         let result = brute_force_path(input, false);
         assert_eq!(result, 736);
     }

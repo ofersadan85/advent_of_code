@@ -50,7 +50,7 @@ pub fn sum_digit_words(s: &str) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const INPUT: &str = include_str!("day01.txt");
+    const INPUT: &str = include_str!("../../inputs/2023/day01.txt");
 
     #[test]
     fn test_sum_digits() {

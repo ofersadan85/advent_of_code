@@ -137,7 +137,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let (commands, map) = parse_input(include_str!("day08.txt")).unwrap();
+        let (commands, map) = parse_input(include_str!("../../inputs/2023/day08.txt")).unwrap();
         assert_eq!(solve1(commands, &map), 17873);
     }
 
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn part2() {
-        let (commands, map) = parse_input(include_str!("day08.txt")).unwrap();
+        let (commands, map) = parse_input(include_str!("../../inputs/2023/day08.txt")).unwrap();
         let factors = solve2(commands, &map);
         assert_eq!(factors, 15_746_133_679_061);
     }

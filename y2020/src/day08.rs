@@ -101,14 +101,14 @@ mod tests {
 
     #[test]
     fn part1() {
-        let input = include_str!("day08.txt");
+        let input = include_str!("../../inputs/2020/day08.txt");
         let instructions = parse_input(input).unwrap();
         assert_eq!(execute(&instructions).0, 1337);
     }
 
     #[test]
     fn part2() {
-        let input = include_str!("day08.txt");
+        let input = include_str!("../../inputs/2020/day08.txt");
         let instructions = parse_input(input).unwrap();
         assert_eq!(fix_bug(&instructions), 1358);
     }

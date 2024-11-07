@@ -146,7 +146,7 @@ mod tests {
     #[test]
     fn part1() {
         init_tracing();
-        let (start, graph) = parse_input(include_str!("day21.txt")).unwrap();
+        let (start, graph) = parse_input(include_str!("../../inputs/2023/day21.txt")).unwrap();
         assert_eq!(find_even_steps(start, &graph, 64), 3729);
     }
 }

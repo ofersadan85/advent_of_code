@@ -80,7 +80,7 @@ pub fn has_triple(s: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const INPUT: &str = include_str!("day05.txt");
+    const INPUT: &str = include_str!("../../inputs/2015/day05.txt");
 
     #[test]
     fn nice_string() {

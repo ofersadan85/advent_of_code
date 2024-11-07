@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        let input = include_str!("day06.txt");
+        let input = include_str!("../../inputs/2015/day06.txt");
         let mut grid = GridOnOff::new();
         input.lines().for_each(|line| {
             let action = Action::try_from(line).unwrap();
@@ -263,7 +263,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        let input = include_str!("day06.txt");
+        let input = include_str!("../../inputs/2015/day06.txt");
         let mut grid = GridBrightness::new();
         input.lines().for_each(|line| {
             let action = Action::try_from(line).unwrap();

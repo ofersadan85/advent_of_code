@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023"]
+members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
@@ -18,15 +18,15 @@ match_bool = "allow"
 
 [workspace.dependencies]
 advent_of_code_common = { path = "common" }
-anyhow = "1.0.75"
-geo = "0.27.0"
+anyhow = "1.0.93"
+geo = "0.29.1"
 integer-sqrt = "0.1.5"
-itertools = "0.12.0"
-num = { version = "0.4.1", features = ["rand", "num-bigint"] }
-petgraph = "0.6.4"
-rayon = "1.8.0"
-regex = "1.10.2"
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
+itertools = "0.13.0"
+num = { version = "0.4.3", features = ["rand", "num-bigint"] }
+petgraph = "0.6.5"
+rayon = "1.10.0"
+regex = "1.11.1"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"

@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input = include_str!("day02.txt");
+        let input = include_str!("../../inputs/2023/day02.txt");
         let another = GameResult {
             red: 12,
             green: 13,
@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        let input = include_str!("day02.txt");
+        let input = include_str!("../../inputs/2023/day02.txt");
         let result: u32 = input.lines().map(|s| Game::from(s).power()).sum();
         assert_eq!(result, 71036);
     }

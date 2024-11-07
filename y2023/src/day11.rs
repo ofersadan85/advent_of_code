@@ -270,7 +270,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let mut space = Space::from_str(include_str!("day11.txt")).unwrap();
+        let mut space = Space::from_str(include_str!("../../inputs/2023/day11.txt")).unwrap();
         space.expand_fast(1);
         assert_eq!(space.total_distance_estimate(), 9918828);
     }
@@ -286,7 +286,7 @@ mod tests {
 
     #[test]
     fn part2() {
-        let mut space = Space::from_str(include_str!("day11.txt")).unwrap();
+        let mut space = Space::from_str(include_str!("../../inputs/2023/day11.txt")).unwrap();
         space.expand_fast(999_999);
         assert_eq!(space.total_distance_estimate(), 692506533832);
     }

@@ -14,7 +14,7 @@ pub fn ribbon(x: usize, y: usize, z: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const INPUT: &str = include_str!("day02.txt");
+    const INPUT: &str = include_str!("../../inputs/2015/day02.txt");
 
     #[test]
     fn test_wrapper() {

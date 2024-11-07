@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn part1() {
-        let input = include_str!("day18.txt");
+        let input = include_str!("../../inputs/2023/day18.txt");
         let result = polygon_area(input, line_parser_1);
         assert_eq!(result, 62500);
     }
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn part2() {
-        let input = include_str!("day18.txt");
+        let input = include_str!("../../inputs/2023/day18.txt");
         let result = polygon_area(input, line_parser_2);
         assert_eq!(result, 122109860712709);
     }

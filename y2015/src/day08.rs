@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input = include_str!("day08.txt");
+        let input = include_str!("../../inputs/2015/day08.txt");
         let total: usize = input.lines().map(|l| l.len() - str_unescape(l)).sum();
         assert_eq!(total, 1342);
     }
@@ -83,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_part2() {
-        let input = include_str!("day08.txt");
+        let input = include_str!("../../inputs/2015/day08.txt");
         let total: usize = input.lines().map(|l| str_escape(l) - l.len()).sum();
         assert_eq!(total, 2074);
     }
