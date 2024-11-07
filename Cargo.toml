@@ -4,6 +4,7 @@ members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
+dead_code = "allow"
 
 [workspace.lints.clippy]
 cargo = "warn"
