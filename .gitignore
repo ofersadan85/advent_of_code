@@ -11,4 +11,3 @@ Cargo.lock
 
 # Foc AoC compliance
 **/*.txt
-!**/*example.txt

@@ -12,10 +12,11 @@ keywords = ["advent-of-code", "puzzle", "challenge"]
 [dependencies]
 advent_of_code_common = { workspace = true }
 anyhow = { workspace = true }
-itertools = { workspace = true }
+itertools.workspace = true
 md5 = "0.7.0"
 rayon = "1.8.0"
 regex = { workspace = true }
+seq-macro = "0.3.5"
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 
