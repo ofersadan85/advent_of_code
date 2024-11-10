@@ -1,9 +1,8 @@
-use std::path::PathBuf;
-
 use anyhow::{Context, Ok, Result};
 use chrono::{prelude::*, DateTime, Utc};
 use clap::Parser;
 use reqwest::Client;
+use std::path::PathBuf;
 use tracing::{info, instrument};
 
 #[derive(Parser, Debug)]
@@ -27,17 +26,18 @@ pub(crate) struct Cli {
 async fn get_input(client: Client, year: u16, day: u8) -> Result<()> {
     info!("Getting input for year {} day {}", year, day);
     let args = Cli::parse();
-    assert!(args.output.is_dir());
     let year_str = year.to_string();
-    if !args.output.join(&year_str).is_dir() {
-        tokio::fs::create_dir(args.output.join(&year_str))
+    let year_dir = args.output.join(&year_str);
+    let filename = format!("day{day:02}.txt");
+    let input_path = year_dir.join(&filename);
+    if input_path.is_file() {
+        info!("Skipping {year}/{filename} - Already exists");
+        return Ok(());
+    }
+    if !year_dir.is_dir() {
+        tokio::fs::create_dir_all(&year_dir)
             .await
-            .with_context(|| {
-                format!(
-                    "Failed to create directory {}",
-                    args.output.join(&year_str).display()
-                )
-            })?;
+            .with_context(|| format!("Failed to create directory {}", year_dir.display()))?;
     }
 
     let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
@@ -51,10 +51,9 @@ async fn get_input(client: Client, year: u16, day: u8) -> Result<()> {
         .text()
         .await
         .with_context(|| format!("Failed to get input for day {}", day))?;
-    let input_path = format!("inputs/{year_str}/day{day:02}.txt");
     tokio::fs::write(&input_path, input)
         .await
-        .with_context(|| format!("Failed to write input to {}", input_path))?;
+        .with_context(|| format!("Failed to write input to {}", input_path.display()))?;
     Ok(())
 }
 
@@ -73,7 +72,10 @@ async fn main() -> Result<()> {
             .expect("Day is invalid");
     }
 
-    let years = args.year.map(|y| y..=y).unwrap_or(2015..=max_date.year() as u16);
+    let years = args
+        .year
+        .map(|y| y..=y)
+        .unwrap_or(2015..=max_date.year() as u16);
     let days = args.day.map(|d| d..=d).unwrap_or(1..=25);
     if years.start() < &2015 || *years.end() > (max_date.year() as u16) {
         eprintln!(
