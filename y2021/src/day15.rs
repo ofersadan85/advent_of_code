@@ -4,7 +4,7 @@ use advent_of_code_common::v2::{get_neighbors, V2};
 use anyhow::Result;
 use std::collections::BTreeMap;
 
-const PATH: &str = "inputs/day15.txt";
+const PATH: &str = "../inputs/2021/day15.txt";
 const EXAMPLE: &str = "1163751742
 1381373672
 2136511328

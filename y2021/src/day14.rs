@@ -6,7 +6,7 @@ type CharPair = (char, char);
 type PairCounter = HashMap<CharPair, i64>;
 type ChainRules = HashMap<CharPair, (CharPair, CharPair)>;
 
-const PATH: &str = "inputs/day14.txt";
+const PATH: &str = "../inputs/2021/day14.txt";
 const EXAMPLE: &str = "NNCB
 
 CH -> B

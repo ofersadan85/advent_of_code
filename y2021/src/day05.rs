@@ -2,7 +2,7 @@ use itertools::Itertools;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-const PATH: &str = "inputs/day05.txt";
+const PATH: &str = "../inputs/2021/day05.txt";
 const EXAMPLE: &str = "
 0,9 -> 5,9
 8,0 -> 0,8

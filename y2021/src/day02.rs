@@ -1,5 +1,5 @@
 use advent_of_code_common::file::split_lines;
-const PATH: &str = "inputs/day02.txt";
+const PATH: &str = "../inputs/2021/day02.txt";
 const EXAMPLE: &str = "forward 5
 down 5
 forward 8

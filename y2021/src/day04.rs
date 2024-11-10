@@ -1,6 +1,6 @@
 use advent_of_code_common::{file::split_lines_trim, v2::transpose};
 
-const PATH: &str = "inputs/day04.txt";
+const PATH: &str = "../inputs/2021/day04.txt";
 const EXAMPLE: &str = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0

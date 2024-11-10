@@ -58,7 +58,7 @@ impl Passport {
 }
 
 fn input(example: bool) -> Vec<String> {
-    const PATH: &str = "inputs/day04.txt";
+    const PATH: &str = "../inputs/2020/day04.txt";
     if example {
         "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd
         byr:1937 iyr:2017 cid:147 hgt:183cm

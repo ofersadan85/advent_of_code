@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const PATH: &str = "inputs/day08.txt";
+const PATH: &str = "../inputs/2021/day08.txt";
 const EXAMPLE: &str =
     "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
 edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc

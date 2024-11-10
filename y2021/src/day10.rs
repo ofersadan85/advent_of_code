@@ -1,4 +1,4 @@
-const PATH: &str = "inputs/day10.txt";
+const PATH: &str = "../inputs/2021/day10.txt";
 const EXAMPLE: &str = "[({(<(())[]>[[{[]{<()<>>
 [(()[<>])]({[<{<<[]>>(
 {([(<{}[<>[]}>{[]{[(<()>

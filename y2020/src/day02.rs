@@ -37,7 +37,7 @@ impl Password {
 }
 
 fn input(example: bool) -> Vec<Password> {
-    const PATH: &str = "inputs/day02.txt";
+    const PATH: &str = "../inputs/2020/day02.txt";
     if example {
         "1-3 a: abcde
         1-3 b: cdefg

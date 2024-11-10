@@ -3,7 +3,7 @@ use euclid::{Box2D, Point2D};
 use itertools::iproduct;
 
 const EXAMPLE: &str = "target area: x=20..30, y=-10..-5";
-const PATH: &str = "inputs/day17.txt";
+const PATH: &str = "../inputs/2021/day17.txt";
 
 fn input(example: bool) -> Box2D<i32, u32> {
     let data = if example {

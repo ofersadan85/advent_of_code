@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const PATH: &str = "inputs/day07.txt";
+const PATH: &str = "../inputs/2021/day07.txt";
 const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
 
 fn calc_fuel(data: &[u32]) -> u32 {

@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 fn input(example: bool) -> Vec<String> {
-    const PATH: &str = "inputs/day06.txt";
+    const PATH: &str = "../inputs/2020/day06.txt";
     if example {
         "abc
 

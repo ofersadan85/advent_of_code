@@ -18,7 +18,7 @@ impl Add for PositionVector {
 }
 
 fn input(example: bool) -> Vec<Vec<bool>> {
-    const PATH: &str = "inputs/day03.txt";
+    const PATH: &str = "../inputs/2020/day03.txt";
     if example {
         "..##.......
         #...#...#..

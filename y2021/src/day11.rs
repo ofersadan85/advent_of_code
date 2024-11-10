@@ -1,7 +1,7 @@
 use advent_of_code_common::v2::{get_neighbors, V2};
 use itertools::iproduct;
 
-const PATH: &str = "inputs/day11.txt";
+const PATH: &str = "../inputs/2021/day11.txt";
 const EXAMPLE: &str = "5483143223
 2745854711
 5264556173

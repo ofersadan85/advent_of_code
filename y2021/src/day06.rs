@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-const PATH: &str = "inputs/day06.txt";
+const PATH: &str = "../inputs/2021/day06.txt";
 const EXAMPLE: &str = "3,4,3,1,2";
 
 fn grow(v: &mut [usize], n: usize) {

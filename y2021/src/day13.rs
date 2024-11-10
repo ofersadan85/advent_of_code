@@ -1,7 +1,7 @@
 use advent_of_code_common::file::split_lines_trim;
 use std::collections::HashSet;
 
-const PATH: &str = "inputs/day13.txt";
+const PATH: &str = "../inputs/2021/day13.txt";
 const EXAMPLE: &str = "6,10
 0,14
 9,10

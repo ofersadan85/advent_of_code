@@ -1,4 +1,4 @@
-const PATH: &str = "inputs/day01.txt";
+const PATH: &str = "../inputs/2021/day01.txt";
 const EXAMPLE: &str = "199
 200
 208

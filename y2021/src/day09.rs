@@ -1,7 +1,7 @@
 use advent_of_code_common::v2::{get_neighbors, V2};
 use std::collections::HashSet;
 
-const PATH: &str = "inputs/day09.txt";
+const PATH: &str = "../inputs/2021/day09.txt";
 const EXAMPLE: &str = "2199943210
 3987894921
 9856789892

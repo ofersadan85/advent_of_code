@@ -4,7 +4,7 @@ use advent_of_code_common::{
 };
 use itertools::Itertools;
 
-const PATH: &str = "inputs/day12.txt";
+const PATH: &str = "../inputs/2021/day12.txt";
 const EXAMPLE_1: &str = "start-A
 start-b
 A-c

@@ -2,7 +2,7 @@ extern crate itertools;
 use itertools::iproduct;
 
 fn input(example: bool) -> Vec<usize> {
-    const PATH: &str = "inputs/day01.txt";
+    const PATH: &str = "../inputs/2020/day01.txt";
     if example {
         "1721 979 366 299 675 1456".to_string()
     } else {

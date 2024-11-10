@@ -5,7 +5,7 @@ use advent_of_code_common::{
 use itertools::iproduct;
 use std::collections::HashMap;
 
-const PATH: &str = "inputs/day03.txt";
+const PATH: &str = "../inputs/2021/day03.txt";
 const EXAMPLE: &str = "
 00100
 11110

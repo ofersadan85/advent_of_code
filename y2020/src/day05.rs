@@ -66,7 +66,7 @@ impl BoardingPass {
 }
 
 fn input(example: bool) -> Vec<BoardingPass> {
-    const PATH: &str = "inputs/day05.txt";
+    const PATH: &str = "../inputs/2020/day05.txt";
     if example {
         "FBFBBFFRLR
         BFFFBBFRRR
