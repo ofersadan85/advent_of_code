@@ -7,9 +7,9 @@ unsafe_code = "forbid"
 dead_code = "allow"
 
 [workspace.lints.clippy]
-cargo = "warn"
-nursery = "warn"
-pedantic = "warn"
+cargo = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
 unwrap_used = "deny"
 must_use_candidate = "allow"
 missing_errors_doc = "allow"
@@ -23,6 +23,7 @@ anyhow = "1.0.93"
 geo = "0.29.1"
 integer-sqrt = "0.1.5"
 itertools = "0.13.0"
+md5 = "0.7.0"
 num = { version = "0.4.3", features = ["rand", "num-bigint"] }
 petgraph = "0.6.5"
 rayon = "1.10.0"

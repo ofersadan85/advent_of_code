@@ -2,22 +2,24 @@
 name = "advent_of_code_2019"
 version = "0.1.0"
 edition = "2021"
-authors = ["Ofer Sadan"]
+authors = ["Ofer Sadan <ofersadan85@gmail.com>"]
+readme = "../README.md"
 description = "2022 solutions to adventofcode.com in Rust"
 repository = "https://github.com/ofersadan85/advent_of_code"
 publish = false
 categories = ["advent-of-code", "puzzle", "challenge"]
 keywords = ["advent-of-code", "puzzle", "challenge"]
+license-file = "../LICENSE"
 
 [dependencies]
 advent_of_code_common = { workspace = true }
 anyhow = { workspace = true }
 itertools.workspace = true
-md5 = "0.7.0"
-rayon = "1.8.0"
+md5 = { workspace = true }
+rayon = { workspace = true }
 regex = { workspace = true }
-seq-macro = "0.3.5"
-serde = { workspace = true, features = ["derive"] }
+seq-macro = { workspace = true }
+serde = { workspace = true }
 serde_json.workspace = true
 
 [lints]

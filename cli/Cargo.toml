@@ -1,7 +1,15 @@
 [package]
-name = "cli"
+name = "aoc-cli"
 version = "0.1.0"
 edition = "2021"
+description = "A CLI tool to download all personal inputs from adventofcode.com"
+authors = ["Ofer Sadan <ofersadan85@gmail.com>"]
+readme = "../README.md"
+repository = "https://github.com/ofersadan85/advent_of_code"
+publish = false
+categories = ["advent-of-code", "puzzle", "challenge"]
+keywords = ["advent-of-code", "puzzle", "challenge"]
+license-file = "../LICENSE"
 
 [dependencies]
 anyhow.workspace = true

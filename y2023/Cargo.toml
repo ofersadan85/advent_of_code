@@ -2,12 +2,14 @@
 name = "advent_of_code_2023"
 version = "0.1.0"
 edition = "2021"
-authors = ["Ofer Sadan"]
 description = "2023 solutions to adventofcode.com in Rust"
+authors = ["Ofer Sadan <ofersadan85@gmail.com>"]
+readme = "../README.md"
 repository = "https://github.com/ofersadan85/advent_of_code"
 publish = false
 categories = ["advent-of-code", "puzzle", "challenge"]
 keywords = ["advent-of-code", "puzzle", "challenge"]
+license-file = "../LICENSE"
 
 [dependencies]
 anyhow = { workspace = true }
