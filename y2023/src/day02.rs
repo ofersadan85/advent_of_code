@@ -125,9 +125,9 @@ mod tests {
             let game = Game::from(line);
             if [0, 1, 4].contains(&i) {
                 total += game.index;
-                assert!(game.is_possible(&another), "line: {}", i);
+                assert!(game.is_possible(&another), "line: {i}");
             } else {
-                assert!(!game.is_possible(&another), "line: {}", i);
+                assert!(!game.is_possible(&another), "line: {i}");
             }
         }
         assert_eq!(total, 8);

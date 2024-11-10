@@ -84,7 +84,7 @@ mod tests {
     #[test]
     fn example1() {
         let input = parse_input1(EXAMPLE).unwrap();
-        let result = input.iter().map(|r| r.ways_to_win()).collect_vec();
+        let result = input.iter().map(Race::ways_to_win).collect_vec();
         assert_eq!(result, vec![4, 8, 9]);
         assert_eq!(result.iter().product::<usize>(), 288);
     }
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn part1() {
         let input = parse_input1(INPUT).unwrap();
-        let result = input.iter().map(|r| r.ways_to_win()).product::<usize>();
+        let result = input.iter().map(Race::ways_to_win).product::<usize>();
         assert_eq!(result, 781200);
     }
 

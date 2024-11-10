@@ -77,7 +77,7 @@ fn input(example: bool) -> Vec<BoardingPass> {
         std::fs::read_to_string(PATH).unwrap()
     }
     .trim()
-    .split('\n')
+    .lines()
     .map(BoardingPass::new)
     .collect()
 }

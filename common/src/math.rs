@@ -81,6 +81,20 @@ where
     result
 }
 
+/// A quick shortcut to convert binary strings to integers
+///
+/// # Errors
+///
+/// Will return `T::FromStrRadixErr` if string is not a valid binary of 0s and 1s
+pub fn bin2int<T: Integer>(s: &str) -> Result<T, T::FromStrRadixErr> {
+    T::from_str_radix(s, 2)
+}
+
+/// Count the recurrence of recurrences
+pub fn counts_of_counts<T: Eq + Hash>(v: &[T]) -> HashMap<usize, usize> {
+    v.iter().counts().values().copied().counts()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -112,18 +126,4 @@ mod tests {
         assert!(quadratic_roots_real(0, 5, 3).is_err());
         assert_eq!(quadratic_roots_real(1, 0, -16).unwrap(), (4., -4.));
     }
-}
-
-/// A quick shortcut to convert binary strings to integers
-///
-/// # Errors
-///
-/// Will return `T::FromStrRadixErr` if string is not a valid binary of 0s and 1s
-pub fn bin2int<T: Integer>(s: &str) -> Result<T, T::FromStrRadixErr> {
-    T::from_str_radix(s, 2)
-}
-
-/// Count the recurrence of recurrences
-pub fn counts_of_counts<T: Eq + Hash>(v: &[T]) -> HashMap<usize, usize> {
-    v.iter().counts().values().copied().counts()
 }

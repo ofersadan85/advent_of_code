@@ -64,7 +64,7 @@ impl Card {
     }
 }
 
-pub fn card_explosion(cards: &mut Vec<Card>) {
+pub fn card_explosion(cards: &mut [Card]) {
     let mut index = 0;
     let last_index = cards.len() - 1;
     loop {

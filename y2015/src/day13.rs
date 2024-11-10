@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use itertools::Itertools;
 
-fn parse_line<'a>(line: &'a str) -> (&'a str, &'a str, isize) {
+fn parse_line(line: &str) -> (&str, &str, isize) {
     let (source, rest) = line.split_once(" would ").expect("first split");
     let (measure, target) = rest
         .trim_matches('.')
@@ -16,7 +16,7 @@ fn parse_line<'a>(line: &'a str) -> (&'a str, &'a str, isize) {
 type HappinessMeasure<'a> = HashMap<&'a str, isize>;
 type HappinessMap<'a> = HashMap<&'a str, HappinessMeasure<'a>>;
 
-fn parse_input<'a>(input: &'a str) -> HappinessMap<'a> {
+fn parse_input(input: &str) -> HappinessMap<'_> {
     let mut map = HashMap::new();
     for line in input.lines() {
         let (source, target, measure) = parse_line(line);
@@ -34,7 +34,7 @@ fn parse_input<'a>(input: &'a str) -> HappinessMap<'a> {
 }
 
 fn part_1(map: &HappinessMap) -> Option<isize> {
-    let max = map.keys().permutations(map.len()).map(|table| {
+    map.keys().permutations(map.len()).map(|table| {
         let mut happiness = 0;
         for i in 0..table.len() {
             let i_left = if i == 0 {table.len() - 1} else {i - 1};
@@ -45,8 +45,7 @@ fn part_1(map: &HappinessMap) -> Option<isize> {
             happiness += map[p][p_left] + map[p][p_right];
         }
         happiness
-    }).max();
-    max
+    }).max()
 }
 
 fn part_2(map: &HappinessMap) -> Option<isize> {

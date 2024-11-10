@@ -21,7 +21,7 @@ mod tests {
 
     #[test]
     fn examples_1() {
-        [
+        for (s, expected) in &[
             ("(())", 0),
             ("()()", 0),
             ("(((", 3),
@@ -31,23 +31,19 @@ mod tests {
             ("))(", -1),
             (")))", -3),
             (")())())", -3),
-        ]
-        .iter()
-        .for_each(|(s, expected)| {
+        ] {
             assert_eq!(count_parentheses(s).0, *expected);
-        });
+        }
     }
 
     #[test]
     fn examples_2() {
-        [
+        for (s, expected) in &[
             (")", 1),
             ("()())", 5),
-        ]
-        .iter()
-        .for_each(|(s, expected)| {
+        ] {
             assert_eq!(count_parentheses(s).1, *expected);
-        });
+        }
     }
 
     #[test]

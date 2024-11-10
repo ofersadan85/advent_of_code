@@ -71,12 +71,12 @@ struct RangedPart {
 
 impl Default for RangedPart {
     fn default() -> Self {
-        let initial_map = RangeMap::from_iter(once(((1, 4000), "in".to_string())));
+        let initial_map: RangeMap = once(((1, 4000), "in".to_string())).collect();
         Self {
             x: initial_map.clone(),
             m: initial_map.clone(),
             a: initial_map.clone(),
-            s: initial_map.clone(),
+            s: initial_map,
         }
     }
 }
@@ -159,7 +159,7 @@ impl Rule {
             if let Some((start_true, end_true)) = condition_true {
                 new_ranges.insert((start_true, end_true), self.target.clone());
             }
-            if let Some(_) = condition_false {
+            if condition_false.is_some() {
                 result = condition_false;
             }
         }
@@ -220,7 +220,7 @@ impl RuleSet {
 
     fn eval_range(&self, part: &mut RangedPart) {
         let mut last_ranges = None;
-        for rule in self.rules.iter() {
+        for rule in &self.rules {
             last_ranges = rule.eval_range_for_field(part);
         }
         if let Some((start, end)) = last_ranges {
@@ -357,7 +357,7 @@ mod tests {
         while parts[0].state != "R" && parts[0].state != "A" {
             let rule_set = machine
                 .get(parts[0].state.as_str())
-                .ok_or(anyhow!("Unknown rule"))
+                .ok_or_else(|| anyhow!("Unknown rule"))
                 .unwrap();
             parts[0].state = rule_set.eval(&parts[0]);
             output.push(parts[0].state.clone());

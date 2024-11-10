@@ -53,9 +53,9 @@ mod parallel_tests {
         (0usize..usize::MAX)
             .into_par_iter()
             .find_first(|i| {
-                let test_str = format!("{}{}", input, i);
+                let test_str = format!("{input}{i}");
                 let hash = md5::compute(test_str);
-                format!("{:x}", hash).starts_with(expect)
+                format!("{hash:x}").starts_with(expect)
             })
             .unwrap_or(0)
     }

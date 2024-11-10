@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[allow(clippy::struct_field_names)]
 struct Password {
     min: usize,
     max: usize,
@@ -46,7 +47,7 @@ fn input(example: bool) -> Vec<Password> {
         std::fs::read_to_string(PATH).unwrap()
     }
     .trim()
-    .split('\n')
+    .lines()
     .map(|row| Password::new(row.trim()))
     .collect()
 }

@@ -1,11 +1,11 @@
 const ABC: &str = "abcdefghijklmnopqrstuvwxyz";
 // const FILTERED_ABC: &str = "abcdefghjkmnpqrstuvwxyz";
 
-fn increment(mut s: &mut String) {
+fn increment(s: &mut String) {
     // eprintln!("{s}==>");
     if let Some(last) = s.pop() {
         if last == 'z' {
-            increment(&mut s);
+            increment(s);
             s.push('a');
         } else {
             // if "hkn".contains(last) {
@@ -86,5 +86,5 @@ mod tests {
     }
 
     #[test]
-    fn test_part2() {}
+    const fn test_part2() {}
 }

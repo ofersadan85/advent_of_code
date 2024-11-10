@@ -43,15 +43,13 @@ mod tests {
 
     #[test]
     fn example_1() {
-        [(">", 2), ("^>v<", 4), ("^v^v^v^v^v", 2)]
-            .iter()
-            .for_each(|(input, expected)| {
+        for (input, expected) in &[(">", 2), ("^>v<", 4), ("^v^v^v^v^v", 2)] {
                 let mut santa = Santa::new();
                 for c in input.chars() {
                     santa.step(c);
                 }
                 assert_eq!(santa.houses(), *expected);
-            });
+            }
     }
 
     #[test]
@@ -69,9 +67,9 @@ mod tests {
         let mut robot = Santa::new();
         INPUT.chars().enumerate().for_each(|(i, c)| {
             if i % 2 == 0 {
-                santa.step(c)
+                santa.step(c);
             } else {
-                robot.step(c)
+                robot.step(c);
             }
         });
         let mut map = HashMap::new();

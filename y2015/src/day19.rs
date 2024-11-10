@@ -8,9 +8,7 @@ struct Replacement<'a> {
 
 impl<'a> Replacement<'a> {
     fn reverse(&mut self) {
-        let tmp = self.src;
-        self.src = self.dst;
-        self.dst = tmp;
+        std::mem::swap(&mut self.src, &mut self.dst);
     }
 }
 
@@ -22,11 +20,11 @@ struct Data<'a> {
 
 impl<'a> Data<'a> {
     fn reverse_all(&mut self) {
-        self.replacements.iter_mut().for_each(|r| r.reverse());
+        self.replacements.iter_mut().for_each(Replacement::reverse);
     }
 }
 
-fn parse_input<'a>(s: &'a str) -> Data<'a> {
+fn parse_input(s: &str) -> Data<'_> {
     let replacements: Vec<_> = s
         .lines()
         .take_while(|s| !s.trim().is_empty())
@@ -90,7 +88,7 @@ fn shortest_mutation(data: &Data) -> usize {
     seen.insert(data.molecule.clone());
     let mut count = 0;
     while !set.contains("e") {
-        let old_set: HashSet<_> = set.drain().collect();
+        let old_set: HashSet<_> = std::mem::take(&mut set);
         eprintln!("{old_set:#?}");
         for item in old_set {
             let mut new_mutations = possible_mutations(&item, &data.replacements);
@@ -98,7 +96,7 @@ fn shortest_mutation(data: &Data) -> usize {
             set.extend(new_mutations.clone());
         }
         count += 1;
-        set.retain(|m| !seen.contains(m) && (m == "e" || !m.contains("e")));
+        set.retain(|m| !seen.contains(m) && (m == "e" || !m.contains('e')));
         seen.extend(set.clone());
         // if set.len() > 0 {
         //     // I'll make the assumption that the general direction should be for shorter length molecules
@@ -154,7 +152,7 @@ mod tests {
                 ],
                 molecule: "HOH".to_string()
             }
-        )
+        );
     }
 
     #[test]

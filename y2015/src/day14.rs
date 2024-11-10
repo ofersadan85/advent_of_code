@@ -17,10 +17,10 @@ impl std::str::FromStr for Reindeer {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut split = s.split_whitespace();
-        let name = split.next().ok_or(anyhow!("No name"))?.to_string();
-        let speed = split.nth(2).ok_or(anyhow!("No speed"))?.parse()?;
-        let endurance = split.nth(2).ok_or(anyhow!("No endurance"))?.parse()?;
-        let rest = split.nth(6).ok_or(anyhow!("No rest"))?.parse()?;
+        let name = split.next().ok_or_else(|| anyhow!("No name"))?.to_string();
+        let speed = split.nth(2).ok_or_else(|| anyhow!("No speed"))?.parse()?;
+        let endurance = split.nth(2).ok_or_else(|| anyhow!("No endurance"))?.parse()?;
+        let rest = split.nth(6).ok_or_else(|| anyhow!("No rest"))?.parse()?;
         Ok(Self {
             name,
             speed,
@@ -36,19 +36,18 @@ impl Reindeer {
         let run_length = self.endurance + self.rest;
         let full_runs = t / run_length;
         let modulo = t - (full_runs * run_length);
-        let total =
-            (full_runs * self.speed * self.endurance) + (modulo.min(self.endurance) * self.speed);
-        total
+        
+        (full_runs * self.speed * self.endurance) + (modulo.min(self.endurance) * self.speed)
     }
 }
 
-fn step_winners(racers: &mut Vec<Reindeer>, t: usize) {
+fn step_winners(racers: &mut [Reindeer], t: usize) {
     let best = racers.iter().map(|r| r.position_at_t(t)).max().unwrap_or(0);
-    racers.iter_mut().for_each(|r| {
+    for r in racers.iter_mut() {
         if r.position_at_t(t) == best {
-            r.points += 1
+            r.points += 1;
         }
-    });
+    }
 }
 
 #[cfg(test)]
@@ -81,7 +80,7 @@ mod tests {
                 rest: 162,
                 points: 0
             }
-        )
+        );
     }
 
     #[test]

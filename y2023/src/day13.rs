@@ -170,7 +170,7 @@ mod tests {
     fn value() {
         assert_eq!(box_value(EXAMPLE1, false), 5);
         assert_eq!(box_value(EXAMPLE2, false), 400);
-        let both = format!("{}\n\n{}", EXAMPLE1, EXAMPLE2);
+        let both = format!("{EXAMPLE1}\n\n{EXAMPLE2}");
         assert_eq!(mirrors(&both, false), 405);
     }
 

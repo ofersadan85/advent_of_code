@@ -41,13 +41,13 @@ impl std::str::FromStr for Board {
         let size = s
             .lines()
             .next()
-            .ok_or(anyhow!("No first line"))?
+            .ok_or_else(|| anyhow!("No first line"))?
             .trim()
             .len();
         let lights = s
             .lines()
             .enumerate()
-            .map(|(y, line)| {
+            .flat_map(|(y, line)| {
                 line.trim()
                     .chars()
                     .enumerate()
@@ -59,11 +59,10 @@ impl std::str::FromStr for Board {
                         };
                         state.map(|state| Light { x, y, state })
                     })
-                    .filter_map(|light| light.ok())
+                    .filter_map(std::result::Result::ok)
             })
-            .flatten()
             .collect();
-        Ok(Board { lights, size })
+        Ok(Self { lights, size })
     }
 }
 
@@ -111,10 +110,8 @@ impl Board {
                     }
                 }
                 this.state = match (this.state, on_count) {
-                    (LightState::On, 2) | (LightState::On, 3) => LightState::On,
-                    (LightState::On, _) => LightState::Off,
-                    (LightState::Off, 3) => LightState::On,
-                    (LightState::Off, _) => LightState::Off,
+                    (LightState::On, 2 | 3) | (LightState::Off, 3) => LightState::On,
+                    _ => LightState::Off,
                 };
                 new_board.push(this);
             }

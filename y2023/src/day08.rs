@@ -145,7 +145,7 @@ mod tests {
     fn example3() {
         let (commands, map) = parse_input(EXAMPLE3).unwrap();
         let factors = solve2(commands, &map);
-        assert_eq!(factors, 6)
+        assert_eq!(factors, 6);
     }
 
     #[test]

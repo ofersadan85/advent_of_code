@@ -21,40 +21,40 @@ impl std::str::FromStr for Ingredient {
         let mut split = s.split_whitespace();
         let name = split
             .next()
-            .ok_or(anyhow!("No name"))?
+            .ok_or_else(|| anyhow!("No name"))?
             .trim_end_matches(':')
             .to_string();
         let capacity = split
             .nth(1)
-            .ok_or(anyhow!("No capacity"))?
+            .ok_or_else(|| anyhow!("No capacity"))?
             .trim_end_matches(',')
             .parse()
             .context("capacity")?;
         let durability = split
             .nth(1)
-            .ok_or(anyhow!("No durability"))?
+            .ok_or_else(|| anyhow!("No durability"))?
             .trim_end_matches(',')
             .parse()
             .context("durability")?;
         let flavor = split
             .nth(1)
-            .ok_or(anyhow!("No flavor"))?
+            .ok_or_else(|| anyhow!("No flavor"))?
             .trim_end_matches(',')
             .parse()
             .context("flavor")?;
         let texture = split
             .nth(1)
-            .ok_or(anyhow!("No texture"))?
+            .ok_or_else(|| anyhow!("No texture"))?
             .trim_end_matches(',')
             .parse()
             .context("texture")?;
         let calories = split
             .nth(1)
-            .ok_or(anyhow!("No calories"))?
+            .ok_or_else(|| anyhow!("No calories"))?
             .trim_end_matches(',')
             .parse()
             .context("calories")?;
-        Ok(Ingredient {
+        Ok(Self {
             name,
             capacity,
             durability,
@@ -104,7 +104,7 @@ impl std::ops::Add for Ingredient {
     }
 }
 
-impl std::ops::Add<&Ingredient> for Ingredient {
+impl std::ops::Add<&Self> for Ingredient {
     type Output = Self;
 
     fn add(self, rhs: &Self) -> Self::Output {
@@ -129,14 +129,15 @@ fn cookie_value(cookie: &[Ingredient]) -> f64 {
     for i in 1..cookie.len() {
         final_cookie = final_cookie + cookie.get(i).unwrap();
     }
-    let value = final_cookie.capacity.max(0.0)
+
+    final_cookie.capacity.max(0.0)
         * final_cookie.durability.max(0.0)
         * final_cookie.flavor.max(0.0)
-        * final_cookie.texture.max(0.0);
-    value
+        * final_cookie.texture.max(0.0)
 }
 
-fn get_optimal(cookie: &mut Vec<Ingredient>, max: usize) -> f64 {
+#[allow(clippy::cast_possible_truncation)]
+fn get_optimal(cookie: &mut [Ingredient], max: usize) -> f64 {
     let mut perm = HashSet::new();
     (1..=max)
         .combinations_with_replacement(cookie.len())
@@ -147,7 +148,7 @@ fn get_optimal(cookie: &mut Vec<Ingredient>, max: usize) -> f64 {
         });
     let mut max = 0.0;
     for p in &perm {
-        for i in 0..p.len() {
+        for (i, _) in p.iter().enumerate() {
             // We can unwrap here because we know it's within the bounds
             cookie.get_mut(i).unwrap().set_quantity(p[i] as u32);
         }
@@ -159,7 +160,8 @@ fn get_optimal(cookie: &mut Vec<Ingredient>, max: usize) -> f64 {
     max
 }
 
-fn get_optimal_calories(cookie: &mut Vec<Ingredient>, max: usize, calories: f64) -> f64 {
+#[allow(clippy::float_cmp, clippy::cast_possible_truncation)]
+fn get_optimal_calories(cookie: &mut [Ingredient], max: usize, calories: f64) -> f64 {
     let mut perm = HashSet::new();
     (1..=max)
         .combinations_with_replacement(cookie.len())
@@ -170,7 +172,7 @@ fn get_optimal_calories(cookie: &mut Vec<Ingredient>, max: usize, calories: f64)
         });
     let mut max = 0.0;
     for p in &perm {
-        for i in 0..p.len() {
+        for (i, _) in p.iter().enumerate() {
             // We can unwrap here because we know it's within the bounds
             cookie.get_mut(i).unwrap().set_quantity(p[i] as u32);
         }
@@ -186,6 +188,7 @@ fn get_optimal_calories(cookie: &mut Vec<Ingredient>, max: usize, calories: f64)
 }
 
 #[cfg(test)]
+#[allow(clippy::float_cmp)]
 mod tests {
     use std::fs::read_to_string;
 
@@ -228,7 +231,7 @@ mod tests {
         let mut examples = parse_input(EXAMPLE);
         examples.get_mut(0).unwrap().set_quantity(44);
         examples.get_mut(1).unwrap().set_quantity(56);
-        let cookie = examples.get(0).unwrap() + examples.get(1).unwrap();
+        let cookie = examples.first().unwrap() + examples.get(1).unwrap();
         assert_eq!(
             cookie,
             Ingredient {

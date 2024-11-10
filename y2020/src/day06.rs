@@ -23,7 +23,7 @@ fn input(example: bool) -> Vec<String> {
         std::fs::read_to_string(PATH).unwrap()
     }
     .trim()
-    .split('\n')
+    .lines()
     .map(|s| s.trim().to_string())
     .collect()
 }

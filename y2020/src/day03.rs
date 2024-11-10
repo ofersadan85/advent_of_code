@@ -36,7 +36,7 @@ fn input(example: bool) -> Vec<Vec<bool>> {
         std::fs::read_to_string(PATH).unwrap()
     }
     .trim()
-    .split('\n')
+    .lines()
     .map(|row| row.trim().chars().map(|c| c == '#').collect())
     .collect()
 }

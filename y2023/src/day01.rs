@@ -76,13 +76,13 @@ mod tests {
         assert_eq!(sum_digit_words("zoneight234"), 14);
         assert_eq!(sum_digit_words("7pqrstsixteen"), 76);
         let all_lines = "two1nine\neightwothree\nabcone2threexyz\nxtwone3four\n4nineeightseven2\nzoneight234\n7pqrstsixteen";
-        let result = all_lines.lines().map(|s| sum_digit_words(s)).sum::<u32>();
+        let result = all_lines.lines().map(sum_digit_words).sum::<u32>();
         assert_eq!(result, 281);
     }
 
     #[test]
     fn test_part2() {
-        let result = INPUT.lines().map(|s| sum_digit_words(s)).sum::<u32>();
+        let result = INPUT.lines().map(sum_digit_words).sum::<u32>();
         assert_eq!(result, 54208);
     }
 }

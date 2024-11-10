@@ -61,7 +61,7 @@ mod tests {
     fn hash_one() {
         let expected = [30, 253, 97, 47, 14, 180, 9, 197, 48, 214, 231];
         for (i, s) in EXAMPLE.split(',').enumerate() {
-            assert_eq!(hash(s), expected[i], "{}", s);
+            assert_eq!(hash(s), expected[i], "{s}");
         }
     }
 

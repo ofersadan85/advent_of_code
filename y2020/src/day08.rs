@@ -13,7 +13,7 @@ impl FromStr for Instruction {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut parts = s.split(' ');
-        let op = parts.next().ok_or_else(|| "Missing operation")?;
+        let op = parts.next().ok_or("Missing operation")?;
         let arg = parts
             .next()
             .unwrap()
@@ -28,12 +28,13 @@ impl FromStr for Instruction {
     }
 }
 
-fn parse_input(s: &str) -> Result<Vec<Instruction>> {
-    Ok(s.lines()
+fn parse_input(s: &str) -> Vec<Instruction> {
+    s.lines()
         .filter_map(|l| l.trim().parse::<Instruction>().ok())
-        .collect())
+        .collect()
 }
 
+#[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn execute(instructions: &[Instruction]) -> (i32, bool) {
     let mut acc = 0;
     let mut pc = 0;
@@ -58,7 +59,7 @@ fn fix_bug(instructions: &[Instruction]) -> i32 {
         match instruction {
             Instruction::Nop(arg) => modified[i] = Instruction::Jmp(*arg),
             Instruction::Jmp(arg) => modified[i] = Instruction::Nop(*arg),
-            _ => continue,
+            Instruction::Acc(_) => continue,
         }
         let (acc, terminated) = execute(&modified);
         if terminated {
@@ -94,7 +95,7 @@ mod tests {
             Instruction::Acc(6),
         ];
 
-        let parsed = parse_input(EXAMPLE).unwrap();
+        let parsed = parse_input(EXAMPLE);
         assert_eq!(parsed, instructions);
         assert_eq!(execute(&instructions), (5, false));
     }
@@ -102,14 +103,14 @@ mod tests {
     #[test]
     fn part1() {
         let input = include_str!("../../inputs/2020/day08.txt");
-        let instructions = parse_input(input).unwrap();
+        let instructions = parse_input(input);
         assert_eq!(execute(&instructions).0, 1337);
     }
 
     #[test]
     fn part2() {
         let input = include_str!("../../inputs/2020/day08.txt");
-        let instructions = parse_input(input).unwrap();
+        let instructions = parse_input(input);
         assert_eq!(fix_bug(&instructions), 1358);
     }
 }

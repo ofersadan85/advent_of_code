@@ -82,8 +82,7 @@ where
             row_vec.push(
                 c.to_digit(radix)
                     .context("Invalid digit")?
-                    .try_into()
-                    .context("Couldn't convert digit to type")?,
+                    .into(),
             );
         }
         result.push(row_vec);

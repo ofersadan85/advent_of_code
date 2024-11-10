@@ -27,7 +27,7 @@ mod tests {
         let result: usize = INPUT
             .lines()
             .map(|line| {
-                let dims: Vec<usize> = line.splitn(3, 'x').flat_map(|s| s.parse()).collect();
+                let dims: Vec<usize> = line.splitn(3, 'x').flat_map(str::parse).collect();
                 wrapper(dims[0], dims[1], dims[2])
             })
             .sum();
@@ -45,7 +45,7 @@ mod tests {
         let result: usize = INPUT
             .lines()
             .map(|line| {
-                let dims: Vec<usize> = line.splitn(3, 'x').flat_map(|s| s.parse()).collect();
+                let dims: Vec<usize> = line.splitn(3, 'x').flat_map(str::parse).collect();
                 ribbon(dims[0], dims[1], dims[2])
             })
             .sum();

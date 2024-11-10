@@ -96,11 +96,11 @@ pub fn print_distance_map(start: (i32, i32), graph: &Maze) {
         for x in 0..width {
             if let Some(distance) = distances.get(&(x, y)) {
                 if distance == &10 {
-                    print!("{}{:3}{}", red_color, distance, reset_color);
+                    print!("{red_color}{distance:3}{reset_color}");
                 } else if distance == &20 {
-                    print!("{}{:3}{}", green_color, distance, reset_color);
+                    print!("{green_color}{distance:3}{reset_color}");
                 } else {
-                    print!("{:3}", distance);
+                    print!("{distance:3}");
                 }
             } else {
                 print!("   ");
@@ -128,7 +128,7 @@ mod tests {
     fn init_tracing() {
         let tracing =
             TRACING_INIT.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst);
-        if let Ok(false) = tracing {
+        if tracing == Ok(false) {
             fmt()
                 .with_line_number(true)
                 .with_span_events(FmtSpan::CLOSE)

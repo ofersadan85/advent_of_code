@@ -88,7 +88,7 @@ pub fn find_gears(map: &EngineMap) -> Vec<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const EXAMPLE1: &str = r#"467..114..
+    const EXAMPLE1: &str = r"467..114..
     ...*......
     ..35..633.
     ......#...
@@ -97,7 +97,7 @@ mod tests {
     ..592.....
     ......755.
     ...$.*....
-    .664.598.."#;
+    .664.598..";
 
     #[test]
     fn test_example_map() {

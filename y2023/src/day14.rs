@@ -304,6 +304,6 @@ mod tests {
     #[test]
     fn part2() {
         let input = include_str!("../../inputs/2023/day14.txt");
-        assert_eq!(cycle_detect_repeats(input, 1_000_000_000), 108404);
+        assert_eq!(cycle_detect_repeats(input, 1_000_000_000), 108_404);
     }
 }

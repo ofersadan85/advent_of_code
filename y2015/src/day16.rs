@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::anyhow;
 use serde::Deserialize;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 struct SueData {
     children: Option<usize>,
     cats: Option<usize>,
@@ -29,7 +29,7 @@ impl std::str::FromStr for SueData {
 
 fn parse_input(s: &str) -> HashMap<usize, SueData> {
     s.lines()
-        .flat_map(|s| {
+        .filter_map(|s| {
             let (id, line) = s.split_once(": ")?;
             let id = id
                 .split_whitespace()
@@ -41,7 +41,7 @@ fn parse_input(s: &str) -> HashMap<usize, SueData> {
         .collect()
 }
 
-fn match_sue(data: SueData, mut map: HashMap<usize, SueData>) -> Option<usize> {
+fn match_sue(data: &SueData, mut map: HashMap<usize, SueData>) -> Option<usize> {
     map.retain(|_k, v| {
         (v.akitas.is_none() || v.akitas == data.akitas)
             && (v.cars.is_none() || v.cars == data.cars)
@@ -103,7 +103,7 @@ mod tests {
             cars: Some(2),
             perfumes: Some(1),
         };
-        let result = match_sue(known, sues).unwrap();
+        let result = match_sue(&known, sues).unwrap();
         assert_eq!(result, 103);
     }
 

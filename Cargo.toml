@@ -7,15 +7,15 @@ unsafe_code = "forbid"
 dead_code = "allow"
 
 [workspace.lints.clippy]
-cargo = { level = "warn", priority = -1 }
+# cargo = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
-unwrap_used = "deny"
+# unwrap_used = "deny"
 must_use_candidate = "allow"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 module_name_repetitions = "allow"
-match_bool = "allow"
+unreadable_literal = "allow"
 
 [workspace.dependencies]
 advent_of_code_common = { path = "common" }

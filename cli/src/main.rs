@@ -40,17 +40,17 @@ async fn get_input(client: Client, year: u16, day: u8) -> Result<()> {
             .with_context(|| format!("Failed to create directory {}", year_dir.display()))?;
     }
 
-    let url = format!("https://adventofcode.com/{}/day/{}/input", year, day);
+    let url = format!("https://adventofcode.com/{year}/day/{day}/input");
     let response = client
         .get(&url)
         .header("Cookie", format!("session={}", args.session))
         .send()
         .await
-        .with_context(|| format!("Failed to get input for day {}", day))?;
+        .with_context(|| format!("Failed to get input for day {day}"))?;
     let input = response
         .text()
         .await
-        .with_context(|| format!("Failed to get input for day {}", day))?;
+        .with_context(|| format!("Failed to get input for day {day}"))?;
     tokio::fs::write(&input_path, input)
         .await
         .with_context(|| format!("Failed to write input to {}", input_path.display()))?;
@@ -71,13 +71,11 @@ async fn main() -> Result<()> {
             .with_day(26)
             .expect("Day is invalid");
     }
-
-    let years = args
-        .year
-        .map(|y| y..=y)
-        .unwrap_or(2015..=max_date.year() as u16);
-    let days = args.day.map(|d| d..=d).unwrap_or(1..=25);
-    if years.start() < &2015 || *years.end() > (max_date.year() as u16) {
+    
+    let max_year = u16::try_from(max_date.year())?;
+    let years = args.year.map_or(2015..=max_year, |y| y..=y);
+    let days = args.day.map_or(1..=25, |d| d..=d);
+    if years.start() < &2015 || *years.end() > (max_year) {
         eprintln!(
             "Year must be between 2015 and {}, or specify --all_years",
             max_date.year()

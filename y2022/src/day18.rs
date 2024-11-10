@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use std::collections::HashSet;
 
-pub const PATH: &str = "inputs/day18.txt";
+pub const PATH: &str = "../inputs/2022/day18.txt";
 pub const EXAMPLE: &str = "2,2,2
 1,2,2
 3,2,2
@@ -97,8 +97,7 @@ fn part_2(cubes: &HashSet<Cube>) -> i32 {
     let mut water = HashSet::new();
     let mut result = 0;
     while let Some(cube) = unvisited.pop() {
-        if !water.contains(&cube) {
-            water.insert(cube);
+        if water.insert(cube) {
             let neighbors = cube.neighbors();
             for n in neighbors {
                 if cubes.contains(&n) {

@@ -507,6 +507,7 @@ mod tests {
     // }
 
     #[test]
+    #[allow(clippy::cognitive_complexity)]
     fn card_comparison() {
         use CardValue::*;
         assert!(Joker == Joker);

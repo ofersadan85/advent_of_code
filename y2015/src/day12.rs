@@ -6,8 +6,8 @@ fn sum_numbers(v: &Value) -> i64 {
     let mut sum = 0;
     sum += match v {
         Value::Number(n) => n.as_i64().expect("Invalid number"),
-        Value::Array(arr) => arr.iter().map(|item| sum_numbers(item)).sum::<i64>(),
-        Value::Object(obj) => obj.values().map(|item| sum_numbers(item)).sum::<i64>(),
+        Value::Array(arr) => arr.iter().map(sum_numbers).sum::<i64>(),
+        Value::Object(obj) => obj.values().map(sum_numbers).sum::<i64>(),
         Value::Bool(_) | Value::Null | Value::String(_) => 0,
     };
     sum
@@ -17,12 +17,12 @@ fn sum_non_reds(v: &Value) -> i64 {
     let mut sum = 0;
     sum += match v {
         Value::Number(n) => n.as_i64().expect("Invalid number"),
-        Value::Array(arr) => arr.iter().map(|item| sum_non_reds(item)).sum::<i64>(),
+        Value::Array(arr) => arr.iter().map(sum_non_reds).sum::<i64>(),
         Value::Object(obj) => {
             if obj.values().any(|value| value == RED) {
                 0
             } else {
-                obj.values().map(|item| sum_non_reds(item)).sum::<i64>()
+                obj.values().map(sum_non_reds).sum::<i64>()
             }
         }
         Value::Bool(_) | Value::Null | Value::String(_) => 0,
@@ -31,7 +31,7 @@ fn sum_non_reds(v: &Value) -> i64 {
 }
 
 fn read_doc(s: &str, allow_reds: bool) -> i64 {
-    let doc: Value = serde_json::from_str(&s).expect("Invalid JSON");
+    let doc: Value = serde_json::from_str(s).expect("Invalid JSON");
     if allow_reds {
         sum_numbers(&doc)
     } else {
@@ -47,14 +47,14 @@ mod tests {
 
     #[test]
     fn test_examples_1() {
-        assert_eq!(read_doc(r#"[1,2,3]"#, true), 6);
+        assert_eq!(read_doc(r"[1,2,3]", true), 6);
         assert_eq!(read_doc(r#"{"a":2,"b":4}"#, true), 6);
-        assert_eq!(read_doc(r#"[[[3]]]"#, true), 3);
+        assert_eq!(read_doc(r"[[[3]]]", true), 3);
         assert_eq!(read_doc(r#"{"a":{"b":4},"c":-1}"#, true), 3);
         assert_eq!(read_doc(r#"{"a":[-1,1]}"#, true), 0);
         assert_eq!(read_doc(r#"[-1,{"a":1}]"#, true), 0);
-        assert_eq!(read_doc(r#"[]"#, true), 0);
-        assert_eq!(read_doc(r#"{}"#, true), 0);
+        assert_eq!(read_doc(r"[]", true), 0);
+        assert_eq!(read_doc(r"{}", true), 0);
     }
 
     #[test]

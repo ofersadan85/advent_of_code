@@ -30,9 +30,10 @@ impl TryFrom<char> for Cell {
 
 impl From<bool> for Cell {
     fn from(value: bool) -> Self {
-        match value {
-            true => Self::Filled,
-            false => Self::Empty,
+        if value {
+            Self::Filled
+        } else {
+            Self::Empty
         }
     }
 }
