@@ -2,12 +2,12 @@ name: Rust Tests
 
 on:
   workflow_dispatch:
-  push:
-    branches: ["main"]
-    paths:
-      - "y**/src/**"
-      - "common/src/**"
-      - "**/Cargo.toml"
+  # push:
+  #   branches: ["main"]
+  #   paths:
+  #     - "y**/src/**"
+  #     - "common/src/**"
+  #     - "**/Cargo.toml"
 
   pull_request:
     branches: ["main"]
