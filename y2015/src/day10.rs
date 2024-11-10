@@ -63,6 +63,6 @@ mod tests {
     #[test]
     fn test_part2() {
         let result = look_and_say_many("3113322113", 50);
-        assert_eq!(result.len(), 329356);
+        assert_eq!(result.len(), 4666278);
     }
 }
