@@ -140,15 +140,15 @@ impl GearStats for Armor {
 
 impl<T: GearStats> GearStats for Option<T> {
     fn damage(&self) -> u32 {
-        self.as_ref().map_or(0, |r| r.damage())
+        self.as_ref().map_or(0, GearStats::damage)
     }
 
     fn armor(&self) -> u32 {
-        self.as_ref().map_or(0, |r| r.armor())
+        self.as_ref().map_or(0, GearStats::armor)
     }
 
     fn cost(&self) -> u32 {
-        self.as_ref().map_or(0, |r| r.cost())
+        self.as_ref().map_or(0, GearStats::cost)
     }
 }
 
@@ -256,10 +256,12 @@ where
         false
     }
     /// Dummy default implementation that can be overridden
+    #[must_use]
     fn with_timer(&self, _timer: u32) -> Option<Self> {
         unimplemented!()
     }
     /// Dummy default implementation that can be overridden
+    #[must_use]
     fn with_default_timer(&self) -> Self {
         unimplemented!()
     }
@@ -327,8 +329,7 @@ impl SpellEffect for Spell {
 
     fn with_timer(&self, timer: u32) -> Option<Self> {
         match self {
-            Self::MagicMissile => None,
-            Self::Drain => None,
+            Self::MagicMissile | Self::Drain => None,
             Self::Shield(_) => Some(Self::Shield(timer)),
             Self::Poison(_) => Some(Self::Poison(timer)),
             Self::Recharge(_) => Some(Self::Recharge(timer)),
@@ -435,7 +436,7 @@ impl GearStats for ActiveEffects {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Player {
     pub hp: u32,
     pub gear: Gear,
@@ -520,33 +521,48 @@ impl FromStr for Boss {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum GameState {
+    #[default]
     Active,
     PlayerWon,
     BossWon,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum GameDifficulty {
+    #[default]
+    Easy,
+    Hard,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Game {
     pub player: Player,
     pub boss: Boss,
     pub state: GameState,
     pub damage_minimum: u32,
+    pub difficulty: GameDifficulty,
 }
 
 impl Game {
-    pub const fn new(boss: Boss, player: Player, damage_minimum: u32) -> Self {
+    pub const fn new(
+        boss: Boss,
+        player: Player,
+        damage_minimum: u32,
+        difficulty: GameDifficulty,
+    ) -> Self {
         Self {
             player,
             boss,
             state: GameState::Active,
             damage_minimum,
+            difficulty,
         }
     }
 
     pub fn apply_spells(&mut self, cast_spell: Option<Spell>) {
-        eprintln!("Active spells: {:?}", self.player.active_effects);
+        // eprintln!("Active spells: {:?}", self.player.active_effects);
         if cast_spell.is_some() && cast_spell.mana_cost() > self.player.mana {
             self.state = GameState::BossWon;
             return;
@@ -555,7 +571,7 @@ impl Game {
         self.player.mana -= cast_spell.mana_cost();
         self.player.mana_spent += cast_spell.mana_cost();
         if cast_spell.is_immediate() {
-            eprintln!("Applying immediate spell {cast_spell:?}");
+            // eprintln!("Applying immediate spell {cast_spell:?}");
             self.boss.hp = self.boss.hp.saturating_sub(cast_spell.damage());
             self.player.hp += cast_spell.heal();
             if self.boss.hp == 0 {
@@ -565,10 +581,10 @@ impl Game {
         if cast_spell.is_none() {
             // Only where `case_spell` is None, we're in the boss's turn
             // Otherwise, the player has already inflicted the damage in his attack
-            eprintln!(
-                "Applying active effect damage: {}",
-                self.player.active_effects.damage()
-            );
+            // eprintln!(
+            //     "Applying active effect damage: {}",
+            //     self.player.active_effects.damage()
+            // );
             self.boss.hp = self
                 .boss
                 .hp
@@ -592,8 +608,15 @@ impl Game {
     }
 
     pub fn player_turn(&mut self, cast_spell: Option<Spell>) {
-        eprintln!("Player casts: {:?}", cast_spell);
-        eprintln!("Boss before {:?}", self.boss);
+        // eprintln!("Player casts: {:?}", cast_spell);
+        // eprintln!("Boss before {:?}", self.boss);
+        if self.difficulty == GameDifficulty::Hard {
+            self.player.hp = self.player.hp.saturating_sub(1);
+            if self.player.hp == 0 {
+                self.state = GameState::BossWon;
+                return;
+            }
+        }
         let attack = self
             .player
             .damage()
@@ -604,15 +627,15 @@ impl Game {
         if self.boss.hp == 0 {
             self.state = GameState::PlayerWon;
         }
-        eprintln!("Boss After {:?}", self.boss);
+        // eprintln!("Boss After {:?}", self.boss);
     }
 
     pub fn boss_turn(&mut self) {
-        eprintln!("BOSS TURN before {:?}", self.boss);
-        eprintln!("Player before {:?}", self.player);
+        // eprintln!("BOSS TURN before {:?}", self.boss);
+        // eprintln!("Player before {:?}", self.player);
         self.apply_spells(None);
         if self.boss.hp == 0 {
-            eprintln!("Boss killed by active effects");
+            // eprintln!("Boss killed by active effects");
             self.state = GameState::PlayerWon;
             return;
         }
@@ -625,7 +648,7 @@ impl Game {
         if self.player.hp == 0 {
             self.state = GameState::BossWon;
         }
-        eprintln!("Player after {:?}", self.player);
+        // eprintln!("Player after {:?}", self.player);
     }
 
     pub fn step(&mut self, cast_spell: Option<Spell>) -> GameState {
@@ -640,8 +663,15 @@ impl Game {
     where
         T: IntoIterator<Item = Option<Spell>>,
     {
+        // eprintln!("Game started");
         let mut spells = spells.into_iter();
-        while self.step(spells.next().flatten()) == GameState::Active {}
+        while self.state == GameState::Active {
+            if let Some(cast_spell) = spells.next() {
+                self.step(cast_spell);
+            } else {
+                break;
+            }
+        }
         self.state
     }
 }
@@ -652,7 +682,7 @@ fn cheap_win(boss: &Boss, player: &Player) -> Option<u32> {
         .filter_map(|g| {
             let mut player = player.clone();
             player.gear = *g;
-            let mut game = Game::new(*boss, player, 1);
+            let mut game = Game::new(*boss, player, 1, GameDifficulty::Easy);
             game.play(iter::once(None).cycle());
             if game.boss.hp == 0 {
                 Some(g.cost())
@@ -669,7 +699,7 @@ fn expensive_loss(boss: &Boss, player: &Player) -> Option<u32> {
         .filter_map(|g| {
             let mut player = player.clone();
             player.gear = *g;
-            let mut game = Game::new(*boss, player, 1);
+            let mut game = Game::new(*boss, player, 1, GameDifficulty::Easy);
             game.play(iter::once(None).cycle());
             if game.player.hp == 0 {
                 Some(g.cost())
@@ -695,7 +725,7 @@ mod tests {
         let mut player = Player::new(8);
         player.gear.weapon = Some(Weapon::ShortSword);
         player.gear.armor = Some(Armor::PlateMail);
-        let mut game = Game::new(EXAMPLE_BOSS, player, 1);
+        let mut game = Game::new(EXAMPLE_BOSS, player, 1, GameDifficulty::Easy);
         game.step(None);
         assert_eq!(game.player.hp, 6, "Player after step 1");
         assert_eq!(game.boss.hp, 9, "Boss after step 1");
@@ -717,7 +747,7 @@ mod tests {
         let mut player = Player::new(8);
         player.gear.weapon = Some(Weapon::ShortSword);
         player.gear.armor = Some(Armor::PlateMail);
-        let mut game = Game::new(EXAMPLE_BOSS, player, 1);
+        let mut game = Game::new(EXAMPLE_BOSS, player, 1, GameDifficulty::Easy);
         game.play(iter::once(None).cycle());
         assert_eq!(game.player.hp, 2, "Player final");
         assert_eq!(game.boss.hp, 0, "Boss final");
