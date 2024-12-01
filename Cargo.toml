@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli"]
+members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli", "y2024"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

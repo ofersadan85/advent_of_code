@@ -1,0 +1,21 @@
+[package]
+name = "advent_of_code_2024"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ofer Sadan <ofersadan85@gmail.com>"]
+readme = "../README.md"
+description = "2024 solutions to adventofcode.com in Rust"
+repository = "https://github.com/ofersadan85/advent_of_code"
+publish = false
+categories = ["advent-of-code", "puzzle", "challenge"]
+keywords = ["advent-of-code", "puzzle", "challenge"]
+license-file = "../LICENSE"
+
+[dependencies]
+advent_of_code_common = { workspace = true }
+anyhow = { workspace = true }
+itertools = { workspace = true }
+seq-macro = { workspace = true }
+
+[lints]
+workspace = true
