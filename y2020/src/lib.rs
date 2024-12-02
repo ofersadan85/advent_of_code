@@ -1,10 +1,7 @@
-#![allow(dead_code)]
-mod day01;
-mod day02;
-mod day03;
-mod day04;
-mod day05;
-mod day06;
-mod day07;
-mod day08;
-mod day09;
+use seq_macro::seq;
+seq!(N in 1..10 {
+    pub mod day0~N;
+});
+seq!(N in 10..=10 {
+    pub mod day~N;
+});
