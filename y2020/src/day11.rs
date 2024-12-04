@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use advent_of_code_common::grid::Grid;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -14,81 +12,42 @@ impl TryFrom<char> for SeatState {
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
         match value {
-            '.' => Ok(SeatState::Floor),
-            'L' => Ok(SeatState::Empty),
-            '#' => Ok(SeatState::Occupied),
+            '.' => Ok(Self::Floor),
+            'L' => Ok(Self::Empty),
+            '#' => Ok(Self::Occupied),
             _ => Err("Invalid character in input"),
         }
     }
 }
 
-impl std::fmt::Display for SeatState {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let c = match self {
-            SeatState::Floor => '.',
-            SeatState::Empty => 'L',
-            SeatState::Occupied => '#',
+fn step_rule_1(seats: &Grid<SeatState>) -> Grid<SeatState> {
+    let mut new_seats = seats.clone();
+    for (old, new) in seats.cells.iter().zip(new_seats.cells.iter_mut()) {
+        let occupied = seats.count_neighbors(old.x, old.y, SeatState::Occupied);
+        new.state = match old.state {
+            SeatState::Empty if occupied == 0 => SeatState::Occupied,
+            SeatState::Occupied if occupied >= 4 => SeatState::Empty,
+            _ => old.state,
+        }
+    }
+    new_seats
+}
+
+fn step_rule_2(seats: &Grid<SeatState>) -> Grid<SeatState> {
+    let mut new_seats = seats.clone();
+    for (old, new) in seats.cells.iter().zip(new_seats.cells.iter_mut()) {
+        let occupied = seats
+            .sight_lines_edges(old.x, old.y, &[SeatState::Occupied, SeatState::Empty])
+            .iter()
+            .filter(|&&s| s == Some(SeatState::Occupied))
+            .count();
+        new.state = match old.state {
+            SeatState::Empty if occupied == 0 => SeatState::Occupied,
+            SeatState::Occupied if occupied >= 5 => SeatState::Empty,
+            _ => old.state,
         };
-        write!(f, "{c}")
     }
-}
-
-fn part_1(mut seats: Grid<SeatState>) -> usize {
-    let mut neighbor_map: HashMap<(isize, isize), usize> =
-        HashMap::with_capacity(seats.cells.len());
-    neighbor_map.clear();
-    let mut changed = true;
-    while changed {
-        neighbor_map = seats
-            .cells
-            .iter()
-            .map(|cell| {
-                let occupied = seats.count_neighbors(cell.x, cell.y, SeatState::Occupied);
-                ((cell.x, cell.y), occupied)
-            })
-            .collect();
-        changed = seats.apply_step(|cell| {
-            let occupied = neighbor_map[&(cell.x, cell.y)];
-            match cell.state {
-                SeatState::Empty if occupied == 0 => SeatState::Occupied,
-                SeatState::Occupied if occupied >= 4 => SeatState::Empty,
-                _ => cell.state,
-            }
-        });
-        dbg!(changed);
-        println!("{seats}");
-    }
-    seats.count_state(SeatState::Occupied)
-}
-
-fn part_2(mut seats: Grid<SeatState>) -> usize {
-    let mut neighbor_map: HashMap<(isize, isize), usize> =
-        HashMap::with_capacity(seats.cells.len());
-    neighbor_map.clear();
-    let mut changed = true;
-    while changed {
-        neighbor_map = seats
-            .cells
-            .iter()
-            .map(|cell| {
-                let occupied = seats
-                    .sight_lines_edges(cell.x, cell.y, &[SeatState::Occupied, SeatState::Empty])
-                    .iter()
-                    .filter(|&&s| s == Some(SeatState::Occupied))
-                    .count();
-                ((cell.x, cell.y), occupied)
-            })
-            .collect();
-        changed = seats.apply_step(|cell| {
-            let occupied = neighbor_map[&(cell.x, cell.y)];
-            match cell.state {
-                SeatState::Empty if occupied == 0 => SeatState::Occupied,
-                SeatState::Occupied if occupied >= 5 => SeatState::Empty,
-                _ => cell.state,
-            }
-        });
-    }
-    seats.count_state(SeatState::Occupied)
+    new_seats
 }
 
 #[cfg(test)]
@@ -108,30 +67,35 @@ mod tests {
 
     #[test]
     fn test_example_1() {
-        let seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
-        assert_eq!(part_1(seats), 37);
+        let mut seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
+        seats.apply_steps_until(step_rule_1, None);
+        assert_eq!(seats.count_state(SeatState::Occupied), 37);
     }
 
     #[test]
     fn test_part_1() {
-        let seats: Grid<SeatState> = read_to_string("../inputs/2020/day11.txt")
+        let mut seats: Grid<SeatState> = read_to_string("../inputs/2020/day11.txt")
             .unwrap()
             .parse()
             .unwrap();
-        assert_eq!(part_1(seats), 2441);
+        seats.apply_steps_until(step_rule_1, None);
+        assert_eq!(seats.count_state(SeatState::Occupied), 2441);
     }
+
     #[test]
     fn test_example_2() {
-        let seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
-        assert_eq!(part_2(seats), 26);
+        let mut seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
+        seats.apply_steps_until(step_rule_2, None);
+        assert_eq!(seats.count_state(SeatState::Occupied), 26);
     }
 
     #[test]
     fn test_part_2() {
-        let seats: Grid<SeatState> = read_to_string("../inputs/2020/day11.txt")
+        let mut seats: Grid<SeatState> = read_to_string("../inputs/2020/day11.txt")
             .unwrap()
             .parse()
             .unwrap();
-        assert_eq!(part_2(seats), 2190);
+        seats.apply_steps_until(step_rule_2, None);
+        assert_eq!(seats.count_state(SeatState::Occupied), 2190);
     }
 }

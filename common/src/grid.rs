@@ -1,14 +1,26 @@
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct PositionedCell<T> {
+pub struct PositionedCell<T, D = ()> {
     pub x: isize,
     pub y: isize,
     pub state: T,
+    pub data: D,
+}
+
+impl<T> PositionedCell<T> {
+    pub const fn new(x: isize, y: isize, state: T) -> Self {
+        Self {
+            x,
+            y,
+            state,
+            data: (),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Grid<T> {
-    x_range: std::ops::Range<isize>,
-    y_range: std::ops::Range<isize>,
+    pub x_range: std::ops::Range<isize>,
+    pub y_range: std::ops::Range<isize>,
     pub cells: Vec<PositionedCell<T>>,
 }
 
@@ -30,7 +42,7 @@ where
                 let x = isize::try_from(x).map_err(|_| "Invalid x coordinate")?;
                 let y = isize::try_from(y).map_err(|_| "Invalid y coordinate")?;
                 let state = T::try_from(c).map_err(|_| "Invalid character in input")?;
-                cells.push(PositionedCell { x, y, state });
+                cells.push(PositionedCell::new(x, y, state));
             }
             width = width.max(line_width);
         }
@@ -54,9 +66,7 @@ where
     }
 
     pub fn get(&self, x: isize, y: isize) -> Option<T> {
-        self.cells
-            .get(self.index_of(x, y)?)
-            .map(|c| c.state)
+        self.cells.get(self.index_of(x, y)?).map(|c| c.state)
     }
 
     pub fn set(&mut self, x: isize, y: isize, state: T) {
@@ -73,17 +83,32 @@ where
         self.cells.iter_mut().map(|c| &mut c.state)
     }
 
-    pub fn apply_step(&mut self, f: impl Fn(&PositionedCell<T>) -> T) -> bool
+    pub fn apply_steps_until(
+        &mut self,
+        f: impl Fn(&Self) -> Self,
+        limit: Option<usize>,
+    ) -> (Self, usize)
     where
         T: PartialEq,
     {
-        let mut new_cells = self.cells.clone();
-        new_cells
-            .iter_mut()
-            .zip(self.cells.iter())
-            .for_each(|(new, old)| new.state = f(old));
-        let changed = new_cells != self.cells;
-        self.cells = new_cells;
+        let mut steps = 0;
+        loop {
+            let new_grid = f(self);
+            steps += 1;
+            if new_grid == *self || limit.map_or(false, |limit| steps >= limit) {
+                return (new_grid, steps);
+            }
+            *self = new_grid;
+        }
+    }
+
+    pub fn apply_step(&mut self, f: impl Fn(&Self) -> Self) -> bool
+    where
+        T: PartialEq,
+    {
+        let new_grid = f(self);
+        let changed = new_grid != *self;
+        *self = new_grid;
         changed
     }
 
