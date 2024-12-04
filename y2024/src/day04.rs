@@ -1,4 +1,4 @@
-use advent_of_code_common::grid::Grid;
+use advent_of_code_common::grid::{Grid, PositionedCell};
 
 fn find_sequences(grid: &Grid<char>) -> usize {
     let search: Vec<char> = "MAS".chars().collect(); // Doesn't include the starting X
@@ -14,18 +14,23 @@ fn find_sequences(grid: &Grid<char>) -> usize {
         .sum()
 }
 
+fn slice_to_string(slice: &[Option<char>]) -> String {
+    slice.iter().map(|c| c.unwrap_or(' ')).collect()
+}
+
 fn find_diagonal_sequences(grid: &Grid<char>) -> usize {
+    // Cspell:disable-next-line
+    let correct = ["MMSS", "MSSM", "SSMM", "SMMS"]; // The results of diagonal slices that are correct
+    let diag_str = |cell: &PositionedCell<char>| {
+        grid.neighbors_diagonal(cell.x, cell.y)
+            .iter()
+            .map(|c| c.unwrap_or_default())
+            .collect::<String>()
+    };
     grid.cells
         .iter()
-        .filter(|c| c.state == 'A')
-        .map(|cell| match grid.neighbors_diagonal(cell.x, cell.y) {
-            [Some('M'), Some('M'), Some('S'), Some('S')]
-            | [Some('M'), Some('S'), Some('S'), Some('M')]
-            | [Some('S'), Some('S'), Some('M'), Some('M')]
-            | [Some('S'), Some('M'), Some('M'), Some('S')] => 1,
-            _ => 0,
-        })
-        .sum()
+        .filter(|c| c.state == 'A' && correct.contains(&diag_str(c).as_str()))
+        .count()
 }
 
 #[cfg(test)]
