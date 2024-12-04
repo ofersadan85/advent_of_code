@@ -149,6 +149,28 @@ where
         self.neighbors_n(x, y, 1)
     }
 
+    pub fn neighbors_box_n(&self, x: isize, y: isize, n: isize) -> Vec<Option<T>> {
+        let mut neighbors = Vec::new();
+        for dy in -n..=n {
+            for dx in -n..=n {
+                neighbors.push(self.get(x + dx, y + dy));
+            }
+        }
+        neighbors
+    }
+
+    pub fn neighbors_box(&self, x: isize, y: isize) -> [Option<T>; 9] {
+        let mut neighbors = [None; 9];
+        let mut count = 0;
+        for dy in -1..=1 {
+            for dx in -1..=1 {
+                neighbors[count] = self.get(x + dx, y + dy);
+                count += 1;
+            }
+        }
+        neighbors
+    }
+
     pub fn count_state(&self, state: T) -> usize
     where
         T: PartialEq,
@@ -318,5 +340,29 @@ mod tests {
                 None,        // down-left
             ]
         );
+    }
+
+    #[test]
+    fn test_box() {
+        let example = "123\n456\n789";
+        let grid: Grid<char> = example.parse().unwrap();
+        assert_eq!(
+            grid.neighbors_box(1, 1),
+            "123456789".chars().map(Some).collect::<Vec<_>>().as_slice()
+        );
+        assert_eq!(
+            grid.neighbors_box(0, 0)
+                .iter()
+                .map(|c| c.unwrap_or_default())
+                .collect::<String>(),
+            "\0\0\0\012\045"
+        );
+        assert_eq!(
+            grid.neighbors_box_n(1, 1, 2)
+                .iter()
+                .map(|c| c.unwrap_or_default())
+                .collect::<String>(),
+            "\0\0\0\0\0\0123\0\0456\0\0789\0\0\0\0\0\0"
+        )
     }
 }
