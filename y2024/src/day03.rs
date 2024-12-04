@@ -12,9 +12,9 @@ fn parse_input_2(input: &str) -> Vec<(usize, usize)> {
     let mut result = vec![];
     input
         .split("do()")
-        .map(|s| s.split_once("don't()").map(|(s, _)| s).unwrap_or(s))
+        .map(|s| s.split_once("don't()").map_or(s, |(s, _)| s))
         .for_each(|clean| {
-            re.captures_iter(&clean)
+            re.captures_iter(clean)
                 .filter_map(|cap| Some((cap[1].parse().ok()?, cap[2].parse().ok()?)))
                 .for_each(|x| result.push(x));
         });

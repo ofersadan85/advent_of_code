@@ -56,7 +56,7 @@ where
     pub fn get(&self, x: isize, y: isize) -> Option<T> {
         self.cells
             .get(self.index_of(x, y)?)
-            .and_then(|c| Some(c.state))
+            .map(|c| c.state)
     }
 
     pub fn set(&mut self, x: isize, y: isize, state: T) {
