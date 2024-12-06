@@ -69,6 +69,10 @@ where
         self.cells.get(self.index_of(x, y)?).map(|c| c.state)
     }
 
+    pub fn get_cell(&self, x: isize, y: isize) -> Option<&PositionedCell<T>> {
+        self.cells.get(self.index_of(x, y)?)
+    }
+
     pub fn set(&mut self, x: isize, y: isize, state: T) {
         if let Some(index) = self.index_of(x, y) {
             self.cells[index].state = state;
@@ -233,6 +237,63 @@ where
                     continue;
                 }
                 edges.push(self.sight_line(x, y, dx, dy, blocks).last().copied());
+            }
+        }
+        edges
+    }
+
+    pub fn sight_line_cells(
+        &self,
+        x: isize,
+        y: isize,
+        dx: isize,
+        dy: isize,
+        blocks: &[T],
+    ) -> Vec<&PositionedCell<T>>
+    where
+        T: PartialEq,
+    {
+        let mut result = Vec::new();
+        let mut x = x + dx;
+        let mut y = y + dy;
+        while let Some(cell) = self.get_cell(x, y) {
+            result.push(cell);
+            if blocks.contains(&cell.state) {
+                break;
+            }
+            x += dx;
+            y += dy;
+        }
+        result
+    }
+
+    pub fn sight_lines_all_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Vec<&PositionedCell<T>>>
+    where
+        T: PartialEq,
+    {
+        let mut result = Vec::new();
+        for &dx in &[-1, 0, 1] {
+            for &dy in &[-1, 0, 1] {
+                if dx == 0 && dy == 0 {
+                    continue;
+                }
+                result.push(self.sight_line_cells(x, y, dx, dy, blocks));
+            }
+        }
+        result
+    }
+
+    pub fn sight_lines_edges_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Option<&PositionedCell<T>>>
+    where
+        T: PartialEq,
+    {
+        let mut edges = Vec::new();
+        for &dx in &[-1, 0, 1] {
+            for &dy in &[-1, 0, 1] {
+                if dx == 0 && dy == 0 {
+                    continue;
+                }
+                edges.push(self.sight_line_cells(x, y, dx, dy, blocks).last().copied());
             }
         }
         edges
