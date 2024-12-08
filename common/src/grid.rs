@@ -6,27 +6,28 @@ pub struct PositionedCell<T, D = ()> {
     pub data: D,
 }
 
-impl<T> PositionedCell<T> {
-    pub const fn new(x: isize, y: isize, state: T) -> Self {
+impl<T, D> PositionedCell<T, D> where D: Default{
+    pub fn new(x: isize, y: isize, state: T) -> Self {
         Self {
             x,
             y,
             state,
-            data: (),
+            data: D::default(),
         }
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Grid<T> {
+pub struct Grid<T, D = ()> {
     pub x_range: std::ops::Range<isize>,
     pub y_range: std::ops::Range<isize>,
-    pub cells: Vec<PositionedCell<T>>,
+    pub cells: Vec<PositionedCell<T, D>>,
 }
 
-impl<T> std::str::FromStr for Grid<T>
+impl<T, D> std::str::FromStr for Grid<T, D>
 where
     T: TryFrom<char>,
+    D: Default,
 {
     type Err = &'static str;
 
@@ -54,7 +55,7 @@ where
     }
 }
 
-impl<T> Grid<T>
+impl<T, D> Grid<T, D>
 where
     T: Copy,
 {
@@ -66,11 +67,20 @@ where
     }
 
     pub fn get(&self, x: isize, y: isize) -> Option<T> {
-        self.cells.get(self.index_of(x, y)?).map(|c| c.state)
+        self.get_cell(x, y).map(|c| c.state)
     }
 
-    pub fn get_cell(&self, x: isize, y: isize) -> Option<&PositionedCell<T>> {
+    pub fn get_cell(&self, x: isize, y: isize) -> Option<&PositionedCell<T, D>> {
         self.cells.get(self.index_of(x, y)?)
+    }
+
+    pub fn get_mut(&mut self, x: isize, y: isize) -> Option<&mut T> {
+        self.get_cell_mut(x, y).map(|c| &mut c.state)
+    }
+
+    pub fn get_cell_mut(&mut self, x: isize, y: isize) -> Option<&mut PositionedCell<T, D>> {
+        let index = self.index_of(x, y)?;
+        self.cells.get_mut(index)
     }
 
     pub fn set(&mut self, x: isize, y: isize, state: T) {
@@ -94,6 +104,7 @@ where
     ) -> (Self, usize)
     where
         T: PartialEq,
+        D: PartialEq,
     {
         let mut steps = 0;
         loop {
@@ -109,6 +120,7 @@ where
     pub fn apply_step(&mut self, f: impl Fn(&Self) -> Self) -> bool
     where
         T: PartialEq,
+        D: PartialEq,
     {
         let new_grid = f(self);
         let changed = new_grid != *self;
@@ -249,7 +261,7 @@ where
         dx: isize,
         dy: isize,
         blocks: &[T],
-    ) -> Vec<&PositionedCell<T>>
+    ) -> Vec<&PositionedCell<T, D>>
     where
         T: PartialEq,
     {
@@ -267,7 +279,7 @@ where
         result
     }
 
-    pub fn sight_lines_all_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Vec<&PositionedCell<T>>>
+    pub fn sight_lines_all_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Vec<&PositionedCell<T, D>>>
     where
         T: PartialEq,
     {
@@ -283,7 +295,7 @@ where
         result
     }
 
-    pub fn sight_lines_edges_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Option<&PositionedCell<T>>>
+    pub fn sight_lines_edges_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Option<&PositionedCell<T, D>>>
     where
         T: PartialEq,
     {
