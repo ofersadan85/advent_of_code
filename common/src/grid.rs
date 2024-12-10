@@ -6,7 +6,10 @@ pub struct PositionedCell<T, D = ()> {
     pub data: D,
 }
 
-impl<T, D> PositionedCell<T, D> where D: Default{
+impl<T, D> PositionedCell<T, D>
+where
+    D: Default,
+{
     pub fn new(x: isize, y: isize, state: T) -> Self {
         Self {
             x,
@@ -146,7 +149,12 @@ where
         ]
     }
 
-    pub fn neighbors_orthogonal_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+    pub fn neighbors_orthogonal_n_cells(
+        &self,
+        x: isize,
+        y: isize,
+        n: isize,
+    ) -> [Option<&PositionedCell<T, D>>; 4] {
         [
             self.get_cell(x, y - n), // up
             self.get_cell(x + n, y), // right
@@ -155,7 +163,12 @@ where
         ]
     }
 
-    pub fn neighbors_diagonal_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+    pub fn neighbors_diagonal_n_cells(
+        &self,
+        x: isize,
+        y: isize,
+        n: isize,
+    ) -> [Option<&PositionedCell<T, D>>; 4] {
         [
             self.get_cell(x - n, y - n), // up-left
             self.get_cell(x + n, y - n), // up-right
@@ -171,7 +184,12 @@ where
         neighbors
     }
 
-    pub fn neighbors_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&PositionedCell<T, D>>; 8] {
+    pub fn neighbors_n_cells(
+        &self,
+        x: isize,
+        y: isize,
+        n: isize,
+    ) -> [Option<&PositionedCell<T, D>>; 8] {
         let mut neighbors = [None; 8];
         neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n_cells(x, y, n));
         neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n_cells(x, y, n));
@@ -190,11 +208,19 @@ where
         self.neighbors_n(x, y, 1)
     }
 
-    pub fn neighbors_orthogonal_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+    pub fn neighbors_orthogonal_cells(
+        &self,
+        x: isize,
+        y: isize,
+    ) -> [Option<&PositionedCell<T, D>>; 4] {
         self.neighbors_orthogonal_n_cells(x, y, 1)
     }
 
-    pub fn neighbors_diagonal_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+    pub fn neighbors_diagonal_cells(
+        &self,
+        x: isize,
+        y: isize,
+    ) -> [Option<&PositionedCell<T, D>>; 4] {
         self.neighbors_diagonal_n_cells(x, y, 1)
     }
 
@@ -316,7 +342,12 @@ where
         result
     }
 
-    pub fn sight_lines_all_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Vec<&PositionedCell<T, D>>>
+    pub fn sight_lines_all_cells(
+        &self,
+        x: isize,
+        y: isize,
+        blocks: &[T],
+    ) -> Vec<Vec<&PositionedCell<T, D>>>
     where
         T: PartialEq,
     {
@@ -332,7 +363,12 @@ where
         result
     }
 
-    pub fn sight_lines_edges_cells(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Option<&PositionedCell<T, D>>>
+    pub fn sight_lines_edges_cells(
+        &self,
+        x: isize,
+        y: isize,
+        blocks: &[T],
+    ) -> Vec<Option<&PositionedCell<T, D>>>
     where
         T: PartialEq,
     {
@@ -474,5 +510,89 @@ mod tests {
                 .collect::<String>(),
             "\0\0\0\0\0\0123\0\0456\0\0789\0\0\0\0\0\0"
         )
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Direction {
+    North,
+    South,
+    East,
+    West,
+    NorthEast,
+    NorthWest,
+    SouthEast,
+    SouthWest,
+}
+
+impl std::fmt::Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::North => write!(f, "↑"),
+            Self::South => write!(f, "↓"),
+            Self::East => write!(f, "→"),
+            Self::West => write!(f, "←"),
+            Self::NorthEast => write!(f, "↗"),
+            Self::NorthWest => write!(f, "↖"),
+            Self::SouthEast => write!(f, "↘"),
+            Self::SouthWest => write!(f, "↙"),
+        }
+    }
+}
+
+pub trait DxDy {
+    fn dx(&self) -> isize;
+    fn dy(&self) -> isize;
+    fn dx_dy(&self) -> (isize, isize) {
+        (self.dx(), self.dy())
+    }
+}
+
+impl DxDy for Direction {
+    fn dx(&self) -> isize {
+        match self {
+            Self::North | Self::South => 0,
+            Self::East | Self::NorthEast | Self::SouthEast => 1,
+            Self::West | Self::NorthWest | Self::SouthWest => -1,
+        }
+    }
+
+    fn dy(&self) -> isize {
+        match self {
+            Self::North | Self::NorthEast | Self::NorthWest => -1,
+            Self::South | Self::SouthEast | Self::SouthWest => 1,
+            Self::East | Self::West => 0,
+        }
+    }
+}
+
+impl Direction {
+    #[must_use]
+    pub const fn turn_cw_45(&self) -> Self {
+        match self {
+            Self::North => Self::East,
+            Self::South => Self::West,
+            Self::East => Self::South,
+            Self::West => Self::North,
+            Self::NorthEast => Self::SouthEast,
+            Self::NorthWest => Self::NorthEast,
+            Self::SouthEast => Self::SouthWest,
+            Self::SouthWest => Self::NorthWest,
+        }
+    }
+
+    #[must_use]
+    pub const fn turn_cw_90(&self) -> Self {
+        self.turn_cw_45().turn_cw_45()
+    }
+
+    #[must_use]
+    pub const fn turn_cw_180(&self) -> Self {
+        self.turn_cw_90().turn_cw_90()
+    }
+
+    #[must_use]
+    pub const fn turn_cw_270(&self) -> Self {
+        self.turn_cw_180().turn_cw_90()
     }
 }

@@ -1,36 +1,6 @@
-use std::collections::{HashMap, HashSet};
-use tracing::{info, instrument};
-
-pub const EXAMPLE: &str = r#".|...\....
-|.-.\.....
-.....|-...
-........|.
-..........
-.........\
-..../.\\..
-.-.-/..|..
-.|....-|.\
-..//.|...."#;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
-impl std::fmt::Display for Direction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use Direction::{Down, Left, Right, Up};
-        match self {
-            Up => write!(f, "↑"),
-            Down => write!(f, "↓"),
-            Left => write!(f, "←"),
-            Right => write!(f, "→"),
-        }
-    }
-}
+use advent_of_code_common::grid::{Direction, DxDy, Grid};
+use std::collections::HashSet;
+use tracing::instrument;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Mirror {
@@ -38,6 +8,7 @@ pub enum Mirror {
     Backslash,
     SplitterHorizontal,
     SplitterVertical,
+    Empty,
 }
 
 impl TryFrom<char> for Mirror {
@@ -49,6 +20,7 @@ impl TryFrom<char> for Mirror {
             '\\' => Ok(Self::Backslash),
             '|' => Ok(Self::SplitterVertical),
             '-' => Ok(Self::SplitterHorizontal),
+            '.' => Ok(Self::Empty),
             _ => Err("Invalid mirror type"),
         }
     }
@@ -56,146 +28,88 @@ impl TryFrom<char> for Mirror {
 
 impl std::fmt::Display for Mirror {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use Mirror::{Backslash, Slash, SplitterHorizontal, SplitterVertical};
         match self {
-            Slash => write!(f, "/"),
-            Backslash => write!(f, "\\"),
-            SplitterHorizontal => write!(f, "-"),
-            SplitterVertical => write!(f, "|"),
+            Self::Slash => write!(f, "/"),
+            Self::Backslash => write!(f, "\\"),
+            Self::SplitterHorizontal => write!(f, "-"),
+            Self::SplitterVertical => write!(f, "|"),
+            Self::Empty => write!(f, "."),
         }
     }
 }
 
 impl Mirror {
-    fn split_light(&self, dir: Direction) -> (Direction, Option<Direction>) {
-        use Direction::{Down, Left, Right, Up};
-        use Mirror::{Backslash, Slash, SplitterHorizontal, SplitterVertical};
+    fn reflect(self, dir: Direction) -> (Direction, Option<Direction>) {
+        use Direction::{East, North, South, West};
+        use Mirror::{Backslash, Empty, Slash, SplitterHorizontal, SplitterVertical};
         match (self, dir) {
-            (Slash, Up) => (Right, None),
-            (Slash, Down) => (Left, None),
-            (Slash, Left) => (Down, None),
-            (Slash, Right) => (Up, None),
-            (Backslash, Up) => (Left, None),
-            (Backslash, Down) => (Right, None),
-            (Backslash, Left) => (Up, None),
-            (Backslash, Right) => (Down, None),
-            (SplitterHorizontal, Up | Down) => (Left, Some(Right)),
-            (SplitterHorizontal, Left | Right) => (dir, None),
-            (SplitterVertical, Up | Down) => (dir, None),
-            (SplitterVertical, Left | Right) => (Up, Some(Down)),
+            (Slash, North) | (Backslash, South) => (East, None),
+            (Slash, South) | (Backslash, North) => (West, None),
+            (Slash, West) | (Backslash, East) => (South, None),
+            (Slash, East) | (Backslash, West) => (North, None),
+            (SplitterHorizontal, North | South) => (West, Some(East)),
+            (SplitterHorizontal, West | East) | (SplitterVertical, North | South) | (Empty, _) => {
+                (dir, None)
+            }
+            (SplitterVertical, West | East) => (North, Some(South)),
+            _ => panic!("Invalid mirror and direction combination {self:?}, {dir:?}"),
         }
     }
-}
-
-type Grid = HashMap<(usize, usize), Mirror>;
-
-fn closest_mirror(x: usize, y: usize, grid: &Grid, dir: Direction) -> Option<(usize, usize)> {
-    grid.keys()
-        .filter(|(x_o, y_o)| match dir {
-            Direction::Up => *y_o < y && *x_o == x,
-            Direction::Down => *y_o > y && *x_o == x,
-            Direction::Left => *x_o < x && *y_o == y,
-            Direction::Right => *x_o > x && *y_o == y,
-        })
-        .min_by_key(|(x_o, y_o)| match dir {
-            Direction::Up | Direction::Down => y_o.abs_diff(y),
-            Direction::Left | Direction::Right => x_o.abs_diff(x),
-        })
-        .copied()
-}
-
-pub fn parse_input(input: &str) -> Grid {
-    input
-        .lines()
-        .enumerate()
-        .flat_map(|(y, line)| {
-            line.chars()
-                .enumerate()
-                .filter_map(move |(x, c)| Mirror::try_from(c).ok().map(|m| ((x, y), m)))
-        })
-        .collect()
 }
 
 #[instrument(skip_all, level = "info")]
-pub fn energize(grid: &Grid, width: usize, height: usize) -> HashSet<((usize, usize), Direction)> {
-    use Direction::{Down, Left, Right, Up};
-    let mut visited = HashSet::new();
-    let first_direction = grid
-        .get(&(0, 0))
-        .map(|m| match m {
-            Mirror::Slash => Up,
-            Mirror::Backslash => Down,
-            Mirror::SplitterHorizontal => Right,
-            Mirror::SplitterVertical => Down,
+fn max_energize(grid: Grid<Mirror, HashSet<Direction>>) -> usize {
+    let mut entry_options = HashSet::new();
+    grid.x_range.clone().for_each(|x| {
+        entry_options.insert(((x, 0), Direction::South));
+        entry_options.insert(((x, grid.y_range.end - 1), Direction::North));
+    });
+    grid.y_range.clone().for_each(|y| {
+        entry_options.insert(((0, y), Direction::East));
+        entry_options.insert(((grid.x_range.end - 1, y), Direction::West));
+    });
+    entry_options
+        .iter()
+        .map(|((x, y), dir)| {
+            let mut grid = grid.clone();
+            energize(&mut grid, *x, *y, *dir)
         })
-        .unwrap_or(Right);
-    let mut queue = vec![((0, 0), first_direction)];
-    while let Some((pos, dir)) = queue.pop() {
-        if visited.contains(&(pos, dir)) {
-            // info!("Already visited {:?}, {:?}", pos, dir);
-            continue;
-        }
-
-        // info!("Visiting {:?}, {:?}", pos, dir);
-        visited.insert((pos, dir));
-        let (x, y) = pos;
-        let next_pos = closest_mirror(x, y, grid, dir);
-        let (next_x, next_y) = next_pos.unwrap_or_else(|| match dir {
-            Up => (x, 0),
-            Down => (x, height - 1),
-            Left => (0, y),
-            Right => (width - 1, y),
-        });
-        let next_pos: HashSet<((usize, usize), Direction)> = match dir {
-            Up => (next_y..=y).map(|y| ((x, y), dir)).collect(),
-            Down => (y..=next_y).map(|y| ((x, y), dir)).collect(),
-            Left => (next_x..=x).map(|x| ((x, y), dir)).collect(),
-            Right => (x..=next_x).map(|x| ((x, y), dir)).collect(),
-        };
-        // info!("Next pos: {:?}", next_pos);
-        visited.extend(next_pos);
-        if let Some(next_mirror) = grid.get(&(next_x, next_y)) {
-            let (new_dir, new_dir2) = next_mirror.split_light(dir);
-            queue.push(((next_x, next_y), new_dir));
-            if new_dir == dir && (next_x, next_y) != (x, y) {
-                visited.remove(&((next_x, next_y), new_dir));
-            }
-            // info!("Splitting light: {:?}, {:?}", new_dir, new_dir2);
-            if let Some(new_dir2) = new_dir2 {
-                queue.push(((next_x, next_y), new_dir2));
-            }
-        }
-        // print_grid(&visited, &visited, grid, width, height);
-        // println!("Now at {:?} press enter to continue", pos);
-        // let mut input = String::new();
-        // std::io::stdin().read_line(&mut input).unwrap();
-    }
-    print_grid(&visited, grid, width, height);
-    visited
+        .max()
+        .unwrap_or(0)
 }
 
-fn print_grid(
-    mirrors: &HashSet<((usize, usize), Direction)>,
-    grid: &Grid,
-    width: usize,
-    height: usize,
-) {
-    for y in 0..height {
-        // print!("{:03} ", y);
-        for x in 0..width {
-            if let Some((_, dir)) = mirrors
-                .iter()
-                .find(|((x_m, y_m), _)| *x_m == x && *y_m == y)
-            {
-                if let Some(mirror) = grid.get(&(x, y)) {
-                    print!("{}{}{}", "\x1b[1;31m", mirror, "\x1b[0m");
-                } else {
-                    print!("{}{}{}", "\x1b[1;32m", dir, "\x1b[0m");
+#[instrument(skip_all, level = "info")]
+pub fn energize(
+    grid: &mut Grid<Mirror, HashSet<Direction>>,
+    x: isize,
+    y: isize,
+    dir: Direction,
+) -> usize {
+    let mut to_visit = HashSet::new();
+    to_visit.insert(((x, y), dir));
+    while let Some(((x, y), direction)) = to_visit.iter().next().copied() {
+        to_visit.remove(&((x, y), direction));
+        if let Some(cell) = grid.get_cell_mut(x, y) {
+            if cell.data.insert(direction) {
+                let (new_dir1, new_dir2) = cell.state.reflect(direction);
+                to_visit.insert(((x + new_dir1.dx(), y + new_dir1.dy()), new_dir1));
+                if let Some(new_dir2) = new_dir2 {
+                    to_visit.insert(((x + new_dir2.dx(), y + new_dir2.dy()), new_dir2));
                 }
-            // } else if grid.contains_key(&(x, y)) {
-            //     print!("{}", grid[&(x, y)]);
-            } else {
-                print!(".");
+            }
+        }
+    }
+    grid.cells
+        .iter()
+        .filter(|cell| !cell.data.is_empty())
+        .count()
+}
+
+fn print_grid(grid: &Grid<Mirror, HashSet<Direction>>) {
+    for y in grid.y_range.clone() {
+        for x in grid.x_range.clone() {
+            if let Some(cell) = grid.get_cell(x, y) {
+                print!("{}", if cell.data.is_empty() { '.' } else { '#' });
             }
         }
         println!();
@@ -205,36 +119,47 @@ fn print_grid(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::init_tracing;
+    // use advent_of_code_common::init_tracing;
+    use std::fs::read_to_string;
+    const EXAMPLE: &str = r#".|...\....
+                             |.-.\.....
+                             .....|-...
+                             ........|.
+                             ..........
+                             .........\
+                             ..../.\\..
+                             .-.-/..|..
+                             .|....-|.\
+                             ..//.|...."#;
 
     #[test]
-    // #[ignore]
-    fn example1() {
-        init_tracing();
-        let grid = parse_input(EXAMPLE);
-        let width = EXAMPLE.lines().next().unwrap().len();
-        let height = EXAMPLE.lines().count();
-        let mut energized = energize(&grid, width, height);
-        energized = energized
-            .iter()
-            .map(|((x, y), _)| ((*x, *y), Direction::Up))
-            .collect();
-        println!("Width: {}, Height: {}", width, height);
-        assert_eq!(energized.len(), 46);
+    fn example_1() {
+        let mut grid: Grid<Mirror, HashSet<Direction>> = EXAMPLE.parse().unwrap();
+        assert_eq!(energize(&mut grid, 0, 0, Direction::East), 46);
     }
 
     #[test]
-    #[ignore]
-    fn part1() {
-        init_tracing();
-        let input = include_str!("day16.txt");
-        let grid = parse_input(input);
-        let width = input.lines().next().unwrap().len();
-        let height = input.lines().count();
-        let energized = energize(&grid, width, height);
-        println!("Width: {}, Height: {}", width, height);
-        assert_ne!(energized.len(), 7156); // Too high
-        assert_ne!(energized.len(), 7386); // Too high
-        assert_ne!(energized.len(), 7219);
+    fn part_1() {
+        let mut grid: Grid<Mirror, HashSet<Direction>> = read_to_string("../inputs/2023/day16.txt")
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_eq!(energize(&mut grid, 0, 0, Direction::East), 7067);
+    }
+
+    #[test]
+    fn example_2() {
+        let grid: Grid<Mirror, HashSet<Direction>> = EXAMPLE.parse().unwrap();
+        assert_eq!(max_energize(grid), 51);
+    }
+
+    #[test]
+    fn part_2() {
+        // init_tracing();
+        let grid: Grid<Mirror, HashSet<Direction>> = read_to_string("../inputs/2023/day16.txt")
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_eq!(max_energize(grid), 7324);
     }
 }
