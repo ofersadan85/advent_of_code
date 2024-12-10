@@ -146,10 +146,35 @@ where
         ]
     }
 
+    pub fn neighbors_orthogonal_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+        [
+            self.get_cell(x, y - n), // up
+            self.get_cell(x + n, y), // right
+            self.get_cell(x, y + n), // down
+            self.get_cell(x - n, y), // left
+        ]
+    }
+
+    pub fn neighbors_diagonal_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+        [
+            self.get_cell(x - n, y - n), // up-left
+            self.get_cell(x + n, y - n), // up-right
+            self.get_cell(x + n, y + n), // down-right
+            self.get_cell(x - n, y + n), // down-left
+        ]
+    }
+
     pub fn neighbors_n(&self, x: isize, y: isize, n: isize) -> [Option<T>; 8] {
         let mut neighbors = [None; 8];
         neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n(x, y, n));
         neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n(x, y, n));
+        neighbors
+    }
+
+    pub fn neighbors_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&PositionedCell<T, D>>; 8] {
+        let mut neighbors = [None; 8];
+        neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n_cells(x, y, n));
+        neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n_cells(x, y, n));
         neighbors
     }
 
@@ -163,6 +188,18 @@ where
 
     pub fn neighbors(&self, x: isize, y: isize) -> [Option<T>; 8] {
         self.neighbors_n(x, y, 1)
+    }
+
+    pub fn neighbors_orthogonal_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+        self.neighbors_orthogonal_n_cells(x, y, 1)
+    }
+
+    pub fn neighbors_diagonal_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 4] {
+        self.neighbors_diagonal_n_cells(x, y, 1)
+    }
+
+    pub fn neighbors_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 8] {
+        self.neighbors_n_cells(x, y, 1)
     }
 
     pub fn neighbors_box_n(&self, x: isize, y: isize, n: isize) -> Vec<Option<T>> {
