@@ -69,6 +69,14 @@ where
         usize::try_from(y * self.x_range.end + x).ok()
     }
 
+    pub const fn width(&self) -> isize {
+        self.x_range.end - self.x_range.start
+    }
+
+    pub const fn height(&self) -> isize {
+        self.y_range.end - self.y_range.start
+    }
+
     pub fn get(&self, x: isize, y: isize) -> Option<T> {
         self.get_cell(x, y).map(|c| c.state)
     }

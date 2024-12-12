@@ -42,7 +42,7 @@ fn transform_row(row: &mut HashMap<usize, usize>) {
 fn process(input: &str, iterations: usize) -> usize {
     let mut row = input
         .split_whitespace()
-        .flat_map(|s| s.parse().ok())
+        .filter_map(|s| s.parse().ok())
         .map(|n| (n, 1))
         .collect();
     for _ in 0..iterations {
