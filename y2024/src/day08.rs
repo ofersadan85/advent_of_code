@@ -1,5 +1,6 @@
 use advent_of_code_common::grid::{Grid, PositionedCell};
 use itertools::Itertools;
+use tracing::instrument;
 use std::collections::HashSet;
 
 type Cell = PositionedCell<char, bool>;
@@ -32,6 +33,7 @@ fn tag_anti_nodes(grid: &mut Grid<char, bool>, p1: &Cell, p2: &Cell, ignore_dist
     }
 }
 
+#[instrument(skip(grid), level = "info")]
 fn count_unique_anti_nodes(mut grid: Grid<char, bool>, ignore_distance: bool) -> usize {
     let states: HashSet<char> = grid
         .cells
@@ -58,6 +60,7 @@ fn count_unique_anti_nodes(mut grid: Grid<char, bool>, ignore_distance: bool) ->
 mod tests {
     use super::*;
     use std::fs::read_to_string;
+    use test_log::test;
 
     const EXAMPLE: &str = "............
                         ........0...

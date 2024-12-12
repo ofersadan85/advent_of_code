@@ -1,3 +1,5 @@
+use tracing::instrument;
+
 #[derive(Debug, Clone, Copy)]
 enum Blocks {
     File { length: usize, index: usize },
@@ -54,6 +56,7 @@ fn checksum(blocks: &[Blocks]) -> usize {
         .sum()
 }
 
+#[instrument(skip_all, level = "info")]
 fn checksum_fragmented(blocks: &mut [Blocks]) -> usize {
     let mut cursor_front = 0;
     let mut cursor_back = blocks.len() - 1;
@@ -81,6 +84,7 @@ fn checksum_fragmented(blocks: &mut [Blocks]) -> usize {
     checksum(blocks)
 }
 
+#[instrument(skip_all, level = "info")]
 fn checksum_defragmented(blocks: &mut [Blocks]) -> usize {
     let mut cursor_back = blocks.len() - 1;
     while cursor_back > 0 {
@@ -94,7 +98,8 @@ fn checksum_defragmented(blocks: &mut [Blocks]) -> usize {
             .map(|block| (block.length(), block.index()))
             .unwrap_or_default();
         let (empty_start, empty_length) = blocks
-            .iter().enumerate()
+            .iter()
+            .enumerate()
             .find(|(_, b)| b.is_empty() && b.length() >= file_length)
             .map(|(i, b)| (i, b.length()))
             .unwrap_or_default();
@@ -121,6 +126,7 @@ fn checksum_defragmented(blocks: &mut [Blocks]) -> usize {
 mod tests {
     use super::*;
     use std::fs::read_to_string;
+    use test_log::test;
     const EXAMPLE: &str = "2333133121414131402";
 
     #[test]

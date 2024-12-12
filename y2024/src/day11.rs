@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use tracing::instrument;
 
 fn transform(n: usize) -> Vec<usize> {
     if n == 0 {
@@ -37,11 +38,24 @@ fn transform_row(row: &mut HashMap<usize, usize>) {
     *row = new_map;
 }
 
+#[instrument(skip(input), level = "info")]
+fn process(input: &str, iterations: usize) -> usize {
+    let mut row = input
+        .split_whitespace()
+        .flat_map(|s| s.parse().ok())
+        .map(|n| (n, 1))
+        .collect();
+    for _ in 0..iterations {
+        transform_row(&mut row);
+    }
+    row.values().sum()
+}
+
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
-
     use super::*;
+    use std::fs::read_to_string;
+    use test_log::test;
 
     #[test]
     fn test_transform() {
@@ -53,36 +67,19 @@ mod tests {
 
     #[test]
     fn example_1() {
-        let mut row = HashMap::from([(125, 1), (17, 1)]);
-        for _ in 0..25 {
-            transform_row(&mut row);
-        }
-        assert_eq!(row.values().sum::<usize>(), 55312);
+        let input = "125 17";
+        assert_eq!(process(&input, 25), 55312);
     }
 
     #[test]
     fn part_1() {
-        let mut row = read_to_string("../inputs/2024/day11.txt")
-            .unwrap()
-            .split_whitespace()
-            .map(|s| (s.parse().unwrap(), 1))
-            .collect();
-        for _ in 0..25 {
-            transform_row(&mut row);
-        }
-        assert_eq!(row.values().sum::<usize>(), 197357);
+        let input = read_to_string("../inputs/2024/day11.txt").unwrap();
+        assert_eq!(process(&input, 25), 197357);
     }
 
     #[test]
     fn part_2() {
-        let mut row = read_to_string("../inputs/2024/day11.txt")
-            .unwrap()
-            .split_whitespace()
-            .map(|s| (s.parse().unwrap(), 1))
-            .collect();
-        for _ in 0..75 {
-            transform_row(&mut row);
-        }
-        assert_eq!(row.values().sum::<usize>(), 234568186890978);
+        let input = read_to_string("../inputs/2024/day11.txt").unwrap();
+        assert_eq!(process(&input, 75), 234568186890978);
     }
 }

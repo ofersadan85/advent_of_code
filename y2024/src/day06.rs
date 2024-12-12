@@ -1,4 +1,5 @@
 use advent_of_code_common::grid::Grid;
+use tracing::instrument;
 use std::collections::HashSet;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -29,6 +30,7 @@ impl Direction {
     }
 }
 
+#[instrument(skip(grid), level = "info")]
 fn patrol(grid: &Grid<char>, mut direction: Direction) -> Option<HashSet<(isize, isize)>> {
     let mut visited = HashSet::new();
     let mut turns = HashSet::new();
@@ -53,6 +55,7 @@ fn patrol(grid: &Grid<char>, mut direction: Direction) -> Option<HashSet<(isize,
     Some(visited)
 }
 
+#[instrument(skip_all, level = "info")]
 fn count_possible_obstacles(grid: &mut Grid<char>) -> usize {
     let visited = patrol(grid, Direction::Up);
     visited
@@ -74,6 +77,7 @@ fn count_possible_obstacles(grid: &mut Grid<char>) -> usize {
 mod tests {
     use super::*;
     use std::fs::read_to_string;
+    use test_log::test;
 
     #[test]
     fn example_1() {

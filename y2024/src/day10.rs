@@ -1,7 +1,8 @@
-use std::collections::HashSet;
-
 use advent_of_code_common::grid::{Grid, PositionedCell};
+use std::collections::HashSet;
+use tracing::instrument;
 
+#[instrument(skip(grid), level = "info")]
 fn count_paths(grid: &Grid<char>, unique: bool) -> usize {
     let mut sum = 0;
     let trail_heads: Vec<&PositionedCell<char>> =
@@ -39,6 +40,8 @@ fn count_paths(grid: &Grid<char>, unique: bool) -> usize {
 mod tests {
     use super::*;
     use std::fs::read_to_string;
+    use test_log::test;
+
     const EXAMPLE: &str = "89010123
                            78121874
                            87430965
