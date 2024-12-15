@@ -156,7 +156,7 @@ fn part_2(input: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::read_to_string;
+    use advent_of_code_macros::read_input;
     use test_log::test;
 
     const EXAMPLE1: &str = "AAAA\nBBCD\nBBCC\nEEEC";
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let input = read_to_string("../inputs/2024/day12.txt").unwrap();
+        read_input!();
         assert_eq!(part_1(&input), 1370100);
     }
 
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        let input = read_to_string("../inputs/2024/day12.txt").unwrap();
+        read_input!();
         assert_eq!(part_2(&input), 818286);
     }
 }

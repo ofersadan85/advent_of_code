@@ -102,9 +102,8 @@ fn find_tree(robots: &[Robot], width: i64, height: i64) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
-
     use super::*;
+    use advent_of_code_macros::read_input;
     const EXAMPLE: &str = "p=0,4 v=3,-3
                            p=6,3 v=-1,-3
                            p=10,3 v=-1,2
@@ -130,7 +129,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        let input = read_to_string("../inputs/2024/day14.txt").unwrap();
+        read_input!();
         let robots = input
             .lines()
             .map(str::parse)
@@ -141,7 +140,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        let input = read_to_string("../inputs/2024/day14.txt").unwrap();
+        read_input!();
         let robots = input
             .lines()
             .map(str::parse)

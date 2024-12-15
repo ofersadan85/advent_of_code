@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli", "y2024"]
+members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli", "y2024", "macros"]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
@@ -19,6 +19,7 @@ unreadable_literal = "allow"
 
 [workspace.dependencies]
 advent_of_code_common = { path = "common" }
+advent_of_code_macros = { path = "macros" }
 anyhow = "1.0.94"
 geo = "0.29.1"
 integer-sqrt = "0.1.5"
