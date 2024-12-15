@@ -548,6 +548,24 @@ impl std::fmt::Display for Direction {
     }
 }
 
+impl TryFrom<char> for Direction {
+    type Error = &'static str;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            'U' | 'N' | '↑' | '^' => Ok(Self::North),
+            'D' | 'S' | '↓' | 'v' => Ok(Self::South),
+            'L' | 'E' | '→' | '>' => Ok(Self::East),
+            'R' | 'W' | '←' | '<' => Ok(Self::West),
+            '↗' => Ok(Self::NorthEast),
+            '↖' => Ok(Self::NorthWest),
+            '↘' => Ok(Self::SouthEast),
+            '↙' => Ok(Self::SouthWest),
+            _ => Err("Invalid character in input"),
+        }
+    }
+}
+
 pub trait DxDy {
     fn dx(&self) -> isize;
     fn dy(&self) -> isize;
@@ -595,12 +613,12 @@ impl Direction {
     }
 
     #[must_use]
-    pub const fn turn_cw_180(&self) -> Self {
+    pub const fn turn_180(&self) -> Self {
         self.turn_cw_90().turn_cw_90()
     }
 
     #[must_use]
     pub const fn turn_cw_270(&self) -> Self {
-        self.turn_cw_180().turn_cw_90()
+        self.turn_180().turn_cw_90()
     }
 }
