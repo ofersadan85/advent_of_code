@@ -566,6 +566,23 @@ impl TryFrom<char> for Direction {
     }
 }
 
+impl Direction {
+    pub fn from_dxdy(dx: isize, dy: isize) -> Option<Self> {
+        use std::cmp::Ordering::{Equal, Greater, Less};
+        match (dx.cmp(&0), dy.cmp(&0)) {
+            (Less, Less) => Some(Self::NorthWest),
+            (Less, Equal) => Some(Self::West),
+            (Less, Greater) => Some(Self::SouthWest),
+            (Equal, Less) => Some(Self::North),
+            (Equal, Equal) => None,
+            (Equal, Greater) => Some(Self::South),
+            (Greater, Less) => Some(Self::NorthEast),
+            (Greater, Equal) => Some(Self::East),
+            (Greater, Greater) => Some(Self::SouthEast),
+        }
+    }
+}
+
 pub trait DxDy {
     fn dx(&self) -> isize;
     fn dy(&self) -> isize;
@@ -596,14 +613,14 @@ impl Direction {
     #[must_use]
     pub const fn turn_cw_45(&self) -> Self {
         match self {
-            Self::North => Self::East,
-            Self::South => Self::West,
-            Self::East => Self::South,
-            Self::West => Self::North,
-            Self::NorthEast => Self::SouthEast,
-            Self::NorthWest => Self::NorthEast,
-            Self::SouthEast => Self::SouthWest,
-            Self::SouthWest => Self::NorthWest,
+            Self::North => Self::NorthEast,
+            Self::South => Self::SouthWest,
+            Self::East => Self::SouthEast,
+            Self::West => Self::NorthWest,
+            Self::NorthEast => Self::East,
+            Self::NorthWest => Self::North,
+            Self::SouthEast => Self::South,
+            Self::SouthWest => Self::West,
         }
     }
 
