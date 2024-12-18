@@ -62,6 +62,60 @@ impl<T, D> Grid<T, D>
 where
     T: Copy,
 {
+    pub fn new(width: isize, height: isize, state: T) -> Self
+    where
+        D: Default,
+    {
+        let mut cells = Vec::new();
+        for y in 0..height {
+            for x in 0..width {
+                cells.push(PositionedCell::new(x, y, state));
+            }
+        }
+        Self {
+            x_range: 0..width,
+            y_range: 0..height,
+            cells,
+        }
+    }
+
+    pub fn new_default(width: isize, height: isize) -> Self
+    where
+        T: Default,
+        D: Default,
+    {
+        let mut cells = Vec::new();
+        for y in 0..height {
+            for x in 0..width {
+                cells.push(PositionedCell::new(x, y, T::default()));
+            }
+        }
+        Self {
+            x_range: 0..width,
+            y_range: 0..height,
+            cells,
+        }
+    }
+
+    pub fn new_with_data(width: isize, height: isize, state: T, data: D) -> Self
+    where
+        D: Default + Clone,
+    {
+        let mut cells = Vec::new();
+        for y in 0..height {
+            for x in 0..width {
+                let mut current = PositionedCell::new(x, y, state);
+                current.data = data.clone();
+                cells.push(current);
+            }
+        }
+        Self {
+            x_range: 0..width,
+            y_range: 0..height,
+            cells,
+        }
+    }
+
     fn index_of(&self, x: isize, y: isize) -> Option<usize> {
         if !self.x_range.contains(&x) || !self.y_range.contains(&y) {
             return None;
@@ -393,7 +447,7 @@ where
     }
 }
 
-impl<T> std::fmt::Display for Grid<T>
+impl<T, D> std::fmt::Display for Grid<T, D>
 where
     T: std::fmt::Display + Copy,
 {
