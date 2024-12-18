@@ -9,6 +9,7 @@ pub mod range;
 mod trace;
 pub mod v2;
 pub use trace::*;
+pub mod iterators;
 
 /// Quick shortcut to "pretty-print"
 pub fn pprint<T: Debug>(item: &T) {
