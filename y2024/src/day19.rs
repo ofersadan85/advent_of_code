@@ -1,5 +1,6 @@
-use std::collections::{BTreeMap, BTreeSet};
 use advent_of_code_macros::aoc_tests;
+use std::collections::{BTreeMap, BTreeSet};
+use tracing::{debug_span, field::Empty};
 
 fn count_possible<'a>(
     options: &[&'a str],
@@ -34,17 +35,25 @@ fn count_possible_total(input: &str, count: bool) -> usize {
     let mut lines = input.lines();
     let options: Vec<&str> = lines.next().unwrap().split(", ").collect();
     let mut cache = options.iter().map(|&o| (o, 1)).collect();
-    let iter = lines.filter_map(|line| {
+    let mut total = 0;
+    let mut sum = 0;
+    for line in lines {
+        let span = debug_span!("line", line = Empty, c = Empty);
+        let _enter = span.enter();
         if line.is_empty() {
-            None
-        } else {
-            Some(count_possible(&options, line.trim(), &mut cache))
+            continue;
         }
-    });
+        let c = count_possible(&options, line.trim(), &mut cache);
+        span.record("c", &c);
+        if c > 0 {
+            total += 1;
+        }
+        sum += c;
+    }
     if count {
-        iter.filter(|c| c > &0).count()
+        total
     } else {
-        iter.sum()
+        sum
     }
 }
 
