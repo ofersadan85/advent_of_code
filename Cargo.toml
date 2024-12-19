@@ -21,6 +21,7 @@ unreadable_literal = "allow"
 advent_of_code_common = { path = "common" }
 advent_of_code_macros = { path = "macros" }
 anyhow = "1.0.94"
+colored = "2.2.0"
 geo = "0.29.1"
 integer-sqrt = "0.1.5"
 itertools = "0.13.0"
