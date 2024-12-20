@@ -1,6 +1,8 @@
 use quote::{quote, ToTokens};
 use syn::parse_macro_input;
 
+mod impls;
+
 fn read_input_fn() -> proc_macro2::TokenStream {
     quote! {
         fn read_input() -> String {
@@ -85,4 +87,60 @@ pub fn all_the_days(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
         }
     }
     .into()
+}
+
+#[proc_macro_derive(CharEnum, attributes(c))]
+pub fn derive_char_enum(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(input as syn::DeriveInput);
+    impls::enum_char_impls(input, false)
+}
+
+#[proc_macro_derive(CharEnumDisplay, attributes(c))]
+pub fn derive_char_enum_display(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(input as syn::DeriveInput);
+    impls::enum_char_impls(input, true)
+}
+
+#[proc_macro_attribute]
+pub fn char_enum(
+    attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let mut item = parse_macro_input!(item as syn::ItemEnum);
+    let derive_variant = if attr
+        .into_iter()
+        .next()
+        .is_some_and(|a| a.to_string() == "display")
+    {
+        quote! {advent_of_code_macros::CharEnumDisplay}
+    } else {
+        quote! {advent_of_code_macros::CharEnum}
+    };
+    if item.attrs.is_empty() {
+        item.attrs
+            .push(syn::parse_quote!(#[derive(Debug, PartialEq, Eq, Clone, Copy, #derive_variant)]));
+    } else {
+        for attr in &mut item.attrs {
+            if attr.meta.path().is_ident("derive") {
+                if let syn::Meta::List(ref mut list) = attr.meta {
+                    list.tokens
+                        .extend(quote! {, Debug, PartialEq, Eq, Clone, Copy, #derive_variant});
+                }
+            }
+        }
+    }
+    for v in item.variants.iter_mut() {
+        if v.discriminant.is_none() {
+            return syn::Error::new_spanned(
+                v,
+                "#[char_enum] variants must have a `char` discriminant",
+            )
+            .to_compile_error()
+            .into();
+        };
+        let value = v.discriminant.clone().unwrap().1;
+        v.discriminant = None;
+        v.attrs.push(syn::parse_quote! {#[c = #value]});
+    }
+    item.to_token_stream().into()
 }
