@@ -312,6 +312,33 @@ where
         neighbors
     }
 
+    pub fn neighbors_box_cells_n(
+        &self,
+        x: isize,
+        y: isize,
+        n: isize,
+    ) -> Vec<Option<&PositionedCell<T, D>>> {
+        let mut neighbors = Vec::new();
+        for dy in -n..=n {
+            for dx in -n..=n {
+                neighbors.push(self.get_cell(x + dx, y + dy));
+            }
+        }
+        neighbors
+    }
+
+    pub fn neighbors_box_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 9] {
+        let mut neighbors = [None; 9];
+        let mut count = 0;
+        for dy in -1..=1 {
+            for dx in -1..=1 {
+                neighbors[count] = self.get_cell(x + dx, y + dy);
+                count += 1;
+            }
+        }
+        neighbors
+    }
+
     pub fn count_state(&self, state: T) -> usize
     where
         T: PartialEq,

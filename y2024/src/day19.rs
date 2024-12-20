@@ -44,7 +44,7 @@ fn count_possible_total(input: &str, count: bool) -> usize {
             continue;
         }
         let c = count_possible(&options, line.trim(), &mut cache);
-        span.record("c", &c);
+        span.record("c", c);
         if c > 0 {
             total += 1;
         }

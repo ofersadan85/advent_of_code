@@ -15,6 +15,7 @@ license-file = "../LICENSE"
 advent_of_code_common = { workspace = true }
 advent_of_code_macros = { workspace = true }
 anyhow = { workspace = true }
+colored = { workspace = true }
 itertools = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
