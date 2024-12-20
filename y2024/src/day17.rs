@@ -275,8 +275,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        read_input!();
-        let mut machine: Machine = input.parse().unwrap();
+        let mut machine: Machine = read_input().parse().unwrap();
         machine.run();
         assert_eq!(machine.output(), "2,1,3,0,5,2,3,7,1");
     }
@@ -289,8 +288,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        read_input!();
-        let machine: Machine = input.parse().unwrap();
+        let machine: Machine = read_input().parse().unwrap();
         assert_eq!(
             find_replicator_recursive(&machine, 1..8, ""),
             Some(107416732707226),

@@ -1,7 +1,5 @@
+use advent_of_code_macros::aoc_tests;
 use itertools::Itertools;
-
-const PATH: &str = "../inputs/2021/day06.txt";
-const EXAMPLE: &str = "3,4,3,1,2";
 
 fn grow(v: &mut [usize], n: usize) {
     for _ in 0..n {
@@ -10,16 +8,11 @@ fn grow(v: &mut [usize], n: usize) {
     }
 }
 
-fn input(example: bool) -> [usize; 9] {
-    let data = if example {
-        EXAMPLE.to_string()
-    } else {
-        std::fs::read_to_string(PATH).unwrap()
-    };
+fn parse_input(data: &str) -> [usize; 9] {
     let mut result = [0; 9];
     let counter = data
         .split(',')
-        .map(|s| s.parse::<usize>().unwrap())
+        .filter_map(|s| s.parse::<usize>().ok())
         .counts();
     for (k, v) in counter {
         result[k] = v;
@@ -27,34 +20,39 @@ fn input(example: bool) -> [usize; 9] {
     result
 }
 
-#[test]
-fn example_1() {
-    let mut data = input(true);
-    grow(&mut data, 18);
-    let result: usize = data.iter().sum();
-    assert_eq!(result, 26);
-}
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "3,4,3,1,2";
 
-#[test]
-fn example_2() {
-    let mut data = input(true);
-    grow(&mut data, 256);
-    let result: usize = data.iter().sum();
-    assert_eq!(result, 26_984_457_539);
-}
+    #[test]
+    fn example_1() {
+        let mut data = parse_input(EXAMPLE);
+        grow(&mut data, 18);
+        let result: usize = data.iter().sum();
+        assert_eq!(result, 26);
+    }
 
-#[test]
-fn task_1() {
-    let mut data = input(false);
-    grow(&mut data, 80);
-    let result: usize = data.iter().sum();
-    assert_eq!(result, 361_169);
-}
+    #[test]
+    fn example_2() {
+        let mut data = parse_input(EXAMPLE);
+        grow(&mut data, 256);
+        let result: usize = data.iter().sum();
+        assert_eq!(result, 26_984_457_539);
+    }
 
-#[test]
-fn task_2() {
-    let mut data = input(false);
-    grow(&mut data, 256);
-    let result: usize = data.iter().sum();
-    assert_eq!(result, 1_634_946_868_992);
+    #[test]
+    fn part_1() {
+        let mut data = parse_input(&read_input());
+        grow(&mut data, 80);
+        let result: usize = data.iter().sum();
+        assert_eq!(result, 361_169);
+    }
+
+    #[test]
+    fn part_2() {
+        let mut data = parse_input(&read_input());
+        grow(&mut data, 256);
+        let result: usize = data.iter().sum();
+        assert_eq!(result, 1_634_946_868_992);
+    }
 }

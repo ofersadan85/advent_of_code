@@ -1,3 +1,4 @@
+use advent_of_code_macros::aoc_tests;
 use advent_of_code_common::grid::{Direction, Grid};
 use std::{
     cell::Cell,
@@ -153,12 +154,8 @@ fn part_2(input: &str) -> usize {
     map_regions(&grid).values().map(Region::cost_discount).sum()
 }
 
-#[cfg(test)]
+#[aoc_tests]
 mod tests {
-    use super::*;
-    use advent_of_code_macros::read_input;
-    use test_log::test;
-
     const EXAMPLE1: &str = "AAAA\nBBCD\nBBCC\nEEEC";
     const EXAMPLE2: &str = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO";
     const EXAMPLE3: &str = "RRRRIICCFF
@@ -182,8 +179,7 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        read_input!();
-        assert_eq!(part_1(&input), 1370100);
+        assert_eq!(part_1(&read_input()), 1370100);
     }
 
     #[test]
@@ -195,7 +191,6 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        read_input!();
-        assert_eq!(part_2(&input), 818286);
+        assert_eq!(part_2(&read_input()), 818286);
     }
 }

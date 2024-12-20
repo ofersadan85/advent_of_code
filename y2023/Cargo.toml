@@ -13,6 +13,7 @@ license-file = "../LICENSE"
 
 [dependencies]
 advent_of_code_common = { workspace = true }
+advent_of_code_macros = { workspace = true }
 anyhow = { workspace = true }
 geo = { workspace = true }
 integer-sqrt = { workspace = true }
@@ -23,6 +24,7 @@ rayon = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+test-log = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 

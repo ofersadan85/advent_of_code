@@ -1,3 +1,4 @@
+use advent_of_code_macros::aoc_tests;
 struct Point {
     x: i64,
     y: i64,
@@ -100,10 +101,9 @@ fn find_tree(robots: &[Robot], width: i64, height: i64) -> usize {
         .unwrap_or_default()
 }
 
-#[cfg(test)]
+#[aoc_tests]
 mod tests {
-    use super::*;
-    use advent_of_code_macros::read_input;
+
     const EXAMPLE: &str = "p=0,4 v=3,-3
                            p=6,3 v=-1,-3
                            p=10,3 v=-1,2
@@ -129,8 +129,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        read_input!();
-        let robots = input
+        let robots = read_input()
             .lines()
             .map(str::parse)
             .collect::<Result<Vec<Robot>, _>>()
@@ -140,8 +139,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        read_input!();
-        let robots = input
+        let robots = read_input()
             .lines()
             .map(str::parse)
             .collect::<Result<Vec<Robot>, _>>()

@@ -1,11 +1,4 @@
-use advent_of_code_common::file::split_lines;
-const PATH: &str = "../inputs/2021/day02.txt";
-const EXAMPLE: &str = "forward 5
-down 5
-forward 8
-up 3
-down 8
-forward 2";
+use advent_of_code_macros::aoc_tests;
 
 enum Direction {
     Forward,
@@ -43,39 +36,48 @@ fn navigate_aim(data: &[(Direction, i32)]) -> i32 {
     depth * forward
 }
 
-fn input(example: bool) -> Vec<(Direction, i32)> {
-    if example {
-        split_lines(EXAMPLE)
-    } else {
-        split_lines(&std::fs::read_to_string(PATH).unwrap())
+fn parse_input(input: &str) -> Vec<(Direction, i32)> {
+    input
+        .lines()
+        .map(|row| {
+            let mut split = row.split_whitespace();
+            let direction = split.next().unwrap();
+            let value = split.next().unwrap().parse().unwrap_or(0);
+            let dir = match direction {
+                "forward" => Direction::Forward,
+                "down" => Direction::Down,
+                "up" => Direction::Up,
+                _ => panic!(),
+            };
+            (dir, value)
+        })
+        .collect()
+}
+
+#[aoc_tests]
+mod tests {
+    const EXAMPLE1: &str = "forward 5
+                            down 5
+                            forward 8
+                            up 3
+                            down 8
+                            forward 2";
+
+    #[test]
+    fn example_1() {
+        let data = parse_input(EXAMPLE1);
+        assert_eq!(navigate(&data), 150);
     }
-    .iter()
-    .map(|row| {
-        let mut split = row.split_ascii_whitespace();
-        let direction = split.next().unwrap();
-        let value = split.next().unwrap().parse().unwrap_or(0);
-        let dir = match direction {
-            "forward" => Direction::Forward,
-            "down" => Direction::Down,
-            "up" => Direction::Up,
-            _ => panic!(),
-        };
-        (dir, value)
-    })
-    .collect()
-}
 
-#[test]
-fn example_1() {
-    assert_eq!(navigate(&input(true)), 150);
-}
+    #[test]
+    fn part_1() {
+        let data = parse_input(&read_input());
+        assert_eq!(navigate(&data), 1_855_814);
+    }
 
-#[test]
-fn task_1() {
-    assert_eq!(navigate(&input(false)), 1_855_814);
-}
-
-#[test]
-fn task_2() {
-    assert_eq!(navigate_aim(&input(false)), 1_845_455_714);
+    #[test]
+    fn part_2() {
+        let data = parse_input(&read_input());
+        assert_eq!(navigate_aim(&data), 1_845_455_714);
+    }
 }

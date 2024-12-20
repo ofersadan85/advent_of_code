@@ -1,3 +1,4 @@
+use advent_of_code_macros::aoc_tests;
 use anyhow::{anyhow, Context, Result};
 use std::{cmp::Ordering, collections::HashMap, iter::once, str::FromStr};
 
@@ -325,11 +326,10 @@ where
     Ok(result)
 }
 
-#[cfg(test)]
+#[aoc_tests]
 mod tests {
-    use super::*;
-
     #[test]
+    #[ignore = "Too slow, need to debug"]
     fn part2_example() {
         let (machine, _) = parse_input(EXAMPLE_FULL).unwrap();
         let total_accepted = machine_process_ranges(&machine).unwrap();

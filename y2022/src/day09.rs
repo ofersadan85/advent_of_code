@@ -2,7 +2,7 @@ use advent_of_code_common::file::split_lines_trim;
 use anyhow::{Context, Result};
 use std::collections::HashSet;
 
-const PATH: &str = "inputs/day09.txt";
+const PATH: &str = "../inputs/2022/day09.txt";
 const EXAMPLE: &str = "R 4
 U 4
 L 3

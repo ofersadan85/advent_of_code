@@ -1,4 +1,5 @@
-use advent_of_code_common::{file::lines_as_digits, v2::V2};
+use advent_of_code_common::v2::V2;
+use advent_of_code_macros::aoc_tests;
 use anyhow::{Context, Result};
 use itertools::iproduct;
 
@@ -8,14 +9,6 @@ const EXAMPLE: &str = "30373
 65332
 33549
 35390";
-
-fn input(example: bool) -> Result<V2<u32>> {
-    if example {
-        lines_as_digits(EXAMPLE)
-    } else {
-        lines_as_digits(&std::fs::read_to_string(PATH).context("Failed to read input file")?)
-    }
-}
 
 fn is_visible(data: &V2<u32>, x: usize, y: usize) -> bool {
     let (h, w) = (data.len(), data[0].len());
@@ -77,22 +70,31 @@ fn part_2(data: &V2<u32>) -> Result<usize> {
     Ok(view_distance(data, best_x, best_y))
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&input(true).unwrap()), 21);
-}
+#[aoc_tests]
+mod tests {
+    use advent_of_code_common::file::lines_as_digits;
 
-#[test]
-fn solution_1() {
-    assert_eq!(part_1(&input(false).unwrap()), 1736);
-}
+    #[test]
+    fn example_1() {
+        let input = lines_as_digits(EXAMPLE).unwrap();
+        assert_eq!(part_1(&input), 21);
+    }
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&input(true).unwrap()).unwrap(), 8);
-}
+    #[test]
+    fn solution_1() {
+        let input = lines_as_digits(&read_input()).unwrap();
+        assert_eq!(part_1(&input), 1736);
+    }
 
-#[test]
-fn solution_2() {
-    assert_eq!(part_2(&input(false).unwrap()).unwrap(), 268_800);
+    #[test]
+    fn example_2() {
+        let input = lines_as_digits(EXAMPLE).unwrap();
+        assert_eq!(part_2(&input).unwrap(), 8);
+    }
+
+    #[test]
+    fn solution_2() {
+        let input = lines_as_digits(&read_input()).unwrap();
+        assert_eq!(part_2(&input).unwrap(), 268_800);
+    }
 }

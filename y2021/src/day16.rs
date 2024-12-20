@@ -248,8 +248,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        read_input!();
-        let packet: Packet = input.parse().unwrap();
+        let packet: Packet = read_input().parse().unwrap();
         assert_eq!(packet.version_sum(), 965);
     }
 
@@ -275,8 +274,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        read_input!();
-        let packet: Packet = input.parse().unwrap();
+        let packet: Packet = read_input().parse().unwrap();
         assert_eq!(packet.value(), 116672213160);
     }
 }

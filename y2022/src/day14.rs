@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use itertools::{iproduct, Itertools};
 use std::{collections::HashSet, hash::Hash};
 
-const PATH: &str = "inputs/day14.txt";
+const PATH: &str = "../inputs/2022/day14.txt";
 const EXAMPLE: &str = "498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9";
 

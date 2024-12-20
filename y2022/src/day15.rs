@@ -1,10 +1,11 @@
+use advent_of_code_macros::aoc_tests;
 use anyhow::{Context, Result};
 use itertools::iproduct;
 use regex::Regex;
 use std::collections::HashSet;
 
-const PATH: &str = "inputs/day15.txt";
-const EXAMPLE: &str = "inputs/day15_example.txt";
+const PATH: &str = "../inputs/2022/day15.txt";
+const EXAMPLE: &str = "../inputs/2022/day15_example.txt";
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct Sensor {
@@ -100,26 +101,29 @@ fn part_2(sensors: &[Sensor]) -> Result<i64> {
     Ok(x * 4_000_000 + y)
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&input(true).unwrap(), 10).unwrap() - 1, 26);
-}
+#[aoc_tests]
+mod tests {
+    #[test]
+    fn example_1() {
+        assert_eq!(part_1(&input(true).unwrap(), 10).unwrap() - 1, 26);
+    }
 
-#[test]
-#[ignore = "Takes too long"]
-fn task_1() {
-    assert_eq!(
-        part_1(&input(false).unwrap(), 2_000_000).unwrap() - 1,
-        5_716_881
-    );
-}
+    #[test]
+    #[ignore = "Takes too long"]
+    fn task_1() {
+        assert_eq!(
+            part_1(&input(false).unwrap(), 2_000_000).unwrap() - 1,
+            5_716_881
+        );
+    }
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&input(true).unwrap()).unwrap(), 56_000_011);
-}
+    #[test]
+    fn example_2() {
+        assert_eq!(part_2(&input(true).unwrap()).unwrap(), 56_000_011);
+    }
 
-#[test]
-fn task_2() {
-    assert_eq!(part_2(&input(false).unwrap()).unwrap(), 10_852_583_132_904);
+    #[test]
+    fn task_2() {
+        assert_eq!(part_2(&input(false).unwrap()).unwrap(), 10_852_583_132_904);
+    }
 }

@@ -1,33 +1,8 @@
-use advent_of_code_common::file::split_lines_trim;
+use advent_of_code_macros::aoc_tests;
 use anyhow::{Context, Result};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 type FolderMap = HashMap<String, Folder>;
-
-const PATH: &str = "inputs/day07.txt";
-const EXAMPLE: &str = "$ cd /
-$ ls
-dir a
-14848514 b.txt
-8504156 c.dat
-dir d
-$ cd a
-$ ls
-dir e
-29116 f
-2557 g
-62596 h.lst
-$ cd e
-$ ls
-584 i
-$ cd ..
-$ cd ..
-$ cd d
-$ ls
-4060174 j
-8033020 d.log
-5626152 d.ext
-7214296 k";
 
 #[derive(Debug, Clone)]
 struct Folder {
@@ -60,16 +35,11 @@ impl Folder {
     }
 }
 
-fn input(example: bool) -> Result<FolderRef> {
-    let lines = if example {
-        split_lines_trim(EXAMPLE)
-    } else {
-        split_lines_trim(&std::fs::read_to_string(PATH).context("Failed to read input file")?)
-    };
+fn parse_input(input: &str) -> Result<FolderRef> {
     let root = Folder::root();
     let mut current_folder = root.clone();
     let mut read_output = false;
-    for row in lines {
+    for row in input.lines().map(str::trim) {
         current_folder = if row == "$ cd /" {
             root.clone()
         } else if row == "$ cd .." {
@@ -154,22 +124,53 @@ fn part_2(root: &FolderRef) -> Option<u32> {
     get_big_folders(root, min_size).iter().min().copied()
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&input(true).unwrap()), 95437);
-}
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "$ cd /
+$ ls
+dir a
+14848514 b.txt
+8504156 c.dat
+dir d
+$ cd a
+$ ls
+dir e
+29116 f
+2557 g
+62596 h.lst
+$ cd e
+$ ls
+584 i
+$ cd ..
+$ cd ..
+$ cd d
+$ ls
+4060174 j
+8033020 d.log
+5626152 d.ext
+7214296 k";
 
-#[test]
-fn task_1() {
-    assert_eq!(part_1(&input(false).unwrap()), 1_182_909);
-}
+    #[test]
+    fn example_1() {
+        let input = parse_input(EXAMPLE).unwrap();
+        assert_eq!(part_1(&input), 95437);
+    }
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&input(true).unwrap()), Some(24_933_642));
-}
+    #[test]
+    fn task_1() {
+        let input = parse_input(&read_input()).unwrap();
+        assert_eq!(part_1(&input), 1_182_909);
+    }
 
-#[test]
-fn task_2() {
-    assert_eq!(part_2(&input(false).unwrap()), Some(2_832_508));
+    #[test]
+    fn example_2() {
+        let input = parse_input(EXAMPLE).unwrap();
+        assert_eq!(part_2(&input), Some(24_933_642));
+    }
+
+    #[test]
+    fn task_2() {
+        let input = parse_input(&read_input()).unwrap();
+        assert_eq!(part_2(&input), Some(2_832_508));
+    }
 }

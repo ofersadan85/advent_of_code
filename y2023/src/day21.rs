@@ -1,3 +1,4 @@
+use advent_of_code_macros::aoc_tests;
 use anyhow::{anyhow, Context, Result};
 use petgraph::{algo::dijkstra, graphmap::UnGraphMap};
 use std::collections::HashMap;
@@ -118,34 +119,16 @@ pub fn find_even_steps(start: (i32, i32), graph: &Maze, max: i32) -> usize {
         .count()
 }
 
-#[cfg(test)]
+#[aoc_tests]
 mod tests {
-    use super::*;
-    use std::sync::atomic::{AtomicBool, Ordering};
-    use tracing_subscriber::{fmt, fmt::format::FmtSpan};
-    static TRACING_INIT: AtomicBool = AtomicBool::new(false);
-
-    fn init_tracing() {
-        let tracing =
-            TRACING_INIT.compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst);
-        if tracing == Ok(false) {
-            fmt()
-                .with_line_number(true)
-                .with_span_events(FmtSpan::CLOSE)
-                .init();
-        }
-    }
-
     #[test]
     fn example() {
-        init_tracing();
         let (start, graph) = parse_input(EXAMPLE).unwrap();
         assert_eq!(find_even_steps(start, &graph, 6), 16);
     }
 
     #[test]
     fn part1() {
-        init_tracing();
         let (start, graph) = parse_input(include_str!("../../inputs/2023/day21.txt")).unwrap();
         assert_eq!(find_even_steps(start, &graph, 64), 3729);
     }

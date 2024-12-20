@@ -1,28 +1,10 @@
+use advent_of_code_macros::aoc_tests;
+use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
-use anyhow::{Context, Result};
-use itertools::Itertools;
-
-fn input(example: bool) -> Result<Vec<String>> {
-    const PATH: &str = "inputs/day03.txt";
-    let s = if example {
-        "vJrwpWtwJgWrhcsFMMfFFhFp
-        jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
-        PmmdzqPrVvPwwTWBwg
-        wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
-        ttgJtRGJQctTZtZT
-        CrZsJsPPZsGzwwsLwLmpwMDw"
-            .to_string()
-    } else {
-        std::fs::read_to_string(PATH).context("Failed to read input file")?
-    };
-    let result = s.trim().lines().map(String::from).collect();
-    Ok(result)
-}
-
-fn part_1(data: &[String]) -> usize {
+fn part_1(input: &str) -> usize {
     let mut result = String::new();
-    for row in data {
+    for row in input.lines() {
         let (a, b) = row.trim().split_at(row.trim().len() / 2);
         let char_count_a: HashMap<char, usize> = a.chars().counts();
         let char_count_b: HashMap<char, usize> = b.chars().counts();
@@ -44,7 +26,8 @@ fn part_1(data: &[String]) -> usize {
         .sum()
 }
 
-fn part_2(data: &[String]) -> usize {
+fn part_2(input: &str) -> usize {
+    let data: Vec<&str> = input.lines().collect();
     (0..data.len())
         .step_by(3)
         .map(|i| {
@@ -68,22 +51,32 @@ fn part_2(data: &[String]) -> usize {
         .sum()
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&input(true).unwrap()), 157);
-}
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw";
 
-#[test]
-fn solution_1() {
-    assert_eq!(part_1(&input(false).unwrap()), 7428);
-}
+    #[test]
+    fn example_1() {
+        assert_eq!(part_1(EXAMPLE), 157);
+    }
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&input(true).unwrap()), 70);
-}
+    #[test]
+    fn solution_1() {
+        assert_eq!(part_1(&read_input()), 7428);
+    }
 
-#[test]
-fn solution_2() {
-    assert_eq!(part_2(&input(false).unwrap()), 2650);
+    #[test]
+    fn example_2() {
+        assert_eq!(part_2(EXAMPLE), 70);
+    }
+
+    #[test]
+    fn solution_2() {
+        assert_eq!(part_2(&read_input()), 2650);
+    }
 }

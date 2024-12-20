@@ -3,8 +3,8 @@ use anyhow::{Context, Result};
 use serde_json::Value as Json;
 use std::cmp::Ordering;
 
-const PATH: &str = "inputs/day13.txt";
-const EXAMPLE: &str = "inputs/day13_example.txt";
+const PATH: &str = "../inputs/2022/day13.txt";
+const EXAMPLE: &str = "../inputs/2022/day13_example.txt";
 
 #[derive(Debug, Clone)]
 struct PacketPair {

@@ -1,3 +1,5 @@
+use advent_of_code_macros::aoc_tests;
+
 #[derive(Debug, PartialEq, Eq)]
 struct MoveOrder {
     amount: usize,
@@ -62,25 +64,6 @@ impl TryFrom<&str> for SupplyStacks {
     }
 }
 
-fn input(example: bool) -> Result<SupplyStacks, &'static str> {
-    const PATH: &str = "inputs/day05.txt";
-    let data = if example {
-        "    [D]    
-[N] [C]    
-[Z] [M] [P]
-    1   2   3 
-
-move 1 from 2 to 1
-move 3 from 1 to 3
-move 2 from 2 to 1
-move 1 from 1 to 2"
-            .to_string()
-    } else {
-        std::fs::read_to_string(PATH).map_err(|_| "Failed to read input file")?
-    };
-    SupplyStacks::try_from(data.as_ref()).map_err(|_| "Failed to parse input file")
-}
-
 fn part_1(stack: &mut SupplyStacks) -> String {
     for move_order in &stack.move_orders {
         let additional_cargo: Vec<_> = (0..move_order.amount)
@@ -102,22 +85,39 @@ fn part_2(stack: &mut SupplyStacks) -> String {
     stack.columns.iter().filter_map(|col| col.last()).collect()
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&mut input(true).unwrap()), "CMZ");
-}
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
 
-#[test]
-fn solution_1() {
-    assert_eq!(part_1(&mut input(false).unwrap()), "TBVFVDZPN");
-}
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2";
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&mut input(true).unwrap()), "MCD");
-}
+    #[test]
+    fn example_1() {
+        let mut input = SupplyStacks::try_from(EXAMPLE).unwrap();
+        assert_eq!(part_1(&mut input), "CMZ");
+    }
 
-#[test]
-fn solution_2() {
-    assert_eq!(part_2(&mut input(false).unwrap()), "VLCWHTDSZ");
+    #[test]
+    fn solution_1() {
+        let mut input = SupplyStacks::try_from(read_input().as_str()).unwrap();
+        assert_eq!(part_1(&mut input), "TBVFVDZPN");
+    }
+
+    #[test]
+    fn example_2() {
+        let mut input = SupplyStacks::try_from(EXAMPLE).unwrap();
+        assert_eq!(part_2(&mut input), "MCD");
+    }
+
+    #[test]
+    fn solution_2() {
+        let mut input = SupplyStacks::try_from(read_input().as_str()).unwrap();
+        assert_eq!(part_2(&mut input), "VLCWHTDSZ");
+    }
 }

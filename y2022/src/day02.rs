@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use advent_of_code_macros::aoc_tests;
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum GameChoice {
@@ -90,22 +90,11 @@ impl GameResult {
     }
 }
 
-fn input(example: bool) -> Result<Vec<Vec<char>>> {
-    const PATH: &str = "inputs/day02.txt";
-    let s = if example {
-        "A Y
-        B X
-        C Z"
-        .to_string()
-    } else {
-        std::fs::read_to_string(PATH).context("Failed to read input file")?
-    };
-    let result = s
-        .trim()
+fn parse_input(s: &str) -> Vec<Vec<char>> {
+    s.trim()
         .lines()
         .map(|row| row.trim().chars().collect())
-        .collect();
-    Ok(result)
+        .collect()
 }
 
 fn part_1(data: &[Vec<char>]) -> usize {
@@ -135,22 +124,31 @@ fn part_2(data: &[Vec<char>]) -> usize {
         .sum()
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&input(true).unwrap()), 15);
-}
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "A Y\nB X\nC Z";
 
-#[test]
-fn solution_1() {
-    assert_eq!(part_1(&input(false).unwrap()), 11841);
-}
+    #[test]
+    fn example_1() {
+        let input = parse_input(EXAMPLE);
+        assert_eq!(part_1(&input), 15);
+    }
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&input(true).unwrap()), 12);
-}
+    #[test]
+    fn solution_1() {
+        let input = parse_input(&read_input());
+        assert_eq!(part_1(&input), 11841);
+    }
 
-#[test]
-fn solution_2() {
-    assert_eq!(part_2(&input(false).unwrap()), 13022);
+    #[test]
+    fn example_2() {
+        let input = parse_input(EXAMPLE);
+        assert_eq!(part_2(&input), 12);
+    }
+
+    #[test]
+    fn solution_2() {
+        let input = parse_input(&read_input());
+        assert_eq!(part_2(&input), 13022);
+    }
 }

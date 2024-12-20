@@ -1,8 +1,8 @@
 use advent_of_code_common::file::lines_as_blocks;
 use anyhow::{Context, Result};
 
-pub const PATH: &str = "inputs/day11.txt";
-pub const EXAMPLE: &str = "inputs/day11_example.txt";
+pub const PATH: &str = "../inputs/2022/day11.txt";
+pub const EXAMPLE: &str = "../inputs/2022/day11_example.txt";
 
 pub fn last_number(s: &str) -> Result<u128> {
     s.trim()

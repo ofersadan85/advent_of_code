@@ -1,8 +1,8 @@
 use advent_of_code_common::file::split_lines_trim;
 use anyhow::{Context, Result};
 
-const PATH: &str = "inputs/day10.txt";
-const EXAMPLE: &str = "inputs/day10_example.txt";
+const PATH: &str = "../inputs/2022/day10.txt";
+const EXAMPLE: &str = "../inputs/2022/day10_example.txt";
 const EXPECTED_EXAMPLE: &str = "##..##..##..##..##..##..##..##..##..##..
 ###...###...###...###...###...###...###.
 ####....####....####....####....####....

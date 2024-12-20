@@ -280,8 +280,7 @@ mod tests {
     #[test]
     #[ignore = "Slow, but works"]
     fn part_1() {
-        read_input!();
-        let mut maze: Maze = input.parse().unwrap();
+        let mut maze: Maze = read_input().parse().unwrap();
         assert_eq!(lowest_cost_path(&mut maze), Some(88468));
     }
 
@@ -296,8 +295,7 @@ mod tests {
     #[test]
     #[ignore = "Wrong answer"]
     fn part_2() {
-        read_input!();
-        let mut maze: Maze = input.parse().unwrap();
+        let mut maze: Maze = read_input().parse().unwrap();
         assert_eq!(count_cells_on_path(&mut maze), Some(0));  // Got 469
     }
 }

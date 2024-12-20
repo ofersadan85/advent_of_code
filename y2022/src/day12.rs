@@ -5,7 +5,7 @@ use itertools::iproduct;
 use std::collections::HashSet;
 use std::hash::Hash;
 
-const PATH: &str = "inputs/day12.txt";
+const PATH: &str = "../inputs/2022/day12.txt";
 const EXAMPLE: &str = "Sabqponm
 abcryxxl
 accszExk

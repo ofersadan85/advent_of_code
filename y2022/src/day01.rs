@@ -1,41 +1,16 @@
-use advent_of_code_common::file::{lines_as_blocks, lines_as_numbers};
-use anyhow::{Context, Result};
+use advent_of_code_macros::aoc_tests;
 
-const PATH: &str = "inputs/day01.txt";
-const EXAMPLE: &str = "
-1000
-2000
-3000
-
-4000
-
-5000
-6000
-
-7000
-8000
-9000
-
-10000";
-
-fn input(example: bool) -> Result<Vec<usize>> {
-    let data = if example {
-        EXAMPLE.to_string()
-    } else {
-        std::fs::read_to_string(PATH).context("Failed to read input file")?
-    };
-
-    let mut elves: Vec<usize> = lines_as_blocks(&data)
-        .iter()
-        .map(|block| {
-            lines_as_numbers(&block.join("\n"))
-                .unwrap_or_default()
-                .iter()
-                .sum()
-        })
+fn parse_input(input: &str) -> Vec<usize> {
+    let numbers: Vec<usize> = input
+        .lines()
+        .map(|line| line.trim().parse().unwrap_or(0))
+        .collect();
+    let mut elves: Vec<_> = numbers
+        .split(|&x| x == 0)
+        .map(|block| block.iter().sum())
         .collect();
     elves.sort_unstable();
-    Ok(elves)
+    elves
 }
 
 fn part_1(elves: &[usize]) -> Option<usize> {
@@ -46,22 +21,41 @@ fn part_2(elves: &[usize]) -> usize {
     elves[(elves.len() - 3)..].iter().sum()
 }
 
-#[test]
-fn example_1() {
-    assert_eq!(part_1(&input(true).unwrap()), Some(24000));
-}
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "
+    1000
+    2000
+    3000
+    
+    4000
+    
+    5000
+    6000
+    
+    7000
+    8000
+    9000
+    
+    10000";
 
-#[test]
-fn solution_1() {
-    assert_eq!(part_1(&input(false).unwrap()), Some(67633));
-}
+    #[test]
+    fn example_1() {
+        assert_eq!(part_1(&parse_input(EXAMPLE)), Some(24000));
+    }
 
-#[test]
-fn example_2() {
-    assert_eq!(part_2(&input(true).unwrap()), 45000);
-}
+    #[test]
+    fn solution_1() {
+        assert_eq!(part_1(&parse_input(&read_input())), Some(67633));
+    }
 
-#[test]
-fn solution_2() {
-    assert_eq!(part_2(&input(false).unwrap()), 199_628);
+    #[test]
+    fn example_2() {
+        assert_eq!(part_2(&parse_input(EXAMPLE)), 45000);
+    }
+
+    #[test]
+    fn solution_2() {
+        assert_eq!(part_2(&parse_input(&read_input())), 199628);
+    }
 }

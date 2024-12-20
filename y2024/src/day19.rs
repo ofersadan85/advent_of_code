@@ -77,8 +77,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        read_input!();
-        assert_eq!(count_possible_total(&input, true), 260);
+        assert_eq!(count_possible_total(&read_input(), true), 260);
     }
     #[test]
     fn example_2() {
@@ -87,7 +86,6 @@ mod tests {
 
     #[test]
     fn part_2() {
-        read_input!();
-        assert_eq!(count_possible_total(&input, false), 639963796864990);
+        assert_eq!(count_possible_total(&read_input(), false), 639963796864990);
     }
 }

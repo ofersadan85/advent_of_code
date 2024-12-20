@@ -93,8 +93,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        read_input!();
-        assert_eq!(shortest_distance(&input, 71, 1024), 372);
+        assert_eq!(shortest_distance(&read_input(), 71, 1024), 372);
     }
 
     #[test]
@@ -104,7 +103,6 @@ mod tests {
 
     #[test]
     fn part_2() {
-        read_input!();
-        assert_eq!(first_block(&input, 71).unwrap(), "25,6");
+        assert_eq!(first_block(&read_input(), 71).unwrap(), "25,6");
     }
 }

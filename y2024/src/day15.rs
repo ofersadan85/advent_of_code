@@ -233,8 +233,7 @@ mod tests {
 
     #[test]
     fn part_1() {
-        read_input!();
-        let (grid, instructions) = parse_input(&input).unwrap();
+        let (grid, instructions) = parse_input(&read_input()).unwrap();
         let result = instructions
             .iter()
             .try_fold(grid, |grid, &direction| push_step(grid, direction))
@@ -258,8 +257,7 @@ mod tests {
 
     #[test]
     fn part_2() {
-        read_input!();
-        let (grid, instructions) = parse_input(&input).unwrap();
+        let (grid, instructions) = parse_input(&read_input()).unwrap();
         let expanded = expand_grid(&grid).unwrap();
         let result = instructions
             .iter()

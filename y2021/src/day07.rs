@@ -1,18 +1,16 @@
+use advent_of_code_macros::aoc_tests;
 use itertools::Itertools;
 
-const PATH: &str = "../inputs/2021/day07.txt";
-const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
-
 fn calc_fuel(data: &[u32]) -> u32 {
-    let (min, max) = data.iter().minmax().into_option().unwrap();
+    let (min, max) = data.iter().minmax().into_option().unwrap_or((&0, &0));
     (*min..*max)
         .map(|i| data.iter().map(|x| x.abs_diff(i)).sum())
         .min()
-        .unwrap()
+        .unwrap_or_default()
 }
 
 fn calc_fuel_increasing(data: &[u32]) -> u32 {
-    let (min, max) = data.iter().minmax().into_option().unwrap();
+    let (min, max) = data.iter().minmax().into_option().unwrap_or((&0, &0));
     (*min..*max)
         .map(|i| {
             data.iter()
@@ -23,40 +21,40 @@ fn calc_fuel_increasing(data: &[u32]) -> u32 {
                 .sum()
         })
         .min()
-        .unwrap()
+        .unwrap_or_default()
 }
 
-fn input(example: bool) -> Vec<u32> {
-    if example {
-        EXAMPLE.to_string()
-    } else {
-        std::fs::read_to_string(PATH).unwrap()
+#[aoc_tests]
+mod tests {
+    const EXAMPLE: &str = "16,1,2,0,4,2,7,1,2,14";
+
+    #[test]
+    fn example_1() {
+        let data: Vec<_> = EXAMPLE.split(',').filter_map(|s| s.parse().ok()).collect();
+        assert_eq!(calc_fuel(&data), 37);
     }
-    .split(',')
-    .map(|s| s.parse().unwrap())
-    .collect()
-}
 
-#[test]
-fn example_1() {
-    let data = input(true);
-    assert_eq!(calc_fuel(&data), 37);
-}
+    #[test]
+    fn example_2() {
+        let data: Vec<_> = EXAMPLE.split(',').filter_map(|s| s.parse().ok()).collect();
+        assert_eq!(calc_fuel_increasing(&data), 168);
+    }
 
-#[test]
-fn example_2() {
-    let data = input(true);
-    assert_eq!(calc_fuel_increasing(&data), 168);
-}
+    #[test]
+    fn part_1() {
+        let data: Vec<_> = read_input()
+            .split(',')
+            .filter_map(|s| s.parse().ok())
+            .collect();
+        assert_eq!(calc_fuel(&data), 356_958);
+    }
 
-#[test]
-fn task_1() {
-    let data = input(false);
-    assert_eq!(calc_fuel(&data), 356_958);
-}
-
-#[test]
-fn task_2() {
-    let data = input(false);
-    assert_eq!(calc_fuel_increasing(&data), 105_461_913);
+    #[test]
+    fn part_2() {
+        let data: Vec<_> = read_input()
+            .split(',')
+            .filter_map(|s| s.parse().ok())
+            .collect();
+        assert_eq!(calc_fuel_increasing(&data), 105_461_913);
+    }
 }
