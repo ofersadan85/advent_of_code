@@ -1,7 +1,1 @@
-use seq_macro::seq;
-seq!(N in 1..10 {
-    pub mod day0~N;
-});
-seq!(N in 10..=20 {
-    pub mod day~N;
-});
+advent_of_code_macros::all_the_days!(20);

@@ -56,3 +56,33 @@ pub fn aoc_tests(
     }
     item.into_token_stream().into()
 }
+
+#[proc_macro]
+pub fn all_the_days(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let last: u8 = if input.is_empty() {
+        25
+    } else {
+        syn::parse_macro_input!(input as syn::LitInt)
+            .base10_parse()
+            .unwrap()
+    };
+    if last <= 10 {
+        quote! {
+            use seq_macro::seq;
+            seq!(N in 1..=#last {
+                pub mod day0~N;
+            });
+        }
+    } else {
+        quote! {
+            use seq_macro::seq;
+            seq!(N in 1..10 {
+                pub mod day0~N;
+            });
+            seq!(N in 10..=#last {
+                pub mod day~N;
+            });
+        }
+    }
+    .into()
+}
