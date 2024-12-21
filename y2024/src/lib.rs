@@ -1,1 +1,1 @@
-advent_of_code_macros::all_the_days!(20);
+advent_of_code_macros::all_the_days!(21);
