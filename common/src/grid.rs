@@ -97,7 +97,7 @@ where
         }
     }
 
-    pub fn new_with_data(width: isize, height: isize, state: T, data: D) -> Self
+    pub fn new_with_data(width: isize, height: isize, state: T, data: &D) -> Self
     where
         D: Default + Clone,
     {

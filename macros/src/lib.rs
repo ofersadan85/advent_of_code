@@ -92,13 +92,13 @@ pub fn all_the_days(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 #[proc_macro_derive(CharEnum, attributes(c))]
 pub fn derive_char_enum(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
-    impls::enum_char_impls(input, false)
+    impls::enum_char_impls(&input, false)
 }
 
 #[proc_macro_derive(CharEnumDisplay, attributes(c))]
 pub fn derive_char_enum_display(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
-    impls::enum_char_impls(input, true)
+    impls::enum_char_impls(&input, true)
 }
 
 #[proc_macro_attribute]
@@ -129,7 +129,7 @@ pub fn char_enum(
             }
         }
     }
-    for v in item.variants.iter_mut() {
+    for v in &mut item.variants {
         if v.discriminant.is_none() {
             return syn::Error::new_spanned(
                 v,

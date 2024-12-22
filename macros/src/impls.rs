@@ -1,6 +1,6 @@
 use quote::quote;
 
-pub(crate) fn enum_char_impls(input: syn::DeriveInput, display: bool) -> proc_macro::TokenStream {
+pub fn enum_char_impls(input: &syn::DeriveInput, display: bool) -> proc_macro::TokenStream {
     let ident = &input.ident;
     let mut to_value = vec![];
     let mut from_value = vec![];
