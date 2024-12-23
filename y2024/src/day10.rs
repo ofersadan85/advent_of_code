@@ -1,21 +1,21 @@
-use advent_of_code_common::grid::{Grid, PositionedCell};
+use advent_of_code_common::grid::{Coords, Grid};
+use advent_of_code_macros::aoc_tests;
 use std::collections::HashSet;
 use tracing::instrument;
 
 #[instrument(skip(grid), level = "info")]
-fn count_paths(grid: &Grid<char>, unique: bool) -> usize {
+fn count_paths(grid: &Grid, unique: bool) -> usize {
     let mut sum = 0;
-    let trail_heads: Vec<&PositionedCell<char>> =
-        grid.cells.iter().filter(|&x| x.state == '0').collect();
+    let trail_heads: Vec<_> = grid.values().filter(|&x| x.data == '0').collect();
     for head in trail_heads {
         let mut paths = vec![head];
         for step in '1'..='9' {
             paths = paths
                 .iter()
-                .flat_map(|c| grid.neighbors_orthogonal_cells(c.x, c.y))
+                .flat_map(|c| grid.neighbors_orthogonal(&c.as_point()))
                 .filter_map(|c| {
                     if let Some(cell) = c {
-                        if cell.state == step {
+                        if cell.data == step {
                             return c;
                         }
                     }
@@ -26,7 +26,7 @@ fn count_paths(grid: &Grid<char>, unique: bool) -> usize {
         if unique {
             sum += paths
                 .iter()
-                .map(|c| (c.x, c.y))
+                .map(|c| (c.as_point()))
                 .collect::<HashSet<_>>()
                 .len();
         } else {
@@ -36,12 +36,8 @@ fn count_paths(grid: &Grid<char>, unique: bool) -> usize {
     sum
 }
 
-#[cfg(test)]
+#[aoc_tests]
 mod tests {
-    use super::*;
-    use std::fs::read_to_string;
-    use test_log::test;
-
     const EXAMPLE: &str = "89010123
                            78121874
                            87430965
@@ -53,31 +49,25 @@ mod tests {
 
     #[test]
     fn test_count_paths_unique() {
-        let grid: Grid<char> = EXAMPLE.parse().unwrap();
+        let grid: Grid = EXAMPLE.parse().unwrap();
         assert_eq!(count_paths(&grid, true), 36);
     }
 
     #[test]
     fn part_1() {
-        let grid: Grid<char> = read_to_string("../inputs/2024/day10.txt")
-            .unwrap()
-            .parse()
-            .unwrap();
+        let grid: Grid = read_input().parse().unwrap();
         assert_eq!(count_paths(&grid, true), 593);
     }
 
     #[test]
     fn test_count_paths() {
-        let grid: Grid<char> = EXAMPLE.parse().unwrap();
+        let grid: Grid = EXAMPLE.parse().unwrap();
         assert_eq!(count_paths(&grid, false), 81);
     }
 
     #[test]
     fn part_2() {
-        let grid: Grid<char> = read_to_string("../inputs/2024/day10.txt")
-            .unwrap()
-            .parse()
-            .unwrap();
+        let grid: Grid = read_input().parse().unwrap();
         assert_eq!(count_paths(&grid, false), 1192);
     }
 }

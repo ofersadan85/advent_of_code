@@ -1,7 +1,9 @@
-pub use crate::grid::{Direction, DxDy, GridCell};
-
 /// A 2D point with x and y coordinates.
+///
 /// The number type is `isize` to allow for negative coordinates, or minus operations.
+///
+/// This struct implements [`Coords`] so it can be used in grid algorithms,
+/// and anything that implements [`Coords`] can be converted to a `Point` using `.as_point()`.
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
     pub x: isize,
@@ -14,12 +16,22 @@ impl std::fmt::Display for Point {
     }
 }
 
+/// An implementation of [`PartialOrd`] and [`Ord`] is required to use [`Point`] as a key in a [`BTreeMap`].
+///
+/// The ordering is first by `y` coordinate, then by `x` coordinate.
+///
+/// Incidentally, this also facilitates printing a grid of points in the correct order.
 impl PartialOrd for Point {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.y.cmp(&other.y).then(self.x.cmp(&other.x)))
     }
 }
 
+/// An implementation of [`PartialOrd`] and [`Ord`] is required to use [`Point`] as a key in a [`BTreeMap`].
+///
+/// The ordering is first by `y` coordinate, then by `x` coordinate.
+///
+/// Incidentally, this also facilitates printing a grid of points in the correct order.
 impl Ord for Point {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.y.cmp(&other.y).then(self.x.cmp(&other.x))
@@ -98,10 +110,31 @@ pub trait Coords {
     /// assert_eq!(point.direction_to(&other), Some(Direction::SouthEast));
     /// ```
     fn direction_to(&self, other: &dyn Coords) -> Option<Direction> {
-        Direction::from_dxdy(other.x() - self.x(), other.y() - self.y())
+        let diff = (other.x() - self.x(), other.y() - self.y());
+        Direction::try_from(diff.as_point()).ok()
+    }
+
+    /// Get the neighbor coordinates in a given [`Direction`], at distance `n`.
+    ///
+    /// As with all [`Direction`] methods, `x = 0` is to the west of positive x, and `y = 0` is to the north of positive y.
+    ///
+    /// # Example
+    /// ```rust
+    /// use advent_of_code_common::coords::{Point, Coords, Direction};
+    /// let point = Point::default();
+    /// assert_eq!(point.neighbor_at_n(&Direction::East, 2), Point { x: 2, y: 0 });
+    /// assert_eq!(point.neighbor_at_n(&Direction::NorthWest, 2), Point { x: -2, y: -2 });
+    /// ```
+    fn neighbor_at_n(&self, direction: &Direction, n: isize) -> Point {
+        Point {
+            x: self.x() + direction.x() * n,
+            y: self.y() + direction.y() * n,
+        }
     }
 
     /// Get the closest neighbor coordinates in a given [`Direction`].
+    ///
+    /// This is equivalent to calling `self.neighbor_at_n(direction, 1)`.
     ///
     /// As with all [`Direction`] methods, `x = 0` is to the west of positive x, and `y = 0` is to the north of positive y.
     ///
@@ -113,10 +146,7 @@ pub trait Coords {
     /// assert_eq!(point.neighbor_at(&Direction::NorthWest), Point { x: -1, y: -1 });
     /// ```
     fn neighbor_at(&self, direction: &Direction) -> Point {
-        Point {
-            x: self.x() + direction.dx(),
-            y: self.y() + direction.dy(),
-        }
+        self.neighbor_at_n(direction, 1)
     }
 
     /// Get the coordinates of the 4 closest orthogonal (cardinal direction) neighbors.
@@ -277,16 +307,6 @@ where
     }
 }
 
-impl<T> Coords for GridCell<T> {
-    fn x(&self) -> isize {
-        self.point.x
-    }
-
-    fn y(&self) -> isize {
-        self.point.y
-    }
-}
-
 impl<N> From<(N, N)> for Point
 where
     isize: From<N>,
@@ -374,20 +394,349 @@ where
     }
 }
 
-impl<T> From<GridCell<T>> for Point {
-    fn from(cell: GridCell<T>) -> Self {
-        Self {
-            x: cell.point.x,
-            y: cell.point.y,
+/// An enum representing the 8 cardinal and diagonal directions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Direction {
+    North,
+    South,
+    East,
+    West,
+    NorthEast,
+    NorthWest,
+    SouthEast,
+    SouthWest,
+}
+
+impl std::fmt::Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::North => write!(f, "↑"),
+            Self::South => write!(f, "↓"),
+            Self::East => write!(f, "→"),
+            Self::West => write!(f, "←"),
+            Self::NorthEast => write!(f, "↗"),
+            Self::NorthWest => write!(f, "↖"),
+            Self::SouthEast => write!(f, "↘"),
+            Self::SouthWest => write!(f, "↙"),
         }
     }
 }
 
-impl<T> From<&GridCell<T>> for Point {
-    fn from(cell: &GridCell<T>) -> Self {
-        Self {
-            x: cell.point.x,
-            y: cell.point.y,
+impl TryFrom<char> for Direction {
+    type Error = &'static str;
+
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+        match value {
+            'U' | 'N' | '↑' | '^' => Ok(Self::North),
+            'D' | 'S' | '↓' | 'v' => Ok(Self::South),
+            'L' | 'E' | '→' | '>' => Ok(Self::East),
+            'R' | 'W' | '←' | '<' => Ok(Self::West),
+            '↗' => Ok(Self::NorthEast),
+            '↖' => Ok(Self::NorthWest),
+            '↘' => Ok(Self::SouthEast),
+            '↙' => Ok(Self::SouthWest),
+            _ => Err("Invalid character in input"),
+        }
+    }
+}
+
+impl Direction {
+    /// Get the 4 cardinal (orthogonal) directions, clockwise starting from `North`.
+    pub const fn orthogonal() -> [Self; 4] {
+        [Self::North, Self::East, Self::South, Self::West]
+    }
+
+    /// Get the 4 diagonal directions, clockwise starting from `NorthEast`.
+    pub const fn diagonal() -> [Self; 4] {
+        [
+            Self::NorthEast,
+            Self::SouthEast,
+            Self::SouthWest,
+            Self::NorthWest,
+        ]
+    }
+
+    /// Get all 8 cardinal and diagonal directions, clockwise starting from `North`.
+    pub const fn all() -> [Self; 8] {
+        [
+            Self::North,
+            Self::NorthEast,
+            Self::East,
+            Self::SouthEast,
+            Self::South,
+            Self::SouthWest,
+            Self::West,
+            Self::NorthWest,
+        ]
+    }
+}
+
+impl Direction {
+    #[must_use]
+    pub const fn turn_cw_45(&self) -> Self {
+        match self {
+            Self::North => Self::NorthEast,
+            Self::South => Self::SouthWest,
+            Self::East => Self::SouthEast,
+            Self::West => Self::NorthWest,
+            Self::NorthEast => Self::East,
+            Self::NorthWest => Self::North,
+            Self::SouthEast => Self::South,
+            Self::SouthWest => Self::West,
+        }
+    }
+
+    #[must_use]
+    pub const fn turn_cw_90(&self) -> Self {
+        self.turn_cw_45().turn_cw_45()
+    }
+
+    #[must_use]
+    pub const fn turn_180(&self) -> Self {
+        self.turn_cw_90().turn_cw_90()
+    }
+
+    #[must_use]
+    pub const fn turn_cw_270(&self) -> Self {
+        self.turn_180().turn_cw_90()
+    }
+}
+
+impl From<Direction> for Point {
+    fn from(direction: Direction) -> Self {
+        let x = match direction {
+            Direction::North | Direction::South => 0,
+            Direction::East | Direction::NorthEast | Direction::SouthEast => 1,
+            Direction::West | Direction::NorthWest | Direction::SouthWest => -1,
+        };
+        let y = match direction {
+            Direction::North | Direction::NorthEast | Direction::NorthWest => -1,
+            Direction::South | Direction::SouthEast | Direction::SouthWest => 1,
+            Direction::East | Direction::West => 0,
+        };
+        Self { x, y }
+    }
+}
+
+impl From<&Direction> for Point {
+    fn from(direction: &Direction) -> Self {
+        Point::from(*direction)
+    }
+}
+
+impl TryFrom<Point> for Direction {
+    type Error = ();
+    fn try_from(value: Point) -> Result<Self, Self::Error> {
+        use std::cmp::Ordering::{Equal, Greater, Less};
+        match (value.x.cmp(&0), value.y.cmp(&0)) {
+            (Less, Less) => Ok(Self::NorthWest),
+            (Less, Equal) => Ok(Self::West),
+            (Less, Greater) => Ok(Self::SouthWest),
+            (Equal, Less) => Ok(Self::North),
+            (Equal, Equal) => Err(()),
+            (Equal, Greater) => Ok(Self::South),
+            (Greater, Less) => Ok(Self::NorthEast),
+            (Greater, Equal) => Ok(Self::East),
+            (Greater, Greater) => Ok(Self::SouthEast),
+        }
+    }
+}
+
+impl TryFrom<&Point> for Direction {
+    type Error = <Self as TryFrom<Point>>::Error;
+    fn try_from(value: &Point) -> Result<Self, Self::Error> {
+        Self::try_from(*value)
+    }
+}
+
+impl<C: Coords> std::ops::Add<C> for Point {
+    type Output = Point;
+
+    fn add(self, rhs: C) -> Self::Output {
+        Point {
+            x: self.x + rhs.x(),
+            y: self.y + rhs.y(),
+        }
+    }
+}
+
+impl<C: Coords> std::ops::Add<C> for &Point {
+    type Output = Point;
+
+    fn add(self, rhs: C) -> Self::Output {
+        Point {
+            x: self.x + rhs.x(),
+            y: self.y + rhs.y(),
+        }
+    }
+}
+
+impl<C: Coords> std::ops::AddAssign<C> for Point {
+    fn add_assign(&mut self, rhs: C) {
+        self.x += rhs.x();
+        self.y += rhs.y();
+    }
+}
+
+impl<C: Coords> std::ops::Sub<C> for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: C) -> Self::Output {
+        Point {
+            x: self.x - rhs.x(),
+            y: self.y - rhs.y(),
+        }
+    }
+}
+
+impl<C: Coords> std::ops::Sub<C> for &Point {
+    type Output = Point;
+
+    fn sub(self, rhs: C) -> Self::Output {
+        Point {
+            x: self.x - rhs.x(),
+            y: self.y - rhs.y(),
+        }
+    }
+}
+
+impl<C: Coords> std::ops::SubAssign<C> for Point {
+    fn sub_assign(&mut self, rhs: C) {
+        self.x -= rhs.x();
+        self.y -= rhs.y();
+    }
+}
+
+impl std::ops::Neg for Point {
+    type Output = Point;
+
+    fn neg(self) -> Self::Output {
+        Point {
+            x: -self.x,
+            y: -self.y,
+        }
+    }
+}
+
+impl std::ops::Neg for &Point {
+    type Output = Point;
+
+    fn neg(self) -> Self::Output {
+        Point {
+            x: -self.x,
+            y: -self.y,
+        }
+    }
+}
+
+impl<T> std::ops::Mul<T> for Point
+where
+    T: Into<isize>,
+{
+    type Output = Point;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl<T> std::ops::Mul<T> for &Point
+where
+    T: Into<isize>,
+{
+    type Output = Point;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl<T> std::ops::MulAssign<T> for Point
+where
+    T: Into<isize>,
+{
+    fn mul_assign(&mut self, rhs: T) {
+        let rhs = rhs.into();
+        self.x *= rhs;
+        self.y *= rhs;
+    }
+}
+
+impl<T> std::ops::Div<T> for Point
+where
+    T: Into<isize>,
+{
+    type Output = Point;
+
+    fn div(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl<T> std::ops::Div<T> for &Point
+where
+    T: Into<isize>,
+{
+    type Output = Point;
+
+    fn div(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl<T> std::ops::DivAssign<T> for Point
+where
+    T: Into<isize>,
+{
+    fn div_assign(&mut self, rhs: T) {
+        let rhs = rhs.into();
+        self.x /= rhs;
+        self.y /= rhs;
+    }
+}
+
+impl<T> std::ops::Mul<T> for Direction
+where
+    T: Into<isize>,
+{
+    type Output = Point;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Point {
+            x: self.x() * rhs,
+            y: self.y() * rhs,
+        }
+    }
+}
+
+impl<T> std::ops::Mul<T> for &Direction
+where
+    T: Into<isize>,
+{
+    type Output = Point;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        let rhs = rhs.into();
+        Point {
+            x: self.x() * rhs,
+            y: self.y() * rhs,
         }
     }
 }

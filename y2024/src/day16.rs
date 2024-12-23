@@ -1,4 +1,4 @@
-use advent_of_code_common::grid::{Direction, DxDy, Grid};
+use advent_of_code_common::grid::{Coords, Direction, Grid, Point};
 use advent_of_code_macros::aoc_tests;
 use std::collections::HashSet;
 use tracing::instrument;
@@ -10,22 +10,26 @@ enum State {
     DeadEnd,
 }
 
-impl TryFrom<char> for State {
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CellData {
+    state: State,
+    paths: HashSet<MazePath>,
+}
+
+impl TryFrom<char> for CellData {
     type Error = ();
 
     fn try_from(value: char) -> Result<Self, Self::Error> {
-        match value {
-            '.' | 'S' | 'E' => Ok(Self::Empty),
-            '#' => Ok(Self::Wall),
-            _ => Err(()),
-        }
+        let state = match value {
+            '.' | 'S' | 'E' => State::Empty,
+            '#' => State::Wall,
+            _ => return Err(()),
+        };
+        Ok(Self {
+            state,
+            paths: HashSet::new(),
+        })
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Point {
-    x: isize,
-    y: isize,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
@@ -40,7 +44,7 @@ impl MazePath {
         }
         let last_index = self.path.len() - 1;
         let (last2, last1) = (self.path[last_index - 1], self.path[last_index]);
-        Direction::from_dxdy(last1.x - last2.x, last1.y - last2.y).expect("Invalid direction")
+        Direction::try_from(last1 - last2).expect("Invalid direction")
     }
 
     fn cost(&self) -> usize {
@@ -48,8 +52,7 @@ impl MazePath {
         let mut cost = 1;
         for points in self.path.windows(3) {
             let [a, b] = [points[0], points[1]];
-            let new_direction =
-                Direction::from_dxdy(b.x - a.x, b.y - a.y).expect("Invalid direction");
+            let new_direction = Direction::try_from(b - a).expect("Invalid direction");
             if new_direction != direction {
                 cost += 1000;
                 direction = new_direction;
@@ -66,34 +69,36 @@ impl MazePath {
             let turn_left = turn_right.turn_180();
             Some([
                 Point {
-                    x: last.x + no_turn.dx(),
-                    y: last.y + no_turn.dy(),
+                    x: last.x + no_turn.x(),
+                    y: last.y + no_turn.y(),
                 },
                 Point {
-                    x: last.x + turn_right.dx(),
-                    y: last.y + turn_right.dy(),
+                    x: last.x + turn_right.x(),
+                    y: last.y + turn_right.y(),
                 },
                 Point {
-                    x: last.x + turn_left.dx(),
-                    y: last.y + turn_left.dy(),
+                    x: last.x + turn_left.x(),
+                    y: last.y + turn_left.y(),
                 },
             ])
         })
     }
 }
 
-type Maze = Grid<State, HashSet<MazePath>>;
+type Maze = Grid<CellData>;
 
-fn is_cell_dead(maze: &Maze, x: isize, y: isize) -> bool {
-    if (y == 1 && x == maze.width() - 2) || (y == maze.height() - 2 && x == 1) {
+fn is_cell_dead(maze: &Maze, c: &dyn Coords) -> bool {
+    if (c.y() == 1 && c.x() == maze.width() - 2) || (c.y() == maze.height() - 2 && c.x() == 1) {
         // Don't mark the start or end as a dead end
         return false;
     }
-    maze.get(x, y) == Some(State::Empty)
+    maze.get(c)
+        .is_some_and(|cell| cell.data.state == State::Empty)
         && maze
-            .neighbors_orthogonal(x, y)
+            .neighbors_orthogonal(c)
             .iter()
             .flatten()
+            .map(|n| n.data.state)
             .filter(|n| matches!(n, State::Empty))
             .count()
             <= 1
@@ -103,18 +108,19 @@ fn mark_dead_ends(maze: &mut Maze) {
     let mut to_visit = vec![];
     for y in 0..maze.height() {
         for x in 0..maze.width() {
-            if is_cell_dead(&maze, x, y) {
-                to_visit.push((x, y));
+            let p = (x, y).as_point();
+            if is_cell_dead(&maze, &p) {
+                to_visit.push(p);
             }
         }
     }
-    while let Some((x, y)) = to_visit.pop() {
-        if let Some(cell) = maze.get_cell_mut(x, y) {
-            cell.state = State::DeadEnd;
+    while let Some(p) = to_visit.pop() {
+        if let Some(cell) = maze.get_mut(&p) {
+            cell.data.state = State::DeadEnd;
         }
-        for neighbor in maze.neighbors_orthogonal_cells(x, y).iter().flatten() {
-            if is_cell_dead(&maze, neighbor.x, neighbor.y) {
-                to_visit.push((neighbor.x, neighbor.y));
+        for neighbor in maze.neighbors_orthogonal(&p).iter().flatten() {
+            if is_cell_dead(&maze, neighbor) {
+                to_visit.push(neighbor.as_point());
             }
         }
     }
@@ -128,30 +134,30 @@ fn calculate_paths(maze: &mut Maze) {
         y: maze.height() - 2,
     };
     let mut to_visit = vec![];
-    if let Some(cell) = maze.get_cell_mut(start.x, start.y) {
+    if let Some(cell) = maze.get_mut(&start) {
         let start_path = MazePath { path: vec![start] };
-        cell.data.insert(start_path);
+        cell.data.paths.insert(start_path);
         to_visit.push(cell.clone());
     }
     while let Some(cell) = to_visit.pop().and_then(|cell| {
-        if cell.state != State::Empty {
+        if cell.data.state != State::Empty {
             None
         } else {
             Some(cell)
         }
     }) {
-        for existing_path in cell.data {
+        for existing_path in cell.data.paths {
             let next_points: Vec<Point> = existing_path
                 .next_points()
-                .iter()
+                .into_iter()
                 .flatten()
-                .filter(|point| maze.get(point.x, point.y) == Some(State::Empty))
-                .copied()
+                .filter(|p| maze.get(p).is_some_and(|c| c.data.state == State::Empty))
                 .collect();
             for next_point in next_points {
-                if let Some(next_cell) = maze.get_cell_mut(next_point.x, next_point.y) {
+                if let Some(next_cell) = maze.get_mut(&next_point) {
                     let best_cost = next_cell
                         .data
+                        .paths
                         .iter()
                         .map(|path| path.cost())
                         .next()
@@ -160,13 +166,13 @@ fn calculate_paths(maze: &mut Maze) {
                     new_path.path.push(next_point);
                     let new_cost = new_path.cost();
                     if new_cost == best_cost {
-                        if next_cell.data.insert(new_path) {
-                            next_cell.data.retain(|path| path.cost() == best_cost);
+                        if next_cell.data.paths.insert(new_path) {
+                            next_cell.data.paths.retain(|path| path.cost() == best_cost);
                             to_visit.push(next_cell.clone());
                         }
                     } else if new_cost < best_cost {
-                        next_cell.data.clear();
-                        next_cell.data.insert(new_path);
+                        next_cell.data.paths.clear();
+                        next_cell.data.paths.insert(new_path);
                         to_visit.push(next_cell.clone());
                     }
                 }
@@ -177,8 +183,9 @@ fn calculate_paths(maze: &mut Maze) {
 
 fn lowest_cost_path(maze: &mut Maze) -> Option<usize> {
     calculate_paths(maze);
-    maze.get_cell(maze.width() - 2, 1)?
+    maze.get(&(maze.width() - 2, 1))?
         .data
+        .paths
         .iter()
         .map(|end| end.cost())
         .min()
@@ -187,10 +194,16 @@ fn lowest_cost_path(maze: &mut Maze) -> Option<usize> {
 fn count_cells_on_path(maze: &mut Maze) -> Option<usize> {
     calculate_paths(maze);
     print_maze(maze);
-    maze.get_cell(maze.width() - 2, 1).and_then(|cell| {
-        let min = cell.data.iter().map(|maze_path| maze_path.cost()).min()?;
+    maze.get(&(maze.width() - 2, 1)).and_then(|cell| {
+        let min = cell
+            .data
+            .paths
+            .iter()
+            .map(|maze_path| maze_path.cost())
+            .min()?;
         Some(
             cell.data
+                .paths
                 .iter()
                 .filter(|maze_path| maze_path.cost() == min)
                 .flat_map(|maze_path| maze_path.path.iter())
@@ -201,15 +214,17 @@ fn count_cells_on_path(maze: &mut Maze) -> Option<usize> {
 }
 
 fn print_maze(maze: &Maze) {
-    let end = maze.get_cell(maze.width() - 2, 1).unwrap();
+    let end = maze.get(&(maze.width() - 2, 1)).unwrap();
     let min = end
         .data
+        .paths
         .iter()
         .map(|maze_path| maze_path.cost())
         .min()
         .unwrap();
     let end_points = end
         .data
+        .paths
         .iter()
         .filter(|maze_path| maze_path.cost() == min)
         .flat_map(|maze_path| maze_path.path.iter())
@@ -217,11 +232,11 @@ fn print_maze(maze: &Maze) {
     for y in 0..maze.height() {
         print!("{}\t", y);
         for x in 0..maze.width() {
-            let cell = maze.get_cell(x, y).unwrap();
-            let point = Point { x, y };
+            let point = (x, y).as_point();
+            let cell = maze.get(&point).unwrap();
             print!(
                 "{}",
-                match (cell.state, cell.data.len() > 0, end_points.contains(&point),) {
+                match (cell.data.state, cell.data.paths.len() > 0, end_points.contains(&point),) {
                     // (_, _, _) => "E",
                     (_, _, true) => "0",
                     (State::DeadEnd, _, _) => " ",
@@ -296,6 +311,6 @@ mod tests {
     #[ignore = "Wrong answer"]
     fn part_2() {
         let mut maze: Maze = read_input().parse().unwrap();
-        assert_eq!(count_cells_on_path(&mut maze), Some(0));  // Got 469
+        assert_eq!(count_cells_on_path(&mut maze), Some(0)); // Got 469
     }
 }

@@ -1,37 +1,69 @@
-use advent_of_code_common::grid::Grid;
+use advent_of_code_common::grid::{Coords, Grid};
 use advent_of_code_macros::aoc_tests;
 use std::cell::Cell;
 use tracing::instrument;
 
-type Maze = Grid<char, Cell<u16>>;
+type Maze = Grid<CellData>;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CellData {
+    state: char,
+    distance: std::cell::Cell<u16>,
+}
+
+impl From<char> for CellData {
+    fn from(value: char) -> Self {
+        Self {
+            state: value,
+            distance: Cell::new(u16::MAX),
+        }
+    }
+}
+
+impl Default for CellData {
+    fn default() -> Self {
+        Self {
+            state: '.',
+            distance: Cell::new(u16::MAX),
+        }
+    }
+}
 
 fn shortest_distance(input: &str, size: isize, count: usize) -> u16 {
-    let mut maze = Maze::new(size, size, '.');
+    let mut maze = Maze::new_default(size, size);
     for line in input.lines().take(count) {
         let (x, y) = line.trim().split_once(',').expect("split");
-        let x = x.parse().expect("x");
-        let y = y.parse().expect("y");
-        maze.set(x, y, '#');
+        let x: isize = x.parse().expect("x");
+        let y: isize = y.parse().expect("y");
+        maze.set(&(x, y), CellData::from('#'));
     }
-    for cell in &maze.cells {
-        cell.data.set(u16::MAX);
-    }
-    maze.cells.first().expect("starting cell").data.set(0);
-    let mut to_visit = vec![(0, 0)];
-    while let Some((x, y)) = to_visit.pop() {
-        let current = maze.get_cell(x, y).expect("current cell").data.get();
-        for neighbor in maze.neighbors_orthogonal_cells(x, y).into_iter().flatten() {
-            if neighbor.state != '.' {
+    let start = (0_isize, 0).as_point();
+    maze.get_mut(&start)
+        .expect("starting cell")
+        .data
+        .distance
+        .set(0);
+    let mut to_visit = vec![start];
+    while let Some(p) = to_visit.pop() {
+        let current = maze.get(&p).expect("current cell").data.distance.get();
+        for neighbor in maze.neighbors_orthogonal(&p).into_iter().flatten() {
+            if neighbor.data.state != '.' {
                 continue;
             }
-            let old_value = neighbor.data.get();
+            let old_value = neighbor.data.distance.get();
             if old_value > current + 1 {
-                neighbor.data.set(current + 1);
-                to_visit.push((neighbor.x, neighbor.y));
+                neighbor.data.distance.set(current + 1);
+                to_visit.push(neighbor.as_point());
             }
         }
     }
-    maze.cells.last().expect("ending cell").data.get()
+    maze.cells
+        .last_entry()
+        .expect("last cell")
+        .get()
+        .data
+        .distance
+        .get()
 }
 
 #[instrument(skip(input))]

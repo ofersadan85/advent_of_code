@@ -1,45 +1,79 @@
+pub use crate::coords::{Coords, Direction, Point};
 use std::collections::BTreeMap;
 
-use crate::coords::{Coords, Point};
-
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct GridCell<'a, T = char> {
+pub struct GridCell<T = char> {
     pub point: Point,
     pub data: T,
-    pub grid: &'a Grid<'a, T>,
 }
 
-impl<'a, T> GridCell<'a, T> {
-    pub fn new(coords: &dyn Coords, data: T, grid: &Grid<T>) -> Self {
+impl<T> GridCell<T> {
+    pub fn new(c: &dyn Coords, data: T) -> Self {
         Self {
-            point: coords.as_point(),
+            point: c.as_point(),
             data,
-            grid,
         }
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, Clone)]
-pub struct Grid<'a, T> {
-    pub x_range: std::ops::Range<isize>,
-    pub y_range: std::ops::Range<isize>,
-    pub cells: BTreeMap<Point, GridCell<'a, T>>,
+impl<T: Default> Default for GridCell<T> {
+    fn default() -> Self {
+        Self {
+            point: Point::default(),
+            data: T::default(),
+        }
+    }
 }
 
-impl<'a, T> std::ops::Deref for Grid<'a, T> {
-    type Target = BTreeMap<Point, GridCell<'a, T>>;
+impl<T> From<GridCell<T>> for Point {
+    fn from(cell: GridCell<T>) -> Self {
+        Self {
+            x: cell.point.x,
+            y: cell.point.y,
+        }
+    }
+}
+
+impl<T> From<&GridCell<T>> for Point {
+    fn from(cell: &GridCell<T>) -> Self {
+        Self {
+            x: cell.point.x,
+            y: cell.point.y,
+        }
+    }
+}
+
+impl<T> Coords for GridCell<T> {
+    fn x(&self) -> isize {
+        self.point.x
+    }
+
+    fn y(&self) -> isize {
+        self.point.y
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+pub struct Grid<T = char> {
+    pub x_range: std::ops::Range<isize>,
+    pub y_range: std::ops::Range<isize>,
+    pub cells: BTreeMap<Point, GridCell<T>>,
+}
+
+impl<T> std::ops::Deref for Grid<T> {
+    type Target = BTreeMap<Point, GridCell<T>>;
     fn deref(&self) -> &Self::Target {
         &self.cells
     }
 }
 
-impl<'a, T> std::ops::DerefMut for Grid<'a, T> {
+impl<T> std::ops::DerefMut for Grid<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.cells
     }
 }
 
-impl<'a, T> std::str::FromStr for Grid<'a, T>
+impl<T> std::str::FromStr for Grid<T>
 where
     T: TryFrom<char>,
 {
@@ -61,7 +95,7 @@ where
                 let y = isize::try_from(y).map_err(|_| "Invalid y coordinate")?;
                 let point = (x, y).as_point();
                 let data = T::try_from(c).map_err(|_| "Invalid character in input")?;
-                grid.insert(point, GridCell::new(&point, data, &grid));
+                grid.insert(point, GridCell::new(&point, data));
             }
             width = width.max(line_width);
         }
@@ -71,7 +105,7 @@ where
     }
 }
 
-impl<'a, T> Grid<'a, T>
+impl<T> Grid<T>
 where
     T: Clone,
 {
@@ -84,7 +118,7 @@ where
         for y in 0..height {
             for x in 0..width {
                 let point = (x, y).as_point();
-                grid.insert(point, GridCell::new(&point, data.clone(), &grid));
+                grid.insert(point, GridCell::new(&point, data.clone()));
             }
         }
         grid.x_range = 0..width;
@@ -103,38 +137,14 @@ where
         };
         for y in 0..height {
             for x in 0..width {
-                cells.push(GridCell::new(x, y, T::default()));
+                let point = (x, y).as_point();
+                grid.cells
+                    .insert(point, GridCell::new(&point, T::default()));
             }
         }
         grid.x_range = 0..width;
         grid.y_range = 0..height;
         grid
-    }
-
-    pub fn new_with_data(width: isize, height: isize, state: T, data: &D) -> Self
-    where
-        D: Default + Clone,
-    {
-        let mut cells = Vec::new();
-        for y in 0..height {
-            for x in 0..width {
-                let mut current = GridCell::new(x, y, state);
-                current.data = data.clone();
-                cells.push(current);
-            }
-        }
-        Self {
-            x_range: 0..width,
-            y_range: 0..height,
-            cells,
-        }
-    }
-
-    fn index_of(&self, x: isize, y: isize) -> Option<usize> {
-        if !self.x_range.contains(&x) || !self.y_range.contains(&y) {
-            return None;
-        }
-        usize::try_from(y * self.x_range.end + x).ok()
     }
 
     pub const fn width(&self) -> isize {
@@ -145,35 +155,21 @@ where
         self.y_range.end - self.y_range.start
     }
 
-    pub fn get(&self, x: isize, y: isize) -> Option<T> {
-        self.get_cell(x, y).map(|c| c.state)
+    pub fn get(&self, c: &dyn Coords) -> Option<&GridCell<T>> {
+        self.cells.get(&c.as_point())
     }
 
-    pub fn get_cell(&self, x: isize, y: isize) -> Option<&GridCell<T, D>> {
-        self.cells.get(self.index_of(x, y)?)
+    pub fn get_mut(&mut self, c: &dyn Coords) -> Option<&mut GridCell<T>> {
+        self.cells.get_mut(&c.as_point())
     }
 
-    pub fn get_mut(&mut self, x: isize, y: isize) -> Option<&mut T> {
-        self.get_cell_mut(x, y).map(|c| &mut c.state)
-    }
-
-    pub fn get_cell_mut(&mut self, x: isize, y: isize) -> Option<&mut GridCell<T, D>> {
-        let index = self.index_of(x, y)?;
-        self.cells.get_mut(index)
-    }
-
-    pub fn set(&mut self, x: isize, y: isize, state: T) {
-        if let Some(index) = self.index_of(x, y) {
-            self.cells[index].state = state;
+    pub fn set(&mut self, c: &dyn Coords, data: T) {
+        if let Some(cell) = self.get_mut(c) {
+            cell.data = data;
+        } else {
+            let point = c.as_point();
+            self.insert(point, GridCell::new(&point, data));
         }
-    }
-
-    pub fn iter(&self) -> impl Iterator<Item = &T> {
-        self.cells.iter().map(|c| &c.state)
-    }
-
-    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut T> {
-        self.cells.iter_mut().map(|c| &mut c.state)
     }
 
     pub fn apply_steps_until(
@@ -183,7 +179,6 @@ where
     ) -> (Self, usize)
     where
         T: PartialEq,
-        D: PartialEq,
     {
         let mut steps = 0;
         loop {
@@ -199,7 +194,6 @@ where
     pub fn apply_step(&mut self, f: impl Fn(&Self) -> Self) -> bool
     where
         T: PartialEq,
-        D: PartialEq,
     {
         let new_grid = f(self);
         let changed = new_grid != *self;
@@ -207,285 +201,152 @@ where
         changed
     }
 
-    pub fn neighbors_orthogonal_n(&self, x: isize, y: isize, n: isize) -> [Option<T>; 4] {
-        [
-            self.get(x, y - n), // up
-            self.get(x + n, y), // right
-            self.get(x, y + n), // down
-            self.get(x - n, y), // left
-        ]
-    }
-
-    pub fn neighbors_diagonal_n(&self, x: isize, y: isize, n: isize) -> [Option<T>; 4] {
-        [
-            self.get(x - n, y - n), // up-left
-            self.get(x + n, y - n), // up-right
-            self.get(x + n, y + n), // down-right
-            self.get(x - n, y + n), // down-left
-        ]
-    }
-
-    pub fn neighbors_orthogonal_n_cells(
+    /// Get the neighbor cell in a given [`Direction`], at distance `n`.
+    ///
+    /// As with all [`Direction`] methods, `x = 0` is to the west of positive x, and `y = 0` is to the north of positive y.
+    pub fn neighbor_at_n(
         &self,
-        x: isize,
-        y: isize,
+        c: &dyn Coords,
+        direction: &Direction,
         n: isize,
-    ) -> [Option<&GridCell<T, D>>; 4] {
+    ) -> Option<&GridCell<T>> {
+        self.get(&c.neighbor_at_n(direction, n))
+    }
+
+    /// Get the closest neighbor cell in a given [`Direction`].
+    ///
+    /// This is equivalent to calling `self.neighbor_at_n(direction, 1)`.
+    ///
+    /// As with all [`Direction`] methods, `x = 0` is to the west of positive x, and `y = 0` is to the north of positive y.
+    pub fn neighbor_at(&self, c: &dyn Coords, direction: &Direction) -> Option<&GridCell<T>> {
+        self.neighbor_at_n(c, direction, 1)
+    }
+
+    pub fn neighbors_orthogonal_n(&self, c: &dyn Coords, n: isize) -> [Option<&GridCell<T>>; 4] {
         [
-            self.get_cell(x, y - n), // up
-            self.get_cell(x + n, y), // right
-            self.get_cell(x, y + n), // down
-            self.get_cell(x - n, y), // left
+            self.neighbor_at_n(c, &Direction::North, n),
+            self.neighbor_at_n(c, &Direction::East, n),
+            self.neighbor_at_n(c, &Direction::South, n),
+            self.neighbor_at_n(c, &Direction::West, n),
         ]
     }
 
-    pub fn neighbors_diagonal_n_cells(
-        &self,
-        x: isize,
-        y: isize,
-        n: isize,
-    ) -> [Option<&GridCell<T, D>>; 4] {
+    pub fn neighbors_orthogonal(&self, c: &dyn Coords) -> [Option<&GridCell<T>>; 4] {
+        self.neighbors_orthogonal_n(c, 1)
+    }
+
+    pub fn neighbors_diagonal_n(&self, c: &dyn Coords, n: isize) -> [Option<&GridCell<T>>; 4] {
         [
-            self.get_cell(x - n, y - n), // up-left
-            self.get_cell(x + n, y - n), // up-right
-            self.get_cell(x + n, y + n), // down-right
-            self.get_cell(x - n, y + n), // down-left
+            self.neighbor_at_n(c, &Direction::NorthEast, n),
+            self.neighbor_at_n(c, &Direction::SouthEast, n),
+            self.neighbor_at_n(c, &Direction::SouthWest, n),
+            self.neighbor_at_n(c, &Direction::NorthWest, n),
         ]
     }
 
-    pub fn neighbors_n(&self, x: isize, y: isize, n: isize) -> [Option<T>; 8] {
+    pub fn neighbors_diagonal(&self, c: &dyn Coords) -> [Option<&GridCell<T>>; 4] {
+        self.neighbors_diagonal_n(c, 1)
+    }
+
+    pub fn neighbors_n(&self, c: &dyn Coords, n: isize) -> [Option<&GridCell<T>>; 8] {
         let mut neighbors = [None; 8];
-        neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n(x, y, n));
-        neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n(x, y, n));
+        neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n(c, n));
+        neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n(c, n));
         neighbors
     }
 
-    pub fn neighbors_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&GridCell<T, D>>; 8] {
-        let mut neighbors = [None; 8];
-        neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n_cells(x, y, n));
-        neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n_cells(x, y, n));
-        neighbors
+    pub fn neighbors(&self, c: &dyn Coords) -> [Option<&GridCell<T>>; 8] {
+        self.neighbors_n(c, 1)
     }
 
-    pub fn neighbors_orthogonal(&self, x: isize, y: isize) -> [Option<T>; 4] {
-        self.neighbors_orthogonal_n(x, y, 1)
-    }
-
-    pub fn neighbors_diagonal(&self, x: isize, y: isize) -> [Option<T>; 4] {
-        self.neighbors_diagonal_n(x, y, 1)
-    }
-
-    pub fn neighbors(&self, x: isize, y: isize) -> [Option<T>; 8] {
-        self.neighbors_n(x, y, 1)
-    }
-
-    pub fn neighbors_orthogonal_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 4] {
-        self.neighbors_orthogonal_n_cells(x, y, 1)
-    }
-
-    pub fn neighbors_diagonal_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 4] {
-        self.neighbors_diagonal_n_cells(x, y, 1)
-    }
-
-    pub fn neighbors_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 8] {
-        self.neighbors_n_cells(x, y, 1)
-    }
-
-    pub fn neighbors_box_n(&self, x: isize, y: isize, n: isize) -> Vec<Option<T>> {
+    pub fn neighbors_box_n(&self, c: &dyn Coords, n: isize) -> Vec<Option<&GridCell<T>>> {
         let mut neighbors = Vec::new();
         for dy in -n..=n {
             for dx in -n..=n {
-                neighbors.push(self.get(x + dx, y + dy));
+                neighbors.push(self.get(&(c.x() + dx, c.y() + dy)));
             }
         }
         neighbors
     }
 
-    pub fn neighbors_box(&self, x: isize, y: isize) -> [Option<T>; 9] {
+    pub fn neighbors_box(&self, c: &dyn Coords) -> [Option<&GridCell<T>>; 9] {
         let mut neighbors = [None; 9];
-        let mut count = 0;
-        for dy in -1..=1 {
-            for dx in -1..=1 {
-                neighbors[count] = self.get(x + dx, y + dy);
-                count += 1;
-            }
-        }
+        neighbors.copy_from_slice(&self.neighbors_box_n(c, 1));
         neighbors
     }
 
-    pub fn neighbors_box_cells_n(
-        &self,
-        x: isize,
-        y: isize,
-        n: isize,
-    ) -> Vec<Option<&GridCell<T, D>>> {
-        let mut neighbors = Vec::new();
-        for dy in -n..=n {
-            for dx in -n..=n {
-                neighbors.push(self.get_cell(x + dx, y + dy));
-            }
-        }
-        neighbors
-    }
-
-    pub fn neighbors_box_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 9] {
-        let mut neighbors = [None; 9];
-        let mut count = 0;
-        for dy in -1..=1 {
-            for dx in -1..=1 {
-                neighbors[count] = self.get_cell(x + dx, y + dy);
-                count += 1;
-            }
-        }
-        neighbors
-    }
-
-    pub fn count_state(&self, state: T) -> usize
+    pub fn count_data(&self, data: T) -> usize
     where
         T: PartialEq,
     {
-        self.cells.iter().filter(|c| c.state == state).count()
+        self.cells.values().filter(|c| c.data == data).count()
     }
 
-    pub fn count_neighbors(&self, x: isize, y: isize, state: T) -> usize
+    pub fn count_neighbors(&self, c: &dyn Coords, data: T) -> usize
     where
         T: PartialEq,
     {
-        self.neighbors(x, y)
+        self.neighbors(c)
             .iter()
-            .filter(|&&s| s == Some(state))
+            .flatten()
+            .filter(|c| c.data == data)
             .count()
     }
 
-    pub fn sight_line(&self, x: isize, y: isize, dx: isize, dy: isize, blocks: &[T]) -> Vec<T>
-    where
-        T: PartialEq,
-    {
-        let mut result = Vec::new();
-        let mut x = x + dx;
-        let mut y = y + dy;
-        while let Some(state) = self.get(x, y) {
-            result.push(state);
-            if blocks.contains(&state) {
-                break;
-            }
-            x += dx;
-            y += dy;
-        }
-        result
-    }
-
-    pub fn sight_lines_all(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Vec<T>>
-    where
-        T: PartialEq,
-    {
-        let mut result = Vec::new();
-        for &dx in &[-1, 0, 1] {
-            for &dy in &[-1, 0, 1] {
-                if dx == 0 && dy == 0 {
-                    continue;
-                }
-                result.push(self.sight_line(x, y, dx, dy, blocks));
-            }
-        }
-        result
-    }
-
-    pub fn sight_lines_edges(&self, x: isize, y: isize, blocks: &[T]) -> Vec<Option<T>>
-    where
-        T: PartialEq,
-    {
-        let mut edges = Vec::new();
-        for &dx in &[-1, 0, 1] {
-            for &dy in &[-1, 0, 1] {
-                if dx == 0 && dy == 0 {
-                    continue;
-                }
-                edges.push(self.sight_line(x, y, dx, dy, blocks).last().copied());
-            }
-        }
-        edges
-    }
-
-    pub fn sight_line_cells(
+    pub fn sight_line(
         &self,
-        x: isize,
-        y: isize,
-        dx: isize,
-        dy: isize,
+        c: &dyn Coords,
+        direction: &Direction,
         blocks: &[T],
-    ) -> Vec<&GridCell<T, D>>
+    ) -> Vec<&GridCell<T>>
     where
         T: PartialEq,
     {
         let mut result = Vec::new();
-        let mut x = x + dx;
-        let mut y = y + dy;
-        while let Some(cell) = self.get_cell(x, y) {
+        let mut point = c.neighbor_at(direction);
+        while let Some(cell) = self.get(&point) {
             result.push(cell);
-            if blocks.contains(&cell.state) {
+            if blocks.contains(&cell.data) {
                 break;
             }
-            x += dx;
-            y += dy;
+            point = point.neighbor_at(direction);
         }
         result
     }
 
-    pub fn sight_lines_all_cells(
-        &self,
-        x: isize,
-        y: isize,
-        blocks: &[T],
-    ) -> Vec<Vec<&GridCell<T, D>>>
+    pub fn sight_lines_all(&self, c: &dyn Coords, blocks: &[T]) -> Vec<Vec<&GridCell<T>>>
     where
         T: PartialEq,
     {
-        let mut result = Vec::new();
-        for &dx in &[-1, 0, 1] {
-            for &dy in &[-1, 0, 1] {
-                if dx == 0 && dy == 0 {
-                    continue;
-                }
-                result.push(self.sight_line_cells(x, y, dx, dy, blocks));
-            }
-        }
-        result
+        Direction::all()
+            .iter()
+            .map(|d| self.sight_line(c, d, blocks))
+            .collect()
     }
 
-    pub fn sight_lines_edges_cells(
-        &self,
-        x: isize,
-        y: isize,
-        blocks: &[T],
-    ) -> Vec<Option<&GridCell<T, D>>>
+    pub fn sight_lines_edges(&self, c: &dyn Coords, blocks: &[T]) -> Vec<&GridCell<T>>
     where
         T: PartialEq,
     {
-        let mut edges = Vec::new();
-        for &dx in &[-1, 0, 1] {
-            for &dy in &[-1, 0, 1] {
-                if dx == 0 && dy == 0 {
-                    continue;
-                }
-                edges.push(self.sight_line_cells(x, y, dx, dy, blocks).last().copied());
-            }
-        }
-        edges
+        Direction::all()
+            .iter()
+            .filter_map(|d| self.sight_line(c, d, blocks).last().copied())
+            .collect()
     }
 }
 
-impl<T, D> std::fmt::Display for Grid<T, D>
+impl<T> std::fmt::Display for Grid<T>
 where
     T: std::fmt::Display + Copy,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for y in self.y_range.clone() {
-            for x in self.x_range.clone() {
-                let c = self.get(x, y).ok_or(std::fmt::Error)?;
-                write!(f, "{c}")?;
+        let mut current_row = self.y_range.start;
+        for cell in self.cells.values() {
+            if cell.point.y > current_row {
+                writeln!(f)?;
+                current_row = cell.point.y;
             }
-            writeln!(f)?;
+            write!(f, "{}", cell.data)?;
         }
         Ok(())
     }
@@ -526,7 +387,7 @@ mod tests {
     }
 
     #[test]
-    fn grid_from_str_test() {
+    fn grid_from_str() {
         let grid: Grid<State> = EXAMPLE.parse().unwrap();
         assert_eq!(grid.x_range, 0..10);
         assert_eq!(grid.y_range, 0..10);
@@ -534,213 +395,84 @@ mod tests {
     }
 
     #[test]
-    fn test_neighbors() {
+    fn neighbors() {
         use State::*;
         let grid: Grid<State> = EXAMPLE.parse().unwrap();
         assert_eq!(
-            grid.neighbors(0, 0),
+            grid.neighbors(&(0_isize, 0))
+                .iter()
+                .map(|c| c.map(|c| c.data))
+                .collect::<Vec<_>>(),
             [
                 None,        // up
                 Some(Floor), // right
                 Some(Empty), // down
                 None,        // left
-                None,        // up-left
                 None,        // up-right
                 Some(Empty), // down-right
                 None,        // down-left
+                None,        // up-left
             ]
         );
         assert_eq!(
-            grid.neighbors(5, 5),
+            grid.neighbors(&(5_isize, 5))
+                .iter()
+                .map(|c| c.map(|c| c.data))
+                .collect::<Vec<_>>(),
             [
                 Some(Empty), // up
                 Some(Empty), // right
                 Some(Floor), // down
                 Some(Empty), // left
-                Some(Floor), // up-left
                 Some(Empty), // up-right
                 Some(Floor), // down-right
-                Some(Empty)  // down-left
+                Some(Empty), // down-left
+                Some(Floor), // up-left
             ]
         );
         assert_eq!(
-            grid.neighbors(9, 9),
+            grid.neighbors(&(9_isize, 9))
+                .iter()
+                .map(|c| c.map(|c| c.data))
+                .collect::<Vec<_>>(),
             [
                 Some(Empty), // up
                 None,        // right
                 None,        // down
                 Some(Empty), // left
-                Some(Floor), // up-left
                 None,        // up-right
                 None,        // down-right
                 None,        // down-left
+                Some(Floor), // up-left
             ]
         );
     }
 
     #[test]
-    fn test_box() {
+    fn neighbors_box() {
         let example = "123\n456\n789";
         let grid: Grid<char> = example.parse().unwrap();
         assert_eq!(
-            grid.neighbors_box(1, 1),
-            "123456789".chars().map(Some).collect::<Vec<_>>().as_slice()
+            grid.neighbors_box(&(1_isize, 1))
+                .iter()
+                .flatten()
+                .map(|c| c.data)
+                .collect::<String>(),
+            "123456789"
         );
         assert_eq!(
-            grid.neighbors_box(0, 0)
+            grid.neighbors_box(&(0_isize, 0))
                 .iter()
-                .map(|c| c.unwrap_or_default())
+                .map(|c| c.map(|c| c.data).unwrap_or_default())
                 .collect::<String>(),
             "\0\0\0\012\045"
         );
         assert_eq!(
-            grid.neighbors_box_n(1, 1, 2)
+            grid.neighbors_box_n(&(1_isize, 1), 2)
                 .iter()
-                .map(|c| c.unwrap_or_default())
+                .map(|c| c.map(|c| c.data).unwrap_or_default())
                 .collect::<String>(),
             "\0\0\0\0\0\0123\0\0456\0\0789\0\0\0\0\0\0"
         )
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Direction {
-    North,
-    South,
-    East,
-    West,
-    NorthEast,
-    NorthWest,
-    SouthEast,
-    SouthWest,
-}
-
-impl std::fmt::Display for Direction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::North => write!(f, "↑"),
-            Self::South => write!(f, "↓"),
-            Self::East => write!(f, "→"),
-            Self::West => write!(f, "←"),
-            Self::NorthEast => write!(f, "↗"),
-            Self::NorthWest => write!(f, "↖"),
-            Self::SouthEast => write!(f, "↘"),
-            Self::SouthWest => write!(f, "↙"),
-        }
-    }
-}
-
-impl TryFrom<char> for Direction {
-    type Error = &'static str;
-
-    fn try_from(value: char) -> Result<Self, Self::Error> {
-        match value {
-            'U' | 'N' | '↑' | '^' => Ok(Self::North),
-            'D' | 'S' | '↓' | 'v' => Ok(Self::South),
-            'L' | 'E' | '→' | '>' => Ok(Self::East),
-            'R' | 'W' | '←' | '<' => Ok(Self::West),
-            '↗' => Ok(Self::NorthEast),
-            '↖' => Ok(Self::NorthWest),
-            '↘' => Ok(Self::SouthEast),
-            '↙' => Ok(Self::SouthWest),
-            _ => Err("Invalid character in input"),
-        }
-    }
-}
-
-impl Direction {
-    pub fn from_dxdy(dx: isize, dy: isize) -> Option<Self> {
-        use std::cmp::Ordering::{Equal, Greater, Less};
-        match (dx.cmp(&0), dy.cmp(&0)) {
-            (Less, Less) => Some(Self::NorthWest),
-            (Less, Equal) => Some(Self::West),
-            (Less, Greater) => Some(Self::SouthWest),
-            (Equal, Less) => Some(Self::North),
-            (Equal, Equal) => None,
-            (Equal, Greater) => Some(Self::South),
-            (Greater, Less) => Some(Self::NorthEast),
-            (Greater, Equal) => Some(Self::East),
-            (Greater, Greater) => Some(Self::SouthEast),
-        }
-    }
-    pub const fn orthogonal() -> [Self; 4] {
-        [Self::North, Self::East, Self::South, Self::West]
-    }
-    pub const fn diagonal() -> [Self; 4] {
-        [
-            Self::NorthEast,
-            Self::SouthEast,
-            Self::SouthWest,
-            Self::NorthWest,
-        ]
-    }
-    pub const fn all() -> [Self; 8] {
-        [
-            Self::North,
-            Self::NorthEast,
-            Self::East,
-            Self::SouthEast,
-            Self::South,
-            Self::SouthWest,
-            Self::West,
-            Self::NorthWest,
-        ]
-    }
-}
-
-pub trait DxDy {
-    fn dx(&self) -> isize;
-    fn dy(&self) -> isize;
-    fn dx_dy(&self) -> (isize, isize) {
-        (self.dx(), self.dy())
-    }
-}
-
-impl DxDy for Direction {
-    fn dx(&self) -> isize {
-        match self {
-            Self::North | Self::South => 0,
-            Self::East | Self::NorthEast | Self::SouthEast => 1,
-            Self::West | Self::NorthWest | Self::SouthWest => -1,
-        }
-    }
-
-    fn dy(&self) -> isize {
-        match self {
-            Self::North | Self::NorthEast | Self::NorthWest => -1,
-            Self::South | Self::SouthEast | Self::SouthWest => 1,
-            Self::East | Self::West => 0,
-        }
-    }
-}
-
-impl Direction {
-    #[must_use]
-    pub const fn turn_cw_45(&self) -> Self {
-        match self {
-            Self::North => Self::NorthEast,
-            Self::South => Self::SouthWest,
-            Self::East => Self::SouthEast,
-            Self::West => Self::NorthWest,
-            Self::NorthEast => Self::East,
-            Self::NorthWest => Self::North,
-            Self::SouthEast => Self::South,
-            Self::SouthWest => Self::West,
-        }
-    }
-
-    #[must_use]
-    pub const fn turn_cw_90(&self) -> Self {
-        self.turn_cw_45().turn_cw_45()
-    }
-
-    #[must_use]
-    pub const fn turn_180(&self) -> Self {
-        self.turn_cw_90().turn_cw_90()
-    }
-
-    #[must_use]
-    pub const fn turn_cw_270(&self) -> Self {
-        self.turn_180().turn_cw_90()
     }
 }
