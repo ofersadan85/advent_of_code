@@ -172,11 +172,7 @@ where
         }
     }
 
-    pub fn apply_steps_until(
-        &mut self,
-        f: impl Fn(&Self) -> Self,
-        limit: Option<usize>,
-    ) -> (Self, usize)
+    pub fn apply_steps_until(&mut self, f: impl Fn(&Self) -> Self, limit: Option<usize>) -> usize
     where
         T: PartialEq,
     {
@@ -185,7 +181,8 @@ where
             let new_grid = f(self);
             steps += 1;
             if new_grid == *self || limit.map_or(false, |limit| steps >= limit) {
-                return (new_grid, steps);
+                *self = new_grid;
+                return steps;
             }
             *self = new_grid;
         }
@@ -333,11 +330,32 @@ where
             .filter_map(|d| self.sight_line(c, d, blocks).last().copied())
             .collect()
     }
+
+    #[allow(clippy::range_plus_one)] // Can't use inclusive ranges here
+    pub fn expand(&mut self)
+    where
+        T: Default,
+    {
+        self.x_range = self.x_range.start - 1..self.x_range.end + 1;
+        self.y_range = self.y_range.start - 1..self.y_range.end + 1;
+        for x in self.x_range.clone() {
+            let p = (x, self.y_range.start).as_point();
+            self.insert(p, GridCell::new(&p, T::default()));
+            let p = (x, self.y_range.end - 1).as_point();
+            self.insert(p, GridCell::new(&p, T::default()));
+        }
+        for y in self.y_range.clone() {
+            let p = (self.x_range.start, y).as_point();
+            self.insert(p, GridCell::new(&p, T::default()));
+            let p = (self.x_range.end - 1, y).as_point();
+            self.insert(p, GridCell::new(&p, T::default()));
+        }
+    }
 }
 
 impl<T> std::fmt::Display for Grid<T>
 where
-    T: std::fmt::Display + Copy,
+    T: std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut current_row = self.y_range.start;
