@@ -1,41 +1,55 @@
+use std::collections::BTreeMap;
+
+use crate::coords::{Coords, Point};
+
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct PositionedCell<T, D = ()> {
-    pub x: isize,
-    pub y: isize,
-    pub state: T,
-    pub data: D,
+pub struct GridCell<'a, T = char> {
+    pub point: Point,
+    pub data: T,
+    pub grid: &'a Grid<'a, T>,
 }
 
-impl<T, D> PositionedCell<T, D>
-where
-    D: Default,
-{
-    pub fn new(x: isize, y: isize, state: T) -> Self {
+impl<'a, T> GridCell<'a, T> {
+    pub fn new(coords: &dyn Coords, data: T, grid: &Grid<T>) -> Self {
         Self {
-            x,
-            y,
-            state,
-            data: D::default(),
+            point: coords.as_point(),
+            data,
+            grid,
         }
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Grid<T, D = ()> {
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
+pub struct Grid<'a, T> {
     pub x_range: std::ops::Range<isize>,
     pub y_range: std::ops::Range<isize>,
-    pub cells: Vec<PositionedCell<T, D>>,
+    pub cells: BTreeMap<Point, GridCell<'a, T>>,
 }
 
-impl<T, D> std::str::FromStr for Grid<T, D>
+impl<'a, T> std::ops::Deref for Grid<'a, T> {
+    type Target = BTreeMap<Point, GridCell<'a, T>>;
+    fn deref(&self) -> &Self::Target {
+        &self.cells
+    }
+}
+
+impl<'a, T> std::ops::DerefMut for Grid<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.cells
+    }
+}
+
+impl<'a, T> std::str::FromStr for Grid<'a, T>
 where
     T: TryFrom<char>,
-    D: Default,
 {
     type Err = &'static str;
-
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut cells = Vec::new();
+        let mut grid = Grid {
+            x_range: 0..0,
+            y_range: 0..0,
+            cells: BTreeMap::new(),
+        };
         let mut height = 0;
         let mut width = 0;
         for (y, line) in s.lines().enumerate() {
@@ -45,56 +59,56 @@ where
                 line_width += 1;
                 let x = isize::try_from(x).map_err(|_| "Invalid x coordinate")?;
                 let y = isize::try_from(y).map_err(|_| "Invalid y coordinate")?;
-                let state = T::try_from(c).map_err(|_| "Invalid character in input")?;
-                cells.push(PositionedCell::new(x, y, state));
+                let point = (x, y).as_point();
+                let data = T::try_from(c).map_err(|_| "Invalid character in input")?;
+                grid.insert(point, GridCell::new(&point, data, &grid));
             }
             width = width.max(line_width);
         }
-        Ok(Self {
-            x_range: 0..width,
-            y_range: 0..height,
-            cells,
-        })
+        grid.x_range = 0..width;
+        grid.y_range = 0..height;
+        Ok(grid)
     }
 }
 
-impl<T, D> Grid<T, D>
+impl<'a, T> Grid<'a, T>
 where
-    T: Copy,
+    T: Clone,
 {
-    pub fn new(width: isize, height: isize, state: T) -> Self
-    where
-        D: Default,
-    {
-        let mut cells = Vec::new();
-        for y in 0..height {
-            for x in 0..width {
-                cells.push(PositionedCell::new(x, y, state));
-            }
-        }
-        Self {
+    pub fn new(width: isize, height: isize, data: T) -> Self {
+        let mut grid = Grid {
             x_range: 0..width,
             y_range: 0..height,
-            cells,
+            cells: BTreeMap::new(),
+        };
+        for y in 0..height {
+            for x in 0..width {
+                let point = (x, y).as_point();
+                grid.insert(point, GridCell::new(&point, data.clone(), &grid));
+            }
         }
+        grid.x_range = 0..width;
+        grid.y_range = 0..height;
+        grid
     }
 
     pub fn new_default(width: isize, height: isize) -> Self
     where
         T: Default,
-        D: Default,
     {
-        let mut cells = Vec::new();
-        for y in 0..height {
-            for x in 0..width {
-                cells.push(PositionedCell::new(x, y, T::default()));
-            }
-        }
-        Self {
+        let mut grid = Grid {
             x_range: 0..width,
             y_range: 0..height,
-            cells,
+            cells: BTreeMap::new(),
+        };
+        for y in 0..height {
+            for x in 0..width {
+                cells.push(GridCell::new(x, y, T::default()));
+            }
         }
+        grid.x_range = 0..width;
+        grid.y_range = 0..height;
+        grid
     }
 
     pub fn new_with_data(width: isize, height: isize, state: T, data: &D) -> Self
@@ -104,7 +118,7 @@ where
         let mut cells = Vec::new();
         for y in 0..height {
             for x in 0..width {
-                let mut current = PositionedCell::new(x, y, state);
+                let mut current = GridCell::new(x, y, state);
                 current.data = data.clone();
                 cells.push(current);
             }
@@ -135,7 +149,7 @@ where
         self.get_cell(x, y).map(|c| c.state)
     }
 
-    pub fn get_cell(&self, x: isize, y: isize) -> Option<&PositionedCell<T, D>> {
+    pub fn get_cell(&self, x: isize, y: isize) -> Option<&GridCell<T, D>> {
         self.cells.get(self.index_of(x, y)?)
     }
 
@@ -143,7 +157,7 @@ where
         self.get_cell_mut(x, y).map(|c| &mut c.state)
     }
 
-    pub fn get_cell_mut(&mut self, x: isize, y: isize) -> Option<&mut PositionedCell<T, D>> {
+    pub fn get_cell_mut(&mut self, x: isize, y: isize) -> Option<&mut GridCell<T, D>> {
         let index = self.index_of(x, y)?;
         self.cells.get_mut(index)
     }
@@ -216,7 +230,7 @@ where
         x: isize,
         y: isize,
         n: isize,
-    ) -> [Option<&PositionedCell<T, D>>; 4] {
+    ) -> [Option<&GridCell<T, D>>; 4] {
         [
             self.get_cell(x, y - n), // up
             self.get_cell(x + n, y), // right
@@ -230,7 +244,7 @@ where
         x: isize,
         y: isize,
         n: isize,
-    ) -> [Option<&PositionedCell<T, D>>; 4] {
+    ) -> [Option<&GridCell<T, D>>; 4] {
         [
             self.get_cell(x - n, y - n), // up-left
             self.get_cell(x + n, y - n), // up-right
@@ -246,12 +260,7 @@ where
         neighbors
     }
 
-    pub fn neighbors_n_cells(
-        &self,
-        x: isize,
-        y: isize,
-        n: isize,
-    ) -> [Option<&PositionedCell<T, D>>; 8] {
+    pub fn neighbors_n_cells(&self, x: isize, y: isize, n: isize) -> [Option<&GridCell<T, D>>; 8] {
         let mut neighbors = [None; 8];
         neighbors[0..4].copy_from_slice(&self.neighbors_orthogonal_n_cells(x, y, n));
         neighbors[4..8].copy_from_slice(&self.neighbors_diagonal_n_cells(x, y, n));
@@ -270,23 +279,15 @@ where
         self.neighbors_n(x, y, 1)
     }
 
-    pub fn neighbors_orthogonal_cells(
-        &self,
-        x: isize,
-        y: isize,
-    ) -> [Option<&PositionedCell<T, D>>; 4] {
+    pub fn neighbors_orthogonal_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 4] {
         self.neighbors_orthogonal_n_cells(x, y, 1)
     }
 
-    pub fn neighbors_diagonal_cells(
-        &self,
-        x: isize,
-        y: isize,
-    ) -> [Option<&PositionedCell<T, D>>; 4] {
+    pub fn neighbors_diagonal_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 4] {
         self.neighbors_diagonal_n_cells(x, y, 1)
     }
 
-    pub fn neighbors_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 8] {
+    pub fn neighbors_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 8] {
         self.neighbors_n_cells(x, y, 1)
     }
 
@@ -317,7 +318,7 @@ where
         x: isize,
         y: isize,
         n: isize,
-    ) -> Vec<Option<&PositionedCell<T, D>>> {
+    ) -> Vec<Option<&GridCell<T, D>>> {
         let mut neighbors = Vec::new();
         for dy in -n..=n {
             for dx in -n..=n {
@@ -327,7 +328,7 @@ where
         neighbors
     }
 
-    pub fn neighbors_box_cells(&self, x: isize, y: isize) -> [Option<&PositionedCell<T, D>>; 9] {
+    pub fn neighbors_box_cells(&self, x: isize, y: isize) -> [Option<&GridCell<T, D>>; 9] {
         let mut neighbors = [None; 9];
         let mut count = 0;
         for dy in -1..=1 {
@@ -413,7 +414,7 @@ where
         dx: isize,
         dy: isize,
         blocks: &[T],
-    ) -> Vec<&PositionedCell<T, D>>
+    ) -> Vec<&GridCell<T, D>>
     where
         T: PartialEq,
     {
@@ -436,7 +437,7 @@ where
         x: isize,
         y: isize,
         blocks: &[T],
-    ) -> Vec<Vec<&PositionedCell<T, D>>>
+    ) -> Vec<Vec<&GridCell<T, D>>>
     where
         T: PartialEq,
     {
@@ -457,7 +458,7 @@ where
         x: isize,
         y: isize,
         blocks: &[T],
-    ) -> Vec<Option<&PositionedCell<T, D>>>
+    ) -> Vec<Option<&GridCell<T, D>>>
     where
         T: PartialEq,
     {
@@ -661,6 +662,29 @@ impl Direction {
             (Greater, Equal) => Some(Self::East),
             (Greater, Greater) => Some(Self::SouthEast),
         }
+    }
+    pub const fn orthogonal() -> [Self; 4] {
+        [Self::North, Self::East, Self::South, Self::West]
+    }
+    pub const fn diagonal() -> [Self; 4] {
+        [
+            Self::NorthEast,
+            Self::SouthEast,
+            Self::SouthWest,
+            Self::NorthWest,
+        ]
+    }
+    pub const fn all() -> [Self; 8] {
+        [
+            Self::North,
+            Self::NorthEast,
+            Self::East,
+            Self::SouthEast,
+            Self::South,
+            Self::SouthWest,
+            Self::West,
+            Self::NorthWest,
+        ]
     }
 }
 
