@@ -79,7 +79,7 @@ where
 {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut grid = Grid {
+        let mut grid = Self {
             x_range: 0..0,
             y_range: 0..0,
             cells: BTreeMap::new(),
@@ -110,7 +110,7 @@ where
     T: Clone,
 {
     pub fn new(width: isize, height: isize, data: T) -> Self {
-        let mut grid = Grid {
+        let mut grid = Self {
             x_range: 0..width,
             y_range: 0..height,
             cells: BTreeMap::new(),
@@ -130,7 +130,7 @@ where
     where
         T: Default,
     {
-        let mut grid = Grid {
+        let mut grid = Self {
             x_range: 0..width,
             y_range: 0..height,
             cells: BTreeMap::new(),
@@ -275,21 +275,21 @@ where
         neighbors
     }
 
-    pub fn count_data(&self, data: T) -> usize
+    pub fn count_data(&self, data: &T) -> usize
     where
         T: PartialEq,
     {
-        self.cells.values().filter(|c| c.data == data).count()
+        self.cells.values().filter(|c| &c.data == data).count()
     }
 
-    pub fn count_neighbors(&self, c: &dyn Coords, data: T) -> usize
+    pub fn count_neighbors(&self, c: &dyn Coords, data: &T) -> usize
     where
         T: PartialEq,
     {
         self.neighbors(c)
             .iter()
             .flatten()
-            .filter(|c| c.data == data)
+            .filter(|c| &c.data == data)
             .count()
     }
 

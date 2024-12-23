@@ -1,7 +1,7 @@
 use advent_of_code_common::grid::{Coords, Direction, Grid, Point};
 use advent_of_code_macros::aoc_tests;
 use std::collections::{HashMap, HashSet};
-use tracing::instrument;
+use tracing::{debug, instrument};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct CellData {
@@ -114,14 +114,17 @@ fn mark_regions(grid: &Grid<CellData>) {
             }
             if let Some(cell) = grid.get(&p) {
                 cell.data.region_id.set(next_region_id);
-                for n in grid.neighbors_orthogonal(&p).into_iter().flatten() {
-                    if n.data.state == cell.data.state {
-                        to_visit.push(p);
-                    }
-                }
+                to_visit.extend(
+                    grid.neighbors_orthogonal(&p)
+                        .into_iter()
+                        .flatten()
+                        .filter(|n| n.data.state == cell.data.state && n.data.region_id.get() == 0)
+                        .map(Coords::as_point),
+                );
             }
         }
     }
+    debug!("Regions marked: {next_region_id}");
 }
 
 fn map_regions(grid: &Grid<CellData>) -> HashMap<usize, Region> {
@@ -162,13 +165,13 @@ fn map_regions(grid: &Grid<CellData>) -> HashMap<usize, Region> {
 }
 
 #[instrument(skip(input), level = "info")]
-fn part_1(input: &str) -> usize {
+fn sum_all_costs(input: &str) -> usize {
     let grid: Grid<CellData> = input.parse().unwrap();
     map_regions(&grid).values().map(Region::cost).sum()
 }
 
 #[instrument(skip(input), level = "info")]
-fn part_2(input: &str) -> usize {
+fn sum_all_discount_costs(input: &str) -> usize {
     let grid: Grid<CellData> = input.parse().unwrap();
     map_regions(&grid).values().map(Region::cost_discount).sum()
 }
@@ -190,26 +193,26 @@ mod tests {
     const EXAMPLE4: &str = "EEEEE\nEXXXX\nEEEEE\nEXXXX\nEEEEE";
 
     #[test]
-    fn test_costs() {
-        assert_eq!(part_1(EXAMPLE1), 140, "EXAMPLE1");
-        assert_eq!(part_1(EXAMPLE2), 772, "EXAMPLE2");
-        assert_eq!(part_1(EXAMPLE3), 1930, "EXAMPLE3");
+    fn example_1() {
+        assert_eq!(sum_all_costs(EXAMPLE1), 140, "EXAMPLE1");
+        assert_eq!(sum_all_costs(EXAMPLE2), 772, "EXAMPLE2");
+        assert_eq!(sum_all_costs(EXAMPLE3), 1930, "EXAMPLE3");
     }
 
     #[test]
-    fn test_part_1() {
-        assert_eq!(part_1(&read_input()), 1370100);
+    fn part_1() {
+        assert_eq!(sum_all_costs(&read_input()), 1370100);
     }
 
     #[test]
-    fn test_costs_discounted() {
-        assert_eq!(part_2(EXAMPLE1), 80, "EXAMPLE1");
-        assert_eq!(part_2(EXAMPLE2), 436, "EXAMPLE2");
-        assert_eq!(part_2(EXAMPLE4), 236, "EXAMPLE4");
+    fn example_2() {
+        assert_eq!(sum_all_discount_costs(EXAMPLE1), 80, "EXAMPLE1");
+        assert_eq!(sum_all_discount_costs(EXAMPLE2), 436, "EXAMPLE2");
+        assert_eq!(sum_all_discount_costs(EXAMPLE4), 236, "EXAMPLE4");
     }
 
     #[test]
-    fn test_part_2() {
-        assert_eq!(part_2(&read_input()), 818286);
+    fn part_2() {
+        assert_eq!(sum_all_discount_costs(&read_input()), 818286);
     }
 }

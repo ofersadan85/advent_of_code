@@ -21,6 +21,7 @@ impl std::fmt::Display for Point {
 /// The ordering is first by `y` coordinate, then by `x` coordinate.
 ///
 /// Incidentally, this also facilitates printing a grid of points in the correct order.
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for Point {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.y.cmp(&other.y).then(self.x.cmp(&other.x)))
@@ -284,7 +285,7 @@ pub trait Coords {
     /// use advent_of_code_common::coords::{Point, Coords};
     /// let box_n = Point::default().neighbors_box();
     /// assert_eq!(box_n.len(), 9);
-    /// assert_eq!(box_n.as_slice(), point.neighbors_box_n(1).as_slice());
+    /// assert_eq!(box_n.as_slice(), Point::default().neighbors_box_n(1).as_slice());
     /// ```
     fn neighbors_box(&self) -> [Point; 9] {
         let mut neighbors = [Point::default(); 9];
@@ -520,7 +521,7 @@ impl From<Direction> for Point {
 
 impl From<&Direction> for Point {
     fn from(direction: &Direction) -> Self {
-        Point::from(*direction)
+        Self::from(*direction)
     }
 }
 
@@ -550,10 +551,10 @@ impl TryFrom<&Point> for Direction {
 }
 
 impl<C: Coords> std::ops::Add<C> for Point {
-    type Output = Point;
+    type Output = Self;
 
     fn add(self, rhs: C) -> Self::Output {
-        Point {
+        Self {
             x: self.x + rhs.x(),
             y: self.y + rhs.y(),
         }
@@ -579,10 +580,10 @@ impl<C: Coords> std::ops::AddAssign<C> for Point {
 }
 
 impl<C: Coords> std::ops::Sub<C> for Point {
-    type Output = Point;
+    type Output = Self;
 
     fn sub(self, rhs: C) -> Self::Output {
-        Point {
+        Self {
             x: self.x - rhs.x(),
             y: self.y - rhs.y(),
         }
@@ -608,10 +609,10 @@ impl<C: Coords> std::ops::SubAssign<C> for Point {
 }
 
 impl std::ops::Neg for Point {
-    type Output = Point;
+    type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Point {
+        Self {
             x: -self.x,
             y: -self.y,
         }
@@ -633,11 +634,11 @@ impl<T> std::ops::Mul<T> for Point
 where
     T: Into<isize>,
 {
-    type Output = Point;
+    type Output = Self;
 
     fn mul(self, rhs: T) -> Self::Output {
         let rhs = rhs.into();
-        Point {
+        Self {
             x: self.x * rhs,
             y: self.y * rhs,
         }
@@ -674,11 +675,11 @@ impl<T> std::ops::Div<T> for Point
 where
     T: Into<isize>,
 {
-    type Output = Point;
+    type Output = Self;
 
     fn div(self, rhs: T) -> Self::Output {
         let rhs = rhs.into();
-        Point {
+        Self {
             x: self.x / rhs,
             y: self.y / rhs,
         }

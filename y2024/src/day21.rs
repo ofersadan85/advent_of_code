@@ -178,7 +178,7 @@ fn full_directions(seq: &str, robots: usize) -> Vec<Directional> {
 fn full_values(seq: &str, robots: usize) -> usize {
     let steps = full_directions(seq, robots);
     let value: usize = seq.replace('A', "").parse().expect("Number parse error");
-    let steps_str = steps.iter().map(|d| d.to_string()).collect::<String>();
+    let steps_str = steps.iter().map(ToString::to_string).collect::<String>();
     dbg!(steps_str);
     // dbg!(&steps.len());
     // dbg!(&value);

@@ -63,11 +63,11 @@ impl MazePath {
     }
 
     fn next_points(&self) -> Option<[Point; 3]> {
-        self.path.last().and_then(|last| {
+        self.path.last().map(|last| {
             let no_turn = self.last_direction();
             let turn_right = no_turn.turn_cw_90();
             let turn_left = turn_right.turn_180();
-            Some([
+            [
                 Point {
                     x: last.x + no_turn.x(),
                     y: last.y + no_turn.y(),
@@ -80,7 +80,7 @@ impl MazePath {
                     x: last.x + turn_left.x(),
                     y: last.y + turn_left.y(),
                 },
-            ])
+            ]
         })
     }
 }
@@ -109,7 +109,7 @@ fn mark_dead_ends(maze: &mut Maze) {
     for y in 0..maze.height() {
         for x in 0..maze.width() {
             let p = (x, y).as_point();
-            if is_cell_dead(&maze, &p) {
+            if is_cell_dead(maze, &p) {
                 to_visit.push(p);
             }
         }
@@ -119,7 +119,7 @@ fn mark_dead_ends(maze: &mut Maze) {
             cell.data.state = State::DeadEnd;
         }
         for neighbor in maze.neighbors_orthogonal(&p).iter().flatten() {
-            if is_cell_dead(&maze, neighbor) {
+            if is_cell_dead(maze, neighbor) {
                 to_visit.push(neighbor.as_point());
             }
         }
@@ -140,10 +140,10 @@ fn calculate_paths(maze: &mut Maze) {
         to_visit.push(cell.clone());
     }
     while let Some(cell) = to_visit.pop().and_then(|cell| {
-        if cell.data.state != State::Empty {
-            None
-        } else {
+        if cell.data.state == State::Empty {
             Some(cell)
+        } else {
+            None
         }
     }) {
         for existing_path in cell.data.paths {
@@ -159,21 +159,25 @@ fn calculate_paths(maze: &mut Maze) {
                         .data
                         .paths
                         .iter()
-                        .map(|path| path.cost())
+                        .map(MazePath::cost)
                         .next()
                         .unwrap_or(usize::MAX);
                     let mut new_path = existing_path.clone();
                     new_path.path.push(next_point);
                     let new_cost = new_path.cost();
-                    if new_cost == best_cost {
-                        if next_cell.data.paths.insert(new_path) {
-                            next_cell.data.paths.retain(|path| path.cost() == best_cost);
+                    match new_cost.cmp(&best_cost) {
+                        std::cmp::Ordering::Less => {
+                            next_cell.data.paths.clear();
+                            next_cell.data.paths.insert(new_path);
                             to_visit.push(next_cell.clone());
                         }
-                    } else if new_cost < best_cost {
-                        next_cell.data.paths.clear();
-                        next_cell.data.paths.insert(new_path);
-                        to_visit.push(next_cell.clone());
+                        std::cmp::Ordering::Equal => {
+                            if next_cell.data.paths.insert(new_path) {
+                                next_cell.data.paths.retain(|path| path.cost() == best_cost);
+                                to_visit.push(next_cell.clone());
+                            }
+                        }
+                        std::cmp::Ordering::Greater => {}
                     }
                 }
             }
@@ -187,7 +191,7 @@ fn lowest_cost_path(maze: &mut Maze) -> Option<usize> {
         .data
         .paths
         .iter()
-        .map(|end| end.cost())
+        .map(MazePath::cost)
         .min()
 }
 
@@ -195,12 +199,7 @@ fn count_cells_on_path(maze: &mut Maze) -> Option<usize> {
     calculate_paths(maze);
     print_maze(maze);
     maze.get(&(maze.width() - 2, 1)).and_then(|cell| {
-        let min = cell
-            .data
-            .paths
-            .iter()
-            .map(|maze_path| maze_path.cost())
-            .min()?;
+        let min = cell.data.paths.iter().map(MazePath::cost).min()?;
         Some(
             cell.data
                 .paths
@@ -215,13 +214,7 @@ fn count_cells_on_path(maze: &mut Maze) -> Option<usize> {
 
 fn print_maze(maze: &Maze) {
     let end = maze.get(&(maze.width() - 2, 1)).unwrap();
-    let min = end
-        .data
-        .paths
-        .iter()
-        .map(|maze_path| maze_path.cost())
-        .min()
-        .unwrap();
+    let min = end.data.paths.iter().map(MazePath::cost).min().unwrap();
     let end_points = end
         .data
         .paths
@@ -230,25 +223,30 @@ fn print_maze(maze: &Maze) {
         .flat_map(|maze_path| maze_path.path.iter())
         .collect::<HashSet<_>>();
     for y in 0..maze.height() {
-        print!("{}\t", y);
+        print!("{y}\t");
         for x in 0..maze.width() {
             let point = (x, y).as_point();
             let cell = maze.get(&point).unwrap();
             print!(
                 "{}",
-                match (cell.data.state, cell.data.paths.len() > 0, end_points.contains(&point),) {
+                match (
+                    cell.data.state,
+                    cell.data.paths.is_empty(),
+                    end_points.contains(&point),
+                ) {
                     // (_, _, _) => "E",
                     (_, _, true) => "0",
-                    (State::DeadEnd, _, _) => " ",
+                    (State::DeadEnd, _, _) => "D",
                     (State::Wall, _, _) => " ",
-                    (State::Empty, false, _) => ".",
-                    (State::Empty, true, _) => "X",
+                    (State::Empty, true, _) => ".",
+                    (State::Empty, false, _) => "X",
                 }
             );
         }
         println!();
     }
 }
+
 #[aoc_tests]
 mod tests {
     const EXAMPLE1: &str = "###############

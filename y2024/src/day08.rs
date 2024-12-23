@@ -26,19 +26,19 @@ fn tag_anti_nodes(grid: &mut Grid<CellData>, p1: &Point, p2: &Point, ignore_dist
         1..=1
     };
     let diff = p1 - *p2;
-    let mut changed = false;
     for distance in range.clone() {
         let p3 = p1 + diff * distance;
         if let Some(cell) = grid.get_mut(&p3) {
             cell.data.is_anti = true;
-            changed = true;
+        } else {
+            break;
         }
+    }
+    for distance in range {
         let p4 = p2 - diff * distance;
         if let Some(cell) = grid.get_mut(&p4) {
             cell.data.is_anti = true;
-            changed = true;
-        }
-        if !changed {
+        } else {
             break;
         }
     }
@@ -55,7 +55,7 @@ fn count_unique_anti_nodes(mut grid: Grid<CellData>, ignore_distance: bool) -> u
         let combos: Vec<(Point, Point)> = grid
             .values()
             .filter(|cell| cell.data.state == state)
-            .map(|cell| cell.as_point())
+            .map(Coords::as_point)
             .tuple_combinations()
             .collect();
         for (p1, p2) in &combos {

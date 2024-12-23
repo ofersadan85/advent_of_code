@@ -23,7 +23,7 @@ impl TryFrom<char> for SeatState {
 fn step_rule_1(seats: &Grid<SeatState>) -> Grid<SeatState> {
     let mut new_seats = seats.clone();
     for (old, new) in seats.values().zip(new_seats.values_mut()) {
-        let occupied = seats.count_neighbors(old, SeatState::Occupied);
+        let occupied = seats.count_neighbors(old, &SeatState::Occupied);
         new.data = match old.data {
             SeatState::Empty if occupied == 0 => SeatState::Occupied,
             SeatState::Occupied if occupied >= 4 => SeatState::Empty,
@@ -69,7 +69,7 @@ mod tests {
     fn example_1() {
         let mut seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
         seats.apply_steps_until(step_rule_1, None);
-        assert_eq!(seats.count_data(SeatState::Occupied), 37);
+        assert_eq!(seats.count_data(&SeatState::Occupied), 37);
     }
 
     #[test]
@@ -79,25 +79,23 @@ mod tests {
             .parse()
             .unwrap();
         seats.apply_steps_until(step_rule_1, None);
-        assert_eq!(seats.count_data(SeatState::Occupied), 2441);
+        assert_eq!(seats.count_data(&SeatState::Occupied), 2441);
     }
 
     #[test]
-    #[ignore = "Bugged, allocates too much memory"]
     fn example_2() {
         let mut seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
         seats.apply_steps_until(step_rule_2, None);
-        assert_eq!(seats.count_data(SeatState::Occupied), 26);
+        assert_eq!(seats.count_data(&SeatState::Occupied), 26);
     }
 
     #[test]
-    #[ignore = "Bugged, allocates too much memory"]
     fn part_2() {
         let mut seats: Grid<SeatState> = read_to_string("../inputs/2020/day11.txt")
             .unwrap()
             .parse()
             .unwrap();
         seats.apply_steps_until(step_rule_2, None);
-        assert_eq!(seats.count_data(SeatState::Occupied), 2190);
+        assert_eq!(seats.count_data(&SeatState::Occupied), 2190);
     }
 }

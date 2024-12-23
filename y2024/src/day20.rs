@@ -38,7 +38,7 @@ fn mark_distances(maze: &mut Maze, start: Point) {
                     .into_iter()
                     .flatten()
                     .filter(|n| n.data.state != '#')
-                    .map(|n| n.as_point()),
+                    .map(Coords::as_point),
             );
         }
     }
@@ -73,7 +73,7 @@ fn best_tunnels(mut maze: Maze, min_saved: isize, max_cheat: isize) -> usize {
     let p = maze
         .values()
         .find(|c| c.data.state == 'S')
-        .map(|c| c.as_point())
+        .map(Coords::as_point)
         .unwrap_or_default();
     mark_distances(&mut maze, p);
     find_tunnels(&maze, min_saved, max_cheat).len() / 2

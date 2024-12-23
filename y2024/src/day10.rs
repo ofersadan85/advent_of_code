@@ -26,7 +26,7 @@ fn count_paths(grid: &Grid, unique: bool) -> usize {
         if unique {
             sum += paths
                 .iter()
-                .map(|c| (c.as_point()))
+                .map(Coords::as_point)
                 .collect::<HashSet<_>>()
                 .len();
         } else {

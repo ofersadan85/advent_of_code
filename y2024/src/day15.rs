@@ -1,38 +1,28 @@
 use advent_of_code_common::grid::{Coords, Direction, Grid, GridCell};
-use advent_of_code_macros::aoc_tests;
+use advent_of_code_macros::{aoc_tests, char_enum};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
-use std::{collections::BTreeMap, ops::Deref};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    ops::Deref,
+};
+use tracing::debug;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[char_enum(display)]
 enum State {
-    Wall,
-    Box,
-    Robot,
-    Empty,
+    Wall = '#',
+    Box = 'O',
+    Robot = '@',
+    Empty = '.',
 }
 
-impl TryFrom<char> for State {
-    type Error = anyhow::Error;
-
-    fn try_from(value: char) -> Result<Self, Self::Error> {
-        match value {
-            '#' => Ok(Self::Wall),
-            'O' => Ok(Self::Box),
-            '@' => Ok(Self::Robot),
-            '.' => Ok(Self::Empty),
-            _ => Err(anyhow!("Invalid state: {value}")),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[char_enum(display)]
 enum Expanded {
-    Wall,
-    BoxLeft,
-    BoxRight,
-    Robot,
-    Empty,
+    Wall = '#',
+    BoxLeft = '[',
+    BoxRight = ']',
+    Robot = '@',
+    Empty = '.',
 }
 
 impl From<State> for [Expanded; 2] {
@@ -110,8 +100,8 @@ fn push_step(mut grid: Grid<State>, direction: Direction) -> Result<Grid<State>>
         }
         (State::Box, State::Empty) => {
             grid.set(&robot, State::Empty);
-            grid.set(&robot, State::Robot);
-            grid.set(&robot, State::Box);
+            grid.set(&first, State::Robot);
+            grid.set(&last, State::Box);
         }
     }
     Ok(grid)
@@ -138,7 +128,7 @@ fn expand_grid(grid: &Grid<State>) -> Result<Grid<Expanded>> {
 }
 
 fn push_step_expanded(mut grid: Grid<Expanded>, direction: Direction) -> Result<Grid<Expanded>> {
-    let mut to_move = Vec::new();
+    let mut to_move = BTreeSet::new();
     let robot = grid
         .values()
         .find(|cell| cell.data == Expanded::Robot)
@@ -153,31 +143,33 @@ fn push_step_expanded(mut grid: Grid<Expanded>, direction: Direction) -> Result<
             continue;
         }
         match next_cell.data {
-            Expanded::Empty => to_move.push(cell),
+            Expanded::Empty => {
+                to_move.insert(cell);
+            }
             Expanded::Wall => return Ok(grid),
             Expanded::BoxLeft => {
-                to_move.push(cell);
+                to_move.insert(cell);
                 to_visit.push(next_cell.as_point());
                 let right = grid
                     .neighbor_at(next_cell, &Direction::East)
                     .ok_or_else(|| anyhow!("BoxLeft must have adjacent BoxRight"))?;
                 debug_assert!(
                     right.data == Expanded::BoxRight,
-                    "BoxLeft must have adjacent BoxRight"
+                    "BoxLeft must have adjacent BoxRight: {right:?}"
                 );
                 if right.as_point() != cell.as_point() {
                     to_visit.push(right.as_point());
                 }
             }
             Expanded::BoxRight => {
-                to_move.push(cell);
+                to_move.insert(cell);
                 to_visit.push(next_cell.as_point());
                 let left = grid
                     .neighbor_at(next_cell, &Direction::West)
                     .ok_or_else(|| anyhow!("BoxRight must have adjacent BoxLeft"))?;
                 debug_assert!(
                     left.data == Expanded::BoxLeft,
-                    "BoxRight must have adjacent BoxLeft"
+                    "BoxRight must have adjacent BoxLeft: {left:?}"
                 );
                 if left.as_point() != cell.as_point() {
                     to_visit.push(left.as_point());
@@ -186,24 +178,24 @@ fn push_step_expanded(mut grid: Grid<Expanded>, direction: Direction) -> Result<
             Expanded::Robot => return Err(anyhow!("Robot pushes another robot")),
         }
     }
-    to_move = match direction {
-        Direction::North | Direction::South => to_move.into_iter().sorted_by_key(|cell| cell.y),
-        Direction::East | Direction::West => to_move.into_iter().sorted_by_key(|cell| cell.x),
-        _ => return Err(anyhow!("Direction must be orthogonal")),
-    }
-    .collect();
+    let mut to_move: Vec<_> = to_move.into_iter().collect();
     if Direction::South == direction || Direction::East == direction {
         to_move.reverse();
     }
+    debug!(?to_move);
     for cell in to_move {
+        let cell = grid
+            .get(&cell)
+            .ok_or_else(|| anyhow!("Cell not found"))?
+            .clone();
         let next_cell = grid
             .neighbor_at(&cell, &direction)
             .ok_or_else(|| anyhow!("Next cell out of bounds"))?
-            .as_point();
-        let current_data = grid.get(&cell).expect("known cell").data;
+            .clone();
         grid.set(&cell, Expanded::Empty);
-        grid.set(&next_cell, current_data);
+        grid.set(&next_cell, cell.data);
     }
+    println!("{grid}");
     Ok(grid)
 }
 
