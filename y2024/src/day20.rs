@@ -1,34 +1,44 @@
-use advent_of_code_common::grid::Grid;
+use advent_of_code_common::grid::{Coords, Grid, Point};
 use advent_of_code_macros::aoc_tests;
 use std::collections::{HashMap, HashSet};
 
-type Maze = Grid<char, Data>;
-type Point = (isize, isize);
+type Maze = Grid<CellData>;
 type Tunnel = (Point, Point);
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
-struct Data {
+struct CellData {
+    state: char,
     cheat: HashSet<Point>,
     distance: isize,
+}
+
+impl From<char> for CellData {
+    fn from(value: char) -> Self {
+        Self {
+            state: value,
+            cheat: HashSet::new(),
+            distance: isize::MAX,
+        }
+    }
 }
 
 fn mark_distances(maze: &mut Maze, start: Point) {
     let mut distance = 0;
     let mut to_visit = vec![start];
     let mut visited = HashSet::new();
-    while let Some((x, y)) = to_visit.pop() {
-        if let Some(cell) = maze.get_cell_mut(x, y) {
-            if !visited.insert((x, y)) || cell.state == '#' {
+    while let Some(p) = to_visit.pop() {
+        if let Some(cell) = maze.get_mut(&p) {
+            if !visited.insert(p) || cell.data.state == '#' {
                 continue;
             }
             cell.data.distance = distance;
             distance += 1;
             to_visit.extend(
-                maze.neighbors_orthogonal_cells(x, y)
+                maze.neighbors_orthogonal(&p)
                     .into_iter()
                     .flatten()
-                    .filter(|n| n.state != '#')
-                    .map(|n| (n.x, n.y)),
+                    .filter(|n| n.data.state != '#')
+                    .map(Coords::as_point),
             );
         }
     }
@@ -36,22 +46,22 @@ fn mark_distances(maze: &mut Maze, start: Point) {
 
 fn find_tunnels(maze: &Maze, min_saved: isize, max_cheat: isize) -> HashMap<Tunnel, isize> {
     let mut tunnels = HashMap::new();
-    for cell in &maze.cells {
-        if cell.state == '#' {
+    for cell in maze.values() {
+        if cell.data.state == '#' {
             continue;
         }
         for neighbor in maze
-            .neighbors_box_cells_n(cell.x, cell.y, max_cheat)
+            .neighbors_box_n(&cell, max_cheat)
             .into_iter()
             .flatten()
-            .filter(|n| n.state != '#')
+            .filter(|n| n.data.state != '#')
         {
             let path_distance = (cell.data.distance - neighbor.data.distance).abs();
-            let cheat_distance = (cell.x - neighbor.x).abs() + (cell.y - neighbor.y).abs();
+            let cheat_distance = cell.manhattan_distance(neighbor);
             let saved = (path_distance - cheat_distance).abs();
             if cheat_distance < path_distance && saved >= min_saved && cheat_distance <= max_cheat {
                 tunnels
-                    .entry(((cell.x, cell.y), (neighbor.x, neighbor.y)))
+                    .entry((cell.as_point(), neighbor.as_point()))
                     .or_insert(saved);
             }
         }
@@ -60,13 +70,12 @@ fn find_tunnels(maze: &Maze, min_saved: isize, max_cheat: isize) -> HashMap<Tunn
 }
 
 fn best_tunnels(mut maze: Maze, min_saved: isize, max_cheat: isize) -> usize {
-    let (x, y) = maze
-        .cells
-        .iter()
-        .find(|c| c.state == 'S')
-        .map(|c| (c.x, c.y))
+    let p = maze
+        .values()
+        .find(|c| c.data.state == 'S')
+        .map(Coords::as_point)
         .unwrap_or_default();
-    mark_distances(&mut maze, (x, y));
+    mark_distances(&mut maze, p);
     find_tunnels(&maze, min_saved, max_cheat).len() / 2
 }
 

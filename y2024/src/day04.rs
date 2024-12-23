@@ -1,14 +1,15 @@
-use advent_of_code_common::grid::{Grid, PositionedCell};
+use advent_of_code_common::grid::{Grid, GridCell};
+use advent_of_code_macros::aoc_tests;
 
-fn find_sequences(grid: &Grid<char>) -> usize {
-    let search: Vec<char> = "MAS".chars().collect(); // Doesn't include the starting X
+fn find_sequences(grid: &Grid) -> usize {
+    let search = "MAS"; // Doesn't include the starting X
     grid.cells
-        .iter()
-        .filter(|c| c.state == 'X')
+        .values()
+        .filter(|c| c.data == 'X')
         .map(|cell| {
-            grid.sight_lines_all(cell.x, cell.y, &['S'])
-                .iter()
-                .filter(|seq| seq.as_slice() == search)
+            grid.sight_lines_all(cell, &['S'])
+                .into_iter()
+                .filter(|seq| seq.iter().map(|c| c.data).collect::<String>() == search)
                 .count()
         })
         .sum()
@@ -18,51 +19,54 @@ fn slice_to_string(slice: &[Option<char>]) -> String {
     slice.iter().map(|c| c.unwrap_or(' ')).collect()
 }
 
-fn find_diagonal_sequences(grid: &Grid<char>) -> usize {
+fn find_diagonal_sequences(grid: &Grid) -> usize {
     // Cspell:disable-next-line
     let correct = ["MMSS", "MSSM", "SSMM", "SMMS"]; // The results of diagonal slices that are correct
-    let diag_str = |cell: &PositionedCell<char>| {
-        grid.neighbors_diagonal(cell.x, cell.y)
-            .iter()
-            .map(|c| c.unwrap_or_default())
-            .collect::<String>()
+    let diag_str = |cell: &GridCell| {
+        correct.contains(
+            &grid
+                .neighbors_diagonal(cell)
+                .iter()
+                .map(|c| c.map(|c| c.data).unwrap_or_default())
+                .collect::<String>()
+                .as_str(),
+        )
     };
     grid.cells
-        .iter()
-        .filter(|c| c.state == 'A' && correct.contains(&diag_str(c).as_str()))
+        .values()
+        .filter(|c| c.data == 'A' && diag_str(c))
         .count()
 }
 
-#[cfg(test)]
+#[aoc_tests]
 mod tests {
-    use super::*;
-    use std::fs::read_to_string;
-
     #[test]
-    fn test_example_1() {
-        let input = read_to_string("../inputs/2024/day04_example.txt").unwrap();
-        let grid: Grid<char> = input.parse().unwrap();
+    fn example_1() {
+        let grid: Grid = std::fs::read_to_string("../inputs/2024/day04_example.txt")
+            .unwrap()
+            .parse()
+            .unwrap();
         assert_eq!(find_sequences(&grid), 18);
     }
 
     #[test]
-    fn test_part_1() {
-        let input = read_to_string("../inputs/2024/day04.txt").unwrap();
-        let grid: Grid<char> = input.parse().unwrap();
+    fn part_1() {
+        let grid: Grid = read_input().parse().unwrap();
         assert_eq!(find_sequences(&grid), 2517);
     }
 
     #[test]
-    fn test_example_2() {
-        let input = read_to_string("../inputs/2024/day04_example.txt").unwrap();
-        let grid: Grid<char> = input.parse().unwrap();
+    fn example_2() {
+        let grid: Grid = std::fs::read_to_string("../inputs/2024/day04_example.txt")
+            .unwrap()
+            .parse()
+            .unwrap();
         assert_eq!(find_diagonal_sequences(&grid), 9);
     }
 
     #[test]
-    fn test_part_2() {
-        let input = read_to_string("../inputs/2024/day04.txt").unwrap();
-        let grid: Grid<char> = input.parse().unwrap();
+    fn part_2() {
+        let grid: Grid = read_input().parse().unwrap();
         assert_eq!(find_diagonal_sequences(&grid), 1960);
     }
 }

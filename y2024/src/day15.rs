@@ -1,38 +1,28 @@
-use advent_of_code_common::grid::{Direction, DxDy, Grid, PositionedCell};
-use advent_of_code_macros::aoc_tests;
+use advent_of_code_common::grid::{Coords, Direction, Grid, GridCell};
+use advent_of_code_macros::{aoc_tests, char_enum};
 use anyhow::{anyhow, Result};
 use itertools::Itertools;
-use std::ops::Deref;
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    ops::Deref,
+};
+use tracing::debug;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[char_enum(display)]
 enum State {
-    Wall,
-    Box,
-    Robot,
-    Empty,
+    Wall = '#',
+    Box = 'O',
+    Robot = '@',
+    Empty = '.',
 }
 
-impl TryFrom<char> for State {
-    type Error = anyhow::Error;
-
-    fn try_from(value: char) -> Result<Self, Self::Error> {
-        match value {
-            '#' => Ok(Self::Wall),
-            'O' => Ok(Self::Box),
-            '@' => Ok(Self::Robot),
-            '.' => Ok(Self::Empty),
-            _ => Err(anyhow!("Invalid state: {value}")),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[char_enum(display)]
 enum Expanded {
-    Wall,
-    BoxLeft,
-    BoxRight,
-    Robot,
-    Empty,
+    Wall = '#',
+    BoxLeft = '[',
+    BoxRight = ']',
+    Robot = '@',
+    Empty = '.',
 }
 
 impl From<State> for [Expanded; 2] {
@@ -50,19 +40,19 @@ trait Gps {
     fn gps(&self) -> isize;
 }
 
-impl Gps for PositionedCell<State> {
+impl Gps for GridCell<State> {
     fn gps(&self) -> isize {
-        match self.state {
-            State::Box => self.x + self.y * 100,
+        match self.data {
+            State::Box => self.x() + self.y() * 100,
             _ => 0,
         }
     }
 }
 
-impl Gps for PositionedCell<Expanded> {
+impl Gps for GridCell<Expanded> {
     fn gps(&self) -> isize {
-        match self.state {
-            Expanded::BoxLeft => self.x + self.y * 100,
+        match self.data {
+            Expanded::BoxLeft => self.x() + self.y() * 100,
             _ => 0,
         }
     }
@@ -84,17 +74,11 @@ fn parse_input(input: &str) -> Result<(Grid<State>, Vec<Direction>)> {
 
 fn push_step(mut grid: Grid<State>, direction: Direction) -> Result<Grid<State>> {
     let robot = grid
-        .cells
-        .iter()
-        .find(|cell| cell.state == State::Robot)
-        .ok_or_else(|| anyhow!("Robot not found"))?;
-    let direction_cells = grid.sight_line_cells(
-        robot.x,
-        robot.y,
-        direction.dx(),
-        direction.dy(),
-        &[State::Wall, State::Empty],
-    );
+        .values()
+        .find(|cell| cell.data == State::Robot)
+        .ok_or_else(|| anyhow!("Robot not found"))?
+        .as_point();
+    let direction_cells = grid.sight_line(&robot, &direction, &[State::Wall, State::Empty]);
     let first = direction_cells
         .first()
         .map(Deref::deref)
@@ -105,34 +89,36 @@ fn push_step(mut grid: Grid<State>, direction: Direction) -> Result<Grid<State>>
         .map(Deref::deref)
         .ok_or_else(|| anyhow!("Last seen cell must exist"))?
         .clone();
-    match (first.state, last.state) {
+    match (first.data, last.data) {
         (_, State::Wall) | (State::Wall, _) => {} // Do nothing
         (_, State::Box) => return Err(anyhow!("Cannot push box past the edge")),
         (_, State::Robot) | (State::Robot, _) => return Err(anyhow!("Robot sees another robot")),
         (State::Empty, State::Empty) => {
             debug_assert_eq!(first, last); // We should only get to see "two" empty cells if they are the same cell
-            grid.set(robot.x, robot.y, State::Empty);
-            grid.set(first.x, first.y, State::Robot);
+            grid.set(&robot, State::Empty);
+            grid.set(&first.as_point(), State::Robot);
         }
         (State::Box, State::Empty) => {
-            grid.set(robot.x, robot.y, State::Empty);
-            grid.set(first.x, first.y, State::Robot);
-            grid.set(last.x, last.y, State::Box);
+            grid.set(&robot, State::Empty);
+            grid.set(&first, State::Robot);
+            grid.set(&last, State::Box);
         }
     }
     Ok(grid)
 }
 
 fn expand_grid(grid: &Grid<State>) -> Result<Grid<Expanded>> {
-    let mut cells = Vec::with_capacity(grid.cells.len() * 2);
+    let mut cells = BTreeMap::new();
     let x_range = grid.x_range.start..grid.x_range.end * 2;
     let y_range = grid.y_range.clone();
-    for (index, cell) in grid.cells.iter().enumerate() {
+    for (index, cell) in grid.values().enumerate() {
         let index = isize::try_from(index).map_err(|e| anyhow!("Index out of range: {e}"))?;
-        let new_states: [Expanded; 2] = cell.state.into();
+        let new_states: [Expanded; 2] = cell.data.into();
         let x = ((index % x_range.end) * 2) % x_range.end;
-        cells.push(PositionedCell::new(x, cell.y, new_states[0]));
-        cells.push(PositionedCell::new(x + 1, cell.y, new_states[1]));
+        let p1 = (x, cell.y()).as_point();
+        let p2 = (x + 1, cell.y()).as_point();
+        cells.insert(p1, GridCell::new(&p1, new_states[0]));
+        cells.insert(p2, GridCell::new(&p2, new_states[1]));
     }
     Ok(Grid {
         x_range,
@@ -142,80 +128,82 @@ fn expand_grid(grid: &Grid<State>) -> Result<Grid<Expanded>> {
 }
 
 fn push_step_expanded(mut grid: Grid<Expanded>, direction: Direction) -> Result<Grid<Expanded>> {
-    let mut to_move = Vec::new();
+    let mut to_move = BTreeSet::new();
     let robot = grid
-        .cells
-        .iter()
-        .find(|cell| cell.state == Expanded::Robot)
-        .ok_or_else(|| anyhow!("Robot not found"))?;
+        .values()
+        .find(|cell| cell.data == Expanded::Robot)
+        .ok_or_else(|| anyhow!("Robot not found"))?
+        .as_point();
     let mut to_visit = vec![robot];
     while let Some(cell) = to_visit.pop() {
         let next_cell = grid
-            .get_cell(cell.x + direction.dx(), cell.y + direction.dy())
+            .neighbor_at(&cell, &direction)
             .ok_or_else(|| anyhow!("Next cell out of bounds"))?;
-        if to_visit.contains(&next_cell) {
+        if to_visit.contains(&next_cell.as_point()) {
             continue;
         }
-        match next_cell.state {
-            Expanded::Empty => to_move.push(cell),
+        match next_cell.data {
+            Expanded::Empty => {
+                to_move.insert(cell);
+            }
             Expanded::Wall => return Ok(grid),
             Expanded::BoxLeft => {
-                to_move.push(cell);
-                to_visit.push(next_cell);
+                to_move.insert(cell);
+                to_visit.push(next_cell.as_point());
                 let right = grid
-                    .get_cell(next_cell.x + 1, next_cell.y)
+                    .neighbor_at(next_cell, &Direction::East)
                     .ok_or_else(|| anyhow!("BoxLeft must have adjacent BoxRight"))?;
                 debug_assert!(
-                    right.state == Expanded::BoxRight,
-                    "BoxLeft must have adjacent BoxRight"
+                    right.data == Expanded::BoxRight,
+                    "BoxLeft must have adjacent BoxRight: {right:?}"
                 );
-                if right != cell {
-                    to_visit.push(right);
+                if right.as_point() != cell.as_point() {
+                    to_visit.push(right.as_point());
                 }
             }
             Expanded::BoxRight => {
-                to_move.push(cell);
-                to_visit.push(next_cell);
+                to_move.insert(cell);
+                to_visit.push(next_cell.as_point());
                 let left = grid
-                    .get_cell(next_cell.x - 1, next_cell.y)
+                    .neighbor_at(next_cell, &Direction::West)
                     .ok_or_else(|| anyhow!("BoxRight must have adjacent BoxLeft"))?;
                 debug_assert!(
-                    left.state == Expanded::BoxLeft,
-                    "BoxRight must have adjacent BoxLeft"
+                    left.data == Expanded::BoxLeft,
+                    "BoxRight must have adjacent BoxLeft: {left:?}"
                 );
-                if left != cell {
-                    to_visit.push(left);
+                if left.as_point() != cell.as_point() {
+                    to_visit.push(left.as_point());
                 }
             }
             Expanded::Robot => return Err(anyhow!("Robot pushes another robot")),
         }
     }
-    to_move = match direction {
-        Direction::North | Direction::South => to_move.into_iter().sorted_by_key(|cell| cell.y),
-        Direction::East | Direction::West => to_move.into_iter().sorted_by_key(|cell| cell.x),
-        _ => return Err(anyhow!("Direction must be orthogonal")),
-    }
-    .collect();
+    let mut to_move: Vec<_> = to_move.into_iter().collect();
     if Direction::South == direction || Direction::East == direction {
         to_move.reverse();
     }
-    let to_move: Vec<_> = to_move.into_iter().cloned().collect();
+    debug!(?to_move);
     for cell in to_move {
+        let cell = grid
+            .get(&cell)
+            .ok_or_else(|| anyhow!("Cell not found"))?
+            .clone();
         let next_cell = grid
-            .get_cell(cell.x + direction.dx(), cell.y + direction.dy())
+            .neighbor_at(&cell, &direction)
             .ok_or_else(|| anyhow!("Next cell out of bounds"))?
             .clone();
-        grid.set(cell.x, cell.y, Expanded::Empty);
-        grid.set(next_cell.x, next_cell.y, cell.state);
+        grid.set(&cell, Expanded::Empty);
+        grid.set(&next_cell, cell.data);
     }
+    println!("{grid}");
     Ok(grid)
 }
 
 fn grid_gps_values<T>(grid: &Grid<T>) -> isize
 where
-    PositionedCell<T>: Gps,
+    GridCell<T>: Gps,
 {
-    grid.cells.iter().map(Gps::gps).sum()
+    grid.values().map(Gps::gps).sum()
 }
 
 #[aoc_tests]
