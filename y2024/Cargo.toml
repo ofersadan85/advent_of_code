@@ -17,6 +17,7 @@ advent_of_code_macros = { workspace = true }
 anyhow = { workspace = true }
 colored = { workspace = true }
 itertools = { workspace = true }
+petgraph = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
 seq-macro = { workspace = true }
