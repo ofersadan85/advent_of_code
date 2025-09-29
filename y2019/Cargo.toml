@@ -1,10 +1,10 @@
 [package]
-name = "advent_of_code_2015"
+name = "advent_of_code_2019"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+description = "2019 solutions to adventofcode.com in Rust"
 authors = ["Ofer Sadan <ofersadan85@gmail.com>"]
 readme = "../README.md"
-description = "2015 solutions to adventofcode.com in Rust"
 repository = "https://github.com/ofersadan85/advent_of_code"
 publish = false
 categories = ["advent-of-code", "puzzle", "challenge"]
@@ -13,15 +13,12 @@ license-file = "../LICENSE"
 
 [dependencies]
 advent_of_code_common = { workspace = true }
-anyhow = { workspace = true }
-itertools.workspace = true
-md5 = { workspace = true }
-rayon = { workspace = true }
-regex = { workspace = true }
+# anyhow = { workspace = true }
+# itertools = { workspace = true }
+# regex = { workspace = true }
+# serde = { workspace = true }
+# serde_json = { workspace = true }
 seq-macro = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-strum = { workspace = true }
 
 [lints]
 workspace = true
