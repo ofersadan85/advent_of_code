@@ -38,6 +38,7 @@ fn count_paths(grid: &Grid, unique: bool) -> usize {
 
 #[aoc_tests]
 mod tests {
+    use advent_of_code_common::trim_lines;
     const EXAMPLE: &str = "89010123
                            78121874
                            87430965
@@ -49,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_count_paths_unique() {
-        let grid: Grid = EXAMPLE.parse().unwrap();
+        let grid: Grid = trim_lines(EXAMPLE).parse().unwrap();
         assert_eq!(count_paths(&grid, true), 36);
     }
 
@@ -61,7 +62,7 @@ mod tests {
 
     #[test]
     fn test_count_paths() {
-        let grid: Grid = EXAMPLE.parse().unwrap();
+        let grid: Grid = trim_lines(EXAMPLE).parse().unwrap();
         assert_eq!(count_paths(&grid, false), 81);
     }
 

@@ -133,6 +133,7 @@ fn print_grid(grid: &Grid<CellData>) {
 
 #[aoc_tests]
 mod tests {
+    use advent_of_code_common::trim_lines;
     const EXAMPLE: &str = r#".|...\....
                              |.-.\.....
                              .....|-...
@@ -146,7 +147,7 @@ mod tests {
 
     #[test]
     fn example_1() {
-        let mut grid: Grid<CellData> = EXAMPLE.parse().unwrap();
+        let mut grid: Grid<CellData> = trim_lines(EXAMPLE).parse().unwrap();
         assert_eq!(
             energize(&mut grid, &(0_isize, 0).as_point(), Direction::East),
             46
@@ -164,7 +165,7 @@ mod tests {
 
     #[test]
     fn example_2() {
-        let grid: Grid<CellData> = EXAMPLE.parse().unwrap();
+        let grid: Grid<CellData> = trim_lines(EXAMPLE).parse().unwrap();
         assert_eq!(max_energize(grid), 51);
     }
 

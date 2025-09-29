@@ -1,5 +1,3 @@
-use std::fmt::Debug;
-
 pub mod algorithms;
 pub mod cards;
 pub mod coords;
@@ -10,7 +8,6 @@ pub mod math;
 pub mod range;
 pub mod v2;
 
-/// Quick shortcut to "pretty-print"
-pub fn pprint<T: Debug>(item: &T) {
-    println!("{item:#?}");
+pub fn trim_lines(input: impl AsRef<str>) -> String {
+    input.as_ref().lines().map(str::trim).collect::<Vec<_>>().join("\n")
 }

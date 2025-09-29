@@ -249,6 +249,7 @@ fn print_maze(maze: &Maze) {
 
 #[aoc_tests]
 mod tests {
+    use advent_of_code_common::trim_lines;
     const EXAMPLE1: &str = "###############
                             #.......#....E#
                             #.#.###.#.###.#
@@ -284,9 +285,9 @@ mod tests {
 
     #[test]
     fn example_1() {
-        let mut maze: Maze = EXAMPLE1.parse().unwrap();
+        let mut maze: Maze = trim_lines(EXAMPLE1).parse().unwrap();
         assert_eq!(lowest_cost_path(&mut maze), Some(7036));
-        let mut maze: Maze = EXAMPLE2.parse().unwrap();
+        let mut maze: Maze = trim_lines(EXAMPLE2).parse().unwrap();
         assert_eq!(lowest_cost_path(&mut maze), Some(11048));
     }
 
@@ -301,7 +302,7 @@ mod tests {
     fn example_2() {
         // let mut maze: Maze = EXAMPLE1.parse().unwrap();
         // assert_eq!(count_cells_on_path(&mut maze), Some(45)); // Something is wrong with this test
-        let mut maze: Maze = EXAMPLE2.parse().unwrap();
+        let mut maze: Maze = trim_lines(EXAMPLE2).parse().unwrap();
         assert_eq!(count_cells_on_path(&mut maze), Some(64));
     }
 

@@ -67,6 +67,7 @@ fn count_unique_anti_nodes(mut grid: Grid<CellData>, ignore_distance: bool) -> u
 
 #[aoc_tests]
 mod tests {
+    use advent_of_code_common::trim_lines;
     const EXAMPLE1: &str = "............
                             ........0...
                             .....0......
@@ -82,7 +83,7 @@ mod tests {
 
     #[test]
     fn example_1() {
-        let grid = EXAMPLE1.parse().unwrap();
+        let grid = trim_lines(EXAMPLE1).parse().unwrap();
         assert_eq!(count_unique_anti_nodes(grid, false), 14);
     }
 
@@ -94,7 +95,7 @@ mod tests {
 
     #[test]
     fn example_2() {
-        let grid = EXAMPLE1.parse().unwrap();
+        let grid = trim_lines(EXAMPLE1).parse().unwrap();
         assert_eq!(count_unique_anti_nodes(grid, true), 34);
     }
 
