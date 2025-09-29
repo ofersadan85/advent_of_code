@@ -1,0 +1,28 @@
+[package]
+name = "everybody_codes"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ofer Sadan <ofersadan85@gmail.com>"]
+readme = "../README.md"
+description = "Solutions to everybody.codes challenges"
+repository = "https://github.com/ofersadan85/advent_of_code"
+publish = false
+categories = ["advent-of-code", "puzzle", "challenge"]
+keywords = ["advent-of-code", "puzzle", "challenge"]
+license-file = "../LICENSE"
+
+[dependencies]
+advent_of_code_common = { workspace = true }
+advent_of_code_macros = { workspace = true }
+anyhow = { workspace = true }
+colored = { workspace = true }
+itertools = { workspace = true }
+petgraph = { workspace = true }
+rayon = { workspace = true }
+regex = { workspace = true }
+seq-macro = { workspace = true }
+test-log = { workspace = true }
+tracing = { workspace = true }
+
+[lints]
+workspace = true
