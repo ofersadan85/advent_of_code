@@ -89,7 +89,7 @@ where
         for (y, line) in s.lines().enumerate() {
             height += 1;
             let mut line_width = 0;
-            for (x, c) in line.trim().chars().enumerate() {
+            for (x, c) in line.chars().enumerate() {
                 line_width += 1;
                 let x = isize::try_from(x).map_err(|_| "Invalid x coordinate")?;
                 let y = isize::try_from(y).map_err(|_| "Invalid y coordinate")?;
@@ -105,11 +105,11 @@ where
     }
 }
 
-impl<T> Grid<T>
-where
-    T: Clone,
-{
-    pub fn new(width: isize, height: isize, data: T) -> Self {
+impl<T> Grid<T> {
+    pub fn new(width: isize, height: isize, data: T) -> Self
+    where
+        T: Clone,
+    {
         let mut grid = Self {
             x_range: 0..width,
             y_range: 0..height,
@@ -161,6 +161,12 @@ where
 
     pub fn get_mut(&mut self, c: &dyn Coords) -> Option<&mut GridCell<T>> {
         self.cells.get_mut(&c.as_point())
+    }
+
+    pub fn get_wrapped(&self, c: &dyn Coords) -> &GridCell<T> {
+        let x = (self.width() + c.x() % self.width()) % self.width();
+        let y = (self.height() + c.y() % self.height()) % self.height();
+        self.get(&(x, y)).expect("Wrapped cell")
     }
 
     pub fn set(&mut self, c: &dyn Coords, data: T) {
@@ -331,6 +337,38 @@ where
             .collect()
     }
 
+    pub fn sight_line_n(
+        &self,
+        c: &dyn Coords,
+        direction: &Direction,
+        n: usize,
+    ) -> Vec<&GridCell<T>> {
+        let mut result = Vec::new();
+        let mut point = c.as_point();
+        while let Some(cell) = self.get(&point) {
+            result.push(cell);
+            if result.len() >= n {
+                break;
+            }
+            point = point.neighbor_at(direction);
+        }
+        result
+    }
+
+    pub fn sight_line_wrapped(
+        &self,
+        c: &dyn Coords,
+        direction: &Direction,
+        n: usize,
+    ) -> Vec<&GridCell<T>> {
+        let mut result = Vec::new();
+        for i in 0..n {
+            let point = c.neighbor_at_n(direction, i as isize); // TODO: usize -> isize
+            result.push(self.get_wrapped(&point));
+        }
+        result
+    }
+
     #[allow(clippy::range_plus_one)] // Can't use inclusive ranges here
     pub fn expand(&mut self)
     where
@@ -373,6 +411,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::trim_lines;
     const EXAMPLE: &str = "L.LL.LL.LL
                 LLLLLLL.LL
                 L.L.L..L..
@@ -406,7 +445,7 @@ mod tests {
 
     #[test]
     fn grid_from_str() {
-        let grid: Grid<State> = EXAMPLE.parse().unwrap();
+        let grid: Grid<State> = trim_lines(EXAMPLE).parse().unwrap();
         assert_eq!(grid.x_range, 0..10);
         assert_eq!(grid.y_range, 0..10);
         assert_eq!(grid.cells.len(), 100);
@@ -415,7 +454,7 @@ mod tests {
     #[test]
     fn neighbors() {
         use State::*;
-        let grid: Grid<State> = EXAMPLE.parse().unwrap();
+        let grid: Grid<State> = trim_lines(EXAMPLE).parse().unwrap();
         assert_eq!(
             grid.neighbors(&(0_isize, 0))
                 .iter()
@@ -492,5 +531,28 @@ mod tests {
                 .collect::<String>(),
             "\0\0\0\0\0\0123\0\0456\0\0789\0\0\0\0\0\0"
         )
+    }
+
+    #[test]
+    fn wrapped_grid() {
+        let example = "123\n456\n789";
+        let grid: Grid<char> = example.parse().unwrap();
+        assert_eq!(grid.get_wrapped(&(-1_isize, -1)).data, '9');
+        assert_eq!(grid.get_wrapped(&(-2_isize, -1)).data, '8');
+        assert_eq!(grid.get_wrapped(&(-3_isize, -1)).data, '7');
+        assert_eq!(grid.get_wrapped(&(-4_isize, -1)).data, '9');
+        assert_eq!(grid.get_wrapped(&(3_isize, 1)).data, '4');
+        assert_eq!(grid.get_wrapped(&(4_isize, 1)).data, '5');
+        assert_eq!(grid.get_wrapped(&(5_isize, 1)).data, '6');
+        assert_eq!(grid.get_wrapped(&(6_isize, 1)).data, '4');
+
+        let n = grid.sight_line_wrapped(&(1_isize, 1), &Direction::North, 4);
+        assert_eq!(n.iter().map(|c| c.data).collect::<String>(), "5285");
+        let n = grid.sight_line_wrapped(&(1_isize, 1), &Direction::West, 4);
+        assert_eq!(n.iter().map(|c| c.data).collect::<String>(), "5465");
+        let n = grid.sight_line_wrapped(&(1_isize, 1), &Direction::East, 4);
+        assert_eq!(n.iter().map(|c| c.data).collect::<String>(), "5645");
+        let n = grid.sight_line_wrapped(&(1_isize, 1), &Direction::South, 4);
+        assert_eq!(n.iter().map(|c| c.data).collect::<String>(), "5825");
     }
 }
