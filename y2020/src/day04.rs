@@ -25,11 +25,11 @@ impl Passport {
     }
 
     fn is_valid(&self) -> bool {
-        self._is_valid_opt().unwrap_or(false)
+        self.is_valid_opt().unwrap_or(false)
     }
 
     #[allow(clippy::similar_names)] // This is the task
-    fn _is_valid_opt(&self) -> Option<bool> {
+    fn is_valid_opt(&self) -> Option<bool> {
         let byr = (1920..=2002).contains(&self.byr.parse::<usize>().ok()?);
         let iyr = (2010..=2020).contains(&self.iyr.parse::<usize>().ok()?);
         let eyr = (2020..=2030).contains(&self.eyr.parse::<usize>().ok()?);

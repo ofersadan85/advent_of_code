@@ -123,7 +123,7 @@ impl Machine {
         self.combo_operator() & 7
     }
 
-    fn increment_instruction(&mut self) {
+    const fn increment_instruction(&mut self) {
         self.ip += 2;
     }
 

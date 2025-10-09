@@ -92,7 +92,7 @@ fn input(example: bool, part_2: bool) -> Result<Vec<Movement>> {
 }
 
 #[allow(clippy::enum_glob_use)]
-fn knot_movement(previous: Point, current: &mut Point) {
+const fn knot_movement(previous: Point, current: &mut Point) {
     use Direction::*;
     let diff = Movement {
         x: previous.x - current.x,

@@ -39,9 +39,9 @@ mod tests {
     #[test]
     fn test_is_possible_sum() {
         let numbers = vec![35, 20, 15, 25, 47];
-        assert_eq!(is_possible_sum(&numbers, 40), true, "40 is possible");
-        assert_eq!(is_possible_sum(&numbers, 62), true, "62 is possible");
-        assert_eq!(is_possible_sum(&numbers, 95), false, "95 is not possible");
+        assert!(is_possible_sum(&numbers, 40), "40 is possible");
+        assert!(is_possible_sum(&numbers, 62), "62 is possible");
+        assert!(!is_possible_sum(&numbers, 95), "95 is not possible");
     }
 
     #[test]

@@ -56,7 +56,7 @@ impl TryFrom<&str> for Rect {
         match words.next() {
             Some("through") => (),
             _ => return Err(CustomError::InvalidRect),
-        };
+        }
         let bottom_right = match words.next() {
             Some(x) => Point::try_from(x)?,
             None => return Err(CustomError::InvalidPoint),

@@ -218,7 +218,10 @@ mod tests {
     #[test]
     #[ignore = "Failed"]
     fn part_1() {
-        let result = read_input().lines().map(|l| full_values(l, 2)).sum::<usize>();
+        let result = read_input()
+            .lines()
+            .map(|l| full_values(l, 2))
+            .sum::<usize>();
         assert_eq!(result, 0, "Part 1");
     }
 
@@ -245,11 +248,16 @@ mod tests {
                     "{:?} -> {:?} = {:?}",
                     a,
                     b,
-                    c.iter().map(|d| d.to_string()).collect::<String>()
+                    c.iter().map(ToString::to_string).collect::<String>()
                 );
             });
-        use Directional::*;
-        let options = [Up, Down, Left, Right, Directional::Push];
+        let options = [
+            Directional::Up,
+            Directional::Down,
+            Directional::Left,
+            Directional::Right,
+            Directional::Push,
+        ];
         itertools::iproduct!(options.iter(), options.iter())
             .map(|(a, b)| (a, b, a.next_moves(b)))
             .for_each(|(a, b, c)| {
@@ -257,7 +265,7 @@ mod tests {
                     "{:?} -> {:?} = {:?}",
                     a,
                     b,
-                    c.iter().map(|d| d.to_string()).collect::<String>()
+                    c.iter().map(ToString::to_string).collect::<String>()
                 );
             });
         // assert!(false);

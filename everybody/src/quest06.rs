@@ -13,8 +13,8 @@ impl FromStr for RacePlan {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let err = "Invalid input";
-        let (id, plan) = s.split_once(':').ok_or_else(|| err)?;
-        let id = id.chars().next().ok_or_else(|| err)?;
+        let (id, plan) = s.split_once(':').ok_or(err)?;
+        let id = id.chars().next().ok_or(err)?;
         let plan = plan
             .split(',')
             .map(|s| match s {
@@ -35,7 +35,7 @@ impl FromStr for RacePlan {
 
 impl RacePlan {
     fn total(&self) -> isize {
-        let segments = (self.len / self.plan.len()) as isize;
+        let segments = isize::try_from(self.len / self.plan.len()).expect("len fits in isize");
         let rem = self.len % self.plan.len();
         self.plan.iter().sum::<isize>() * segments + self.plan[..rem].iter().sum::<isize>()
     }

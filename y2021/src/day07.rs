@@ -16,7 +16,7 @@ fn calc_fuel_increasing(data: &[u32]) -> u32 {
             data.iter()
                 .map(|&x| {
                     let diff = x.abs_diff(i);
-                    (diff * diff + diff) / 2
+                    (diff * diff).midpoint(diff)
                 })
                 .sum()
         })

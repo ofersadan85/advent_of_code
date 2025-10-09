@@ -55,15 +55,15 @@ impl BitsIterator {
         }
     }
 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.data.len() * 8
     }
 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 
-    pub fn remaining(&self) -> usize {
+    pub const fn remaining(&self) -> usize {
         (self.data.len() - self.index) * 8 - self.used
     }
 
@@ -105,7 +105,7 @@ impl BitsIterator {
         self.consume(self.remaining()).unwrap_or(0)
     }
 
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.index = 0;
         self.used = 0;
     }

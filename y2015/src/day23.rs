@@ -78,8 +78,12 @@ fn process(instructions: &[Instruction], mut a: u32, mut b: u32) -> (u32, u32) {
             Instruction::Triple(Register::B) => (a, b * 3, new_index),
             Instruction::Increment(Register::A) => (a + 1, b, new_index),
             Instruction::Increment(Register::B) => (a, b + 1, new_index),
-            Instruction::JumpIfEven(Register::A, d) if a % 2 == 0 => (a, b, index as i32 + d),
-            Instruction::JumpIfEven(Register::B, d) if b % 2 == 0 => (a, b, index as i32 + d),
+            Instruction::JumpIfEven(Register::A, d) if a.is_multiple_of(2) => {
+                (a, b, index as i32 + d)
+            }
+            Instruction::JumpIfEven(Register::B, d) if b.is_multiple_of(2) => {
+                (a, b, index as i32 + d)
+            }
             Instruction::JumpIfOne(Register::A, d) if a == 1 => (a, b, index as i32 + d),
             Instruction::JumpIfOne(Register::B, d) if b == 1 => (a, b, index as i32 + d),
             Instruction::JumpIfOne(_, _) | Instruction::JumpIfEven(_, _) => (a, b, new_index),

@@ -3,7 +3,7 @@ use itertools::Itertools;
 pub fn sum_digits(s: &str) -> u32 {
     let mut digits = s.chars().filter_map(|c| c.to_digit(10));
     let first = digits.next().unwrap_or(0);
-    let last = digits.last().unwrap_or(first);
+    let last = digits.next_back().unwrap_or(first);
     first * 10 + last
 }
 

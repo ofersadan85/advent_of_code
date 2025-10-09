@@ -137,7 +137,7 @@ pub fn char_enum(
             )
             .to_compile_error()
             .into();
-        };
+        }
         let value = v.discriminant.clone().unwrap().1;
         v.discriminant = None;
         v.attrs.push(syn::parse_quote! {#[c = #value]});

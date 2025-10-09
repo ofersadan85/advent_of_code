@@ -104,11 +104,11 @@ impl Space {
         self.tiles[0].len()
     }
 
-    pub fn height(&self) -> usize {
+    pub const fn height(&self) -> usize {
         self.tiles.len()
     }
 
-    pub fn expand_fast(&mut self, factor: usize) {
+    pub const fn expand_fast(&mut self, factor: usize) {
         self.expansion += factor;
     }
 

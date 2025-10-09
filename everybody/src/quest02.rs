@@ -41,7 +41,7 @@ fn count_runes(input: &str) -> usize {
     for w in words.split_whitespace() {
         for r in &runes {
             let mut w = w;
-            while w.len() > 0 {
+            while !w.is_empty() {
                 if let Some(i) = w.find(r) {
                     count += 1;
                     w = &w[i + r.len()..];
@@ -59,7 +59,7 @@ fn count_rune_symbols(input: &str) -> usize {
     let reverse_runes: Vec<String> = runes.iter().map(|r| r.chars().rev().collect()).collect();
     let runes: Vec<String> = runes
         .iter()
-        .map(|r| r.to_string())
+        .map(ToString::to_string)
         .chain(reverse_runes)
         .collect();
     let words = clean_input(input);
@@ -69,7 +69,7 @@ fn count_rune_symbols(input: &str) -> usize {
         for r in &runes {
             let mut w = w;
             let mut prev = 0;
-            while w.len() > 0 {
+            while !w.is_empty() {
                 if let Some(i) = w.find(r) {
                     indexes.extend(i + prev..i + prev + r.len());
                     w = &w[i + 1..];
@@ -90,6 +90,7 @@ struct GridCell {
     is_rune: std::cell::Cell<bool>,
 }
 
+#[allow(clippy::infallible_try_from)]
 impl TryFrom<char> for GridCell {
     type Error = Infallible;
     fn try_from(c: char) -> Result<Self, Infallible> {

@@ -6,8 +6,8 @@ struct Replacement<'a> {
     dst: &'a str,
 }
 
-impl<'a> Replacement<'a> {
-    fn reverse(&mut self) {
+impl Replacement<'_> {
+    const fn reverse(&mut self) {
         std::mem::swap(&mut self.src, &mut self.dst);
     }
 }
@@ -18,7 +18,7 @@ struct Data<'a> {
     molecule: String,
 }
 
-impl<'a> Data<'a> {
+impl Data<'_> {
     fn reverse_all(&mut self) {
         self.replacements.iter_mut().for_each(Replacement::reverse);
     }

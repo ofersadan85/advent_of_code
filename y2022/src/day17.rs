@@ -182,21 +182,23 @@ impl Game {
             }
         };
         if can_move {
-            mover_coords
-                .iter()
-                .for_each(|&(x, y)| self.board[y][x] = Empty);
-            mover_coords.iter().for_each(|&(x, y)| match dir {
-                Left => self.board[y][x - 1] = Moving,
-                Right => self.board[y][x + 1] = Moving,
-                Down => self.board[y + 1][x] = Moving,
-            });
+            for &(x, y) in &mover_coords {
+                self.board[y][x] = Empty;
+            }
+            for &(x, y) in &mover_coords {
+                match dir {
+                    Left => self.board[y][x - 1] = Moving,
+                    Right => self.board[y][x + 1] = Moving,
+                    Down => self.board[y + 1][x] = Moving,
+                }
+            }
             if dir == Down {
                 self.top_of_mover += 1;
             }
         } else if dir == Down {
-            mover_coords
-                .iter()
-                .for_each(|&(x, y)| self.board[y][x] = Full);
+            for &(x, y) in &mover_coords {
+                self.board[y][x] = Full;
+            }
             self.top_of_mover = 0;
             self.prune_top();
         }
@@ -243,7 +245,7 @@ mod tests {
 
     #[test]
     fn example_1() {
-        assert_eq!(play(&EXAMPLE, 2022), 3068);
+        assert_eq!(play(EXAMPLE, 2022), 3068);
     }
 
     #[test]
@@ -255,7 +257,7 @@ mod tests {
     fn example_2() {
         let r_cycle = 35; // Measured the repeats by hand //todo: automate
         let shapes = 1_000_000_000_000;
-        assert_eq!(part_2(&EXAMPLE, r_cycle, shapes), 1_514_285_714_288);
+        assert_eq!(part_2(EXAMPLE, r_cycle, shapes), 1_514_285_714_288);
     }
 
     #[test]

@@ -13,9 +13,7 @@ pub struct Race {
 }
 
 impl Race {
-    #[allow(clippy::float_cmp)]
-    #[allow(clippy::cast_sign_loss)]
-    #[allow(clippy::cast_possible_truncation)]
+    #[allow(clippy::float_cmp, clippy::cast_sign_loss, clippy::cast_possible_truncation, clippy::manual_midpoint)]
     pub fn ways_to_win(&self) -> usize {
         let discriminant = self.time.mul_add(self.time, -4.0 * self.distance);
         if discriminant < 0.0 {

@@ -38,7 +38,7 @@ fn prime_factors(n: &u128) -> Vec<u128> {
         if div > max_div {
             result.push(n);
             break;
-        } else if n % div == 0 {
+        } else if n.is_multiple_of(div) {
             result.push(div);
             n /= div;
             div = 2;
@@ -61,7 +61,7 @@ fn parse_line(s: &str) -> Result<(&str, (&str, &str))> {
 type Map<'a> = HashMap<&'a str, (&'a str, &'a str)>;
 
 #[allow(clippy::implicit_hasher)]
-pub fn parse_input(s: &str) -> Result<(&str, Map)> {
+pub fn parse_input(s: &str) -> Result<(&str, Map<'_>)> {
     let mut lines = s.lines();
     let commands = lines.next().context("no commands")?;
     let map = lines.filter_map(|line| parse_line(line).ok()).collect();

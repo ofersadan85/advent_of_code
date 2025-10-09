@@ -14,10 +14,10 @@ enum Gate {
 impl From<&str> for Gate {
     fn from(s: &str) -> Self {
         match s {
-            "AND" => Gate::And,
-            "OR" => Gate::Or,
-            "XOR" => Gate::Xor,
-            _ => Gate::Unknown,
+            "AND" => Self::And,
+            "OR" => Self::Or,
+            "XOR" => Self::Xor,
+            _ => Self::Unknown,
         }
     }
 }
@@ -46,11 +46,11 @@ impl<'a> Wire<'a> {
 type WireGraph<'a> = GraphMap<Wire<'a>, u8, Directed>;
 type WireValues<'a> = BTreeMap<Wire<'a>, Option<u8>>;
 
-fn parse_graph<'a>(input: &'a str) -> (WireGraph<'a>, WireValues<'a>) {
+fn parse_graph(input: &str) -> (WireGraph<'_>, WireValues<'_>) {
     let mut graph = GraphMap::new();
     let mut values = BTreeMap::new();
     for line in input.lines() {
-        if line.contains(":") {
+        if line.contains(':') {
             let (name, value) = line.split_once(": ").unwrap_or_default();
             let value_wire = Wire::new(name.trim(), value);
             match value.parse::<u8>() {
@@ -88,10 +88,8 @@ fn parse_graph<'a>(input: &'a str) -> (WireGraph<'a>, WireValues<'a>) {
 }
 
 fn calc_wire_value<'a>(graph: &WireGraph<'a>, values: &mut WireValues<'a>, wire: Wire<'a>) -> u8 {
-    if let Some(value) = values.get(&wire) {
-        if let Some(value) = value {
-            return *value;
-        }
+    if let Some(Some(value)) = values.get(&wire) {
+        return *value;
     }
     debug!("Calculating value for {wire}");
     let inputs = graph.neighbors_directed(wire, Incoming).collect::<Vec<_>>();
@@ -104,13 +102,13 @@ fn calc_wire_value<'a>(graph: &WireGraph<'a>, values: &mut WireValues<'a>, wire:
         Gate::And => left_value & right_value,
         Gate::Or => left_value | right_value,
         Gate::Xor => left_value ^ right_value,
-        _ => unreachable!(),
+        Gate::Unknown => unreachable!(),
     };
     values.insert(wire, Some(value));
     value
 }
 
-fn bit_values<'a>(input: &'a str, register: char) -> u64 {
+fn bit_values(input: &str, register: char) -> u64 {
     let (graph, mut values) = parse_graph(input);
     let register_wires = graph
         .nodes()
@@ -127,14 +125,11 @@ fn bit_values<'a>(input: &'a str, register: char) -> u64 {
         }
     }
     let mut result = 0_u64;
-    for (k, v) in values.iter() {
+    for (k, v) in &values {
         if k.name.starts_with(register) {
             debug!("{k} has value {v:?}");
-            match k.name.trim_start_matches(register).parse::<u16>() {
-                Ok(exp) => {
-                    result += u64::from(v.expect("register node value")) << exp;
-                }
-                Err(_) => {}
+            if let Ok(exp) = k.name.trim_start_matches(register).parse::<u16>() {
+                result += u64::from(v.expect("register node value")) << exp;
             }
         }
     }

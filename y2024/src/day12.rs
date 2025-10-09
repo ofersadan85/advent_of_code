@@ -42,7 +42,7 @@ struct Region {
 }
 
 impl Region {
-    fn cost(&self) -> usize {
+    const fn cost(&self) -> usize {
         self.area * self.perimeter.len()
     }
 

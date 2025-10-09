@@ -22,7 +22,7 @@ impl TryFrom<char> for Creature {
 }
 
 impl Creature {
-    fn potions(&self) -> usize {
+    const fn potions(&self) -> usize {
         match self {
             Self::A => 0,
             Self::B => 1,
@@ -35,20 +35,15 @@ impl Creature {
 fn creatures_potions(input: &str, chunk_size: usize) -> usize {
     input
         .chars()
-        .map(|c| Creature::try_from(c))
+        .map(Creature::try_from)
         .chunks(chunk_size)
         .into_iter()
         .map(|c| {
             let mut ok_count: usize = 0;
             let mut potions = 0;
-            for v in c {
-                match v {
-                    Ok(v) => {
-                        potions += v.potions();
-                        ok_count += 1;
-                    }
-                    Err(_) => {}
-                }
+            for v in c.flatten() {
+                potions += v.potions();
+                ok_count += 1;
             }
             potions + (ok_count.saturating_sub(1)) * ok_count
         })

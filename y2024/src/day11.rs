@@ -6,7 +6,7 @@ fn transform(n: usize) -> Vec<usize> {
         return vec![1];
     }
     let s = n.to_string();
-    if s.len() % 2 == 0 {
+    if s.len().is_multiple_of(2) {
         let first = s
             .chars()
             .take(s.len() / 2)
@@ -68,7 +68,7 @@ mod tests {
     #[test]
     fn example_1() {
         let input = "125 17";
-        assert_eq!(process(&input, 25), 55312);
+        assert_eq!(process(input, 25), 55312);
     }
 
     #[test]

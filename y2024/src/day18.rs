@@ -80,11 +80,11 @@ fn first_block(input: &str, size: isize) -> Option<String> {
             }
             (true, true) => {
                 end -= next_diff;
-                next_diff = (next_diff + 1) / 2;
+                next_diff = next_diff.div_ceil(2);
             }
             (false, false) => {
                 end += next_diff;
-                next_diff = (next_diff + 1) / 2;
+                next_diff = next_diff.div_ceil(2);
             }
         }
     }

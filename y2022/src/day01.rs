@@ -13,7 +13,7 @@ fn parse_input(input: &str) -> Vec<usize> {
     elves
 }
 
-fn part_1(elves: &[usize]) -> Option<usize> {
+const fn part_1(elves: &[usize]) -> Option<usize> {
     elves.last().copied()
 }
 

@@ -63,7 +63,7 @@ mod tests {
         assert!(!is_safe(&values[3]));
         assert!(!is_safe(&values[4]));
         assert!(is_safe(&values[5]));
-        assert_eq!(values.iter().filter(|v| is_safe(&v)).count(), 2);
+        assert_eq!(values.iter().filter(|v| is_safe(v)).count(), 2);
     }
 
     #[test]
@@ -71,7 +71,7 @@ mod tests {
         let input = read_to_string("../inputs/2024/day02.txt").unwrap();
         let values = parse_input(&input);
         assert_eq!(values.len(), 1000);
-        assert_eq!(values.iter().filter(|v| is_safe(&v)).count(), 490);
+        assert_eq!(values.iter().filter(|v| is_safe(v)).count(), 490);
     }
 
     #[test]
@@ -83,7 +83,7 @@ mod tests {
         assert!(is_safe_dampened(&values[3]));
         assert!(is_safe_dampened(&values[4]));
         assert!(is_safe_dampened(&values[5]));
-        assert_eq!(values.iter().filter(|v| is_safe_dampened(&v)).count(), 4);
+        assert_eq!(values.iter().filter(|v| is_safe_dampened(v)).count(), 4);
     }
 
     #[test]
@@ -91,6 +91,6 @@ mod tests {
         let input = read_to_string("../inputs/2024/day02.txt").unwrap();
         let values = parse_input(&input);
         assert_eq!(values.len(), 1000);
-        assert_eq!(values.iter().filter(|v| is_safe_dampened(&v)).count(), 536);
+        assert_eq!(values.iter().filter(|v| is_safe_dampened(v)).count(), 536);
     }
 }

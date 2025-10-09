@@ -97,7 +97,7 @@ impl Row {
     }
 
     fn is_valid_solution(&self, n: u32) -> bool {
-        Self::from_number(n, self.cells.len()).map_or(false, |cells| {
+        Self::from_number(n, self.cells.len()).is_ok_and(|cells| {
             let bits = self.bits(true);
             n | bits == bits
                 && cells

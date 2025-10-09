@@ -100,7 +100,7 @@ fn count_unique(input: &str) -> usize {
     for row in input.lines() {
         sum += row_count_unique(
             &row.split('|')
-                .last()
+                .next_back()
                 .expect("last")
                 .split_whitespace()
                 .collect::<Vec<_>>(),

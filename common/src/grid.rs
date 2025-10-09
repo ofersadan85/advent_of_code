@@ -186,7 +186,7 @@ impl<T> Grid<T> {
         loop {
             let new_grid = f(self);
             steps += 1;
-            if new_grid == *self || limit.map_or(false, |limit| steps >= limit) {
+            if new_grid == *self || limit.is_some_and(|limit| steps >= limit) {
                 *self = new_grid;
                 return steps;
             }
@@ -363,7 +363,8 @@ impl<T> Grid<T> {
     ) -> Vec<&GridCell<T>> {
         let mut result = Vec::new();
         for i in 0..n {
-            let point = c.neighbor_at_n(direction, i as isize); // TODO: usize -> isize
+            let i = isize::try_from(i).expect("should fit in isize");
+            let point = c.neighbor_at_n(direction, i);
             result.push(self.get_wrapped(&point));
         }
         result
@@ -435,9 +436,9 @@ mod tests {
 
         fn try_from(value: char) -> Result<Self, Self::Error> {
             match value {
-                '.' => Ok(State::Floor),
-                'L' => Ok(State::Empty),
-                '#' => Ok(State::Occupied),
+                '.' => Ok(Self::Floor),
+                'L' => Ok(Self::Empty),
+                '#' => Ok(Self::Occupied),
                 _ => Err("Invalid character in input"),
             }
         }
@@ -506,6 +507,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::octal_escapes)]
     fn neighbors_box() {
         let example = "123\n456\n789";
         let grid: Grid<char> = example.parse().unwrap();
@@ -530,7 +532,7 @@ mod tests {
                 .map(|c| c.map(|c| c.data).unwrap_or_default())
                 .collect::<String>(),
             "\0\0\0\0\0\0123\0\0456\0\0789\0\0\0\0\0\0"
-        )
+        );
     }
 
     #[test]

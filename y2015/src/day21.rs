@@ -389,7 +389,7 @@ impl<T: SpellEffect> SpellEffect for Option<T> {
     }
 
     fn is_immediate(&self) -> bool {
-        self.as_ref().map_or(false, SpellEffect::is_immediate)
+        self.as_ref().is_some_and(SpellEffect::is_immediate)
     }
 }
 

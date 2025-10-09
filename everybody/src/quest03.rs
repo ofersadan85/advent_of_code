@@ -16,13 +16,11 @@ impl Cell {
     }
 }
 
+#[allow(clippy::infallible_try_from)]
 impl TryFrom<char> for Cell {
     type Error = Infallible;
     fn try_from(value: char) -> Result<Self, Self::Error> {
-        let dig_site = match value {
-            '#' => true,
-            _ => false,
-        };
+        let dig_site = matches!(value, '#');
         Ok(Self::new(dig_site))
     }
 }
@@ -111,9 +109,8 @@ fn calc_slopes(grid: &Grid<Cell>, diagonal: bool) -> usize {
         }
         if visit_next.is_empty() {
             break;
-        } else {
-            std::mem::swap(&mut to_visit, &mut visit_next);
         }
+        std::mem::swap(&mut to_visit, &mut visit_next);
     }
 
     grid.values()

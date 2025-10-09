@@ -68,7 +68,7 @@ impl Monkey {
             let mut new_item = self.inspect(*item)?;
             if !worry {
                 new_item /= 3;
-            };
+            }
             self.inspect_count += 1;
             let target = if new_item % self.divisor == 0 {
                 self.target_true

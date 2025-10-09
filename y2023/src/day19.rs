@@ -257,7 +257,7 @@ fn parse_rule_set(s: &str) -> Result<(&str, RuleSet)> {
     ))
 }
 
-pub fn parse_input(input: &str) -> Result<(AllRules, Vec<Part>)> {
+pub fn parse_input(input: &str) -> Result<(AllRules<'_>, Vec<Part>)> {
     let double_line_end = if input.contains('\r') {
         "\r\n\r\n"
     } else {

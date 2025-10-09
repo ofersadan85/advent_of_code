@@ -65,15 +65,14 @@ fn get_paths(graph: &DiGraph<String, ()>, char_limit: usize) -> HashMap<usize, V
 fn get_unique_path_length(input: &str, char_limit: usize) -> String {
     let graph = parse_graph(input);
     let paths = get_paths(&graph, char_limit);
-    let path = paths
+    paths
         .into_iter()
         .find(|(_, v)| v.len() == 1)
         .expect("No unique path found")
         .1
         .into_iter()
         .next()
-        .expect("Known to have a path");
-    path
+        .expect("Known to have a path")
 }
 
 #[cfg(test)]

@@ -65,12 +65,14 @@ impl Circuit {
             let wire = Wire::from(line.trim());
             wires.insert(wire.name().to_string(), wire);
         }
-        wires.values_mut().for_each(|wire| match wire {
-            Wire::Valued { .. } => {}
-            Wire::Gated { .. } => {
-                *wire = wire.evaluate();
+        for wire in wires.values_mut() {
+            match wire {
+                Wire::Valued { .. } => {}
+                Wire::Gated { .. } => {
+                    *wire = wire.evaluate();
+                }
             }
-        });
+        }
         Self { wires }
     }
 

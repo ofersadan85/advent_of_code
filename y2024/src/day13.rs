@@ -69,7 +69,7 @@ fn parse_input(input: &str) -> Result<Vec<Machine>, &'static str> {
                 };
                 result.push(Machine { a, b, prize });
             }
-            _ => continue,
+            _ => {},
         }
     }
     Ok(result)
@@ -90,7 +90,7 @@ impl Machine {
                 y: self.prize.y - reach_b.y,
             };
             let (div_ax, div_ay) =
-                if diff_b_prize.x % self.a.x != 0 || diff_b_prize.y % self.a.y != 0 {
+                if !diff_b_prize.x.is_multiple_of(self.a.x) || !diff_b_prize.y.is_multiple_of(self.a.y) {
                     continue;
                 } else {
                     (diff_b_prize.x / self.a.x, diff_b_prize.y / self.a.y)
@@ -159,17 +159,17 @@ mod tests {
     #[test]
     fn part_1() {
         let machines = read_to_string("../inputs/2024/day13.txt")
-            .map_err(|e| panic!("Error reading input: {}", e))
+            .map_err(|e| panic!("Error reading input: {e}"))
             .and_then(|input| parse_input(&input))
             .unwrap();
         assert_eq!(sum_cost(&machines), 29598);
     }
 
     #[test]
-    #[ignore]
+    #[ignore = "takes too long"]
     fn part_2() {
         let machines = read_to_string("../inputs/2024/day13.txt")
-            .map_err(|e| panic!("Error reading input: {}", e))
+            .map_err(|e| panic!("Error reading input: {e}"))
             .and_then(|input| parse_input(&input))
             .unwrap();
         assert_eq!(sum_cost_bigger(&machines), 29598);

@@ -94,7 +94,7 @@ fn part_2(sensors: &[Sensor]) -> Result<i64> {
         .map(|(i, j)| negative_lines[i].min(negative_lines[j]) + 1)
         .collect();
     let (x, y) = iproduct!(p_options, n_options)
-        .map(|(p, n)| ((p + n) / 2, (p - n).abs() / 2))
+        .map(|(p, n)| (p.midpoint(n), (p - n).abs() / 2))
         .find(|(x, y)| sensors.iter().all(|s| !s.can_detect(*x, *y)))
         .ok_or_else(|| anyhow::anyhow!("No solution found"))?;
 

@@ -1,7 +1,7 @@
 use std::num::ParseIntError;
 
 fn parse_input(s: &str) -> Result<Vec<usize>, ParseIntError> {
-    s.trim().split(',').map(|s| s.parse::<usize>()).collect()
+    s.trim().split(',').map(str::parse::<usize>).collect()
 }
 
 fn run_program(memory: &mut [usize]) {

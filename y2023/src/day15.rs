@@ -22,7 +22,7 @@ impl LightBox<'_> {
     }
 }
 
-pub fn parse_input(s: &str) -> Vec<LightBox> {
+pub fn parse_input(s: &str) -> Vec<LightBox<'_>> {
     let mut boxes: Vec<LightBox> = (0..256).map(|_| LightBox::default()).collect();
     for item in s.split(',') {
         let (label, value_s) = item
@@ -38,7 +38,7 @@ pub fn parse_input(s: &str) -> Vec<LightBox> {
                     box_.labels.push(label);
                 }
             }
-        };
+        }
         box_.values.insert(label, value);
     }
     boxes
