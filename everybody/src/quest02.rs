@@ -1,7 +1,7 @@
 use advent_of_code_common::grid::{Direction, Grid};
 use colored::Colorize;
 use itertools::Itertools;
-use std::{collections::HashSet, convert::Infallible};
+use std::collections::HashSet;
 
 fn extract_runes(input: &str) -> Vec<&str> {
     input
@@ -90,14 +90,12 @@ struct GridCell {
     is_rune: std::cell::Cell<bool>,
 }
 
-#[allow(clippy::infallible_try_from)]
-impl TryFrom<char> for GridCell {
-    type Error = Infallible;
-    fn try_from(c: char) -> Result<Self, Infallible> {
-        Ok(Self {
+impl From<char> for GridCell {
+    fn from(c: char) -> Self {
+        Self {
             c,
             is_rune: std::cell::Cell::new(false),
-        })
+        }
     }
 }
 

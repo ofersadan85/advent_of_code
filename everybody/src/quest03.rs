@@ -1,5 +1,4 @@
 use advent_of_code_common::grid::{Coords, Grid};
-use std::convert::Infallible;
 
 #[derive(Debug, Default, Clone)]
 struct Cell {
@@ -16,12 +15,10 @@ impl Cell {
     }
 }
 
-#[allow(clippy::infallible_try_from)]
-impl TryFrom<char> for Cell {
-    type Error = Infallible;
-    fn try_from(value: char) -> Result<Self, Self::Error> {
+impl From<char> for Cell {
+    fn from(value: char) -> Self {
         let dig_site = matches!(value, '#');
-        Ok(Self::new(dig_site))
+        Self::new(dig_site)
     }
 }
 
