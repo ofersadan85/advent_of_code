@@ -13,12 +13,15 @@ license-file = "../LICENSE"
 
 [dependencies]
 advent_of_code_common = { workspace = true }
+advent_of_code_macros = { workspace = true }
 anyhow = { workspace = true }
 itertools = { workspace = true }
 regex = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 seq-macro = { workspace = true }
+test-log = { workspace = true }
+tracing = { workspace = true }
 
 [lints]
 workspace = true
