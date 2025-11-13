@@ -9,7 +9,7 @@ enum Direction {
     West,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Action {
     Right90(u16),
     Forward(u16),
@@ -47,7 +47,7 @@ struct Location {
 impl Location {
     fn apply_action(&mut self, action: Action) {
         match action {
-            Action::Right90(n) if n == 0 => {}
+            Action::Right90(0) => {}
             Action::Right90(n) => {
                 self.facing = match self.facing {
                     Direction::North => Direction::East,
@@ -75,7 +75,7 @@ impl Location {
         }
     }
 
-    fn manhattan_from_center(&self) -> i32 {
+    const fn manhattan_from_center(&self) -> i32 {
         self.x.abs() + self.y.abs()
     }
 
@@ -85,7 +85,7 @@ impl Location {
         self.y = tmp;
     }
 
-    fn apply_waypoint_action(&mut self, waypoint: &mut Location, action: Action) {
+    fn apply_waypoint_action(&mut self, waypoint: &mut Self, action: Action) {
         match action {
             Action::Right90(n) => {
                 for _ in 0..n {
@@ -98,7 +98,7 @@ impl Location {
                 self.y += waypoint.y * n;
             }
             Action::Direction(direction, n) => {
-                waypoint.apply_action(Action::Direction(direction, n))
+                waypoint.apply_action(Action::Direction(direction, n));
             }
         }
     }
@@ -107,7 +107,7 @@ impl Location {
 fn move_ship(input: &str) -> Result<i32, ()> {
     let mut ship: Location = Location::default();
     for line in input.lines() {
-        let action = line.trim().parse().unwrap();
+        let action = line.trim().parse()?;
         ship.apply_action(action);
     }
     Ok(ship.manhattan_from_center())
@@ -117,7 +117,7 @@ fn move_ship_by_waypoint(input: &str) -> Result<i32, ()> {
     let mut ship: Location = Location::default();
     let mut waypoint = Location { x: 10, y: -1, facing: Direction::default() };
     for line in input.lines() {
-        let action = line.trim().parse().unwrap();
+        let action = line.trim().parse()?;
         ship.apply_waypoint_action(&mut waypoint, action);
     }
     Ok(ship.manhattan_from_center())

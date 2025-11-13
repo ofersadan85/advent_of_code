@@ -41,19 +41,18 @@ fn parse_input(s: &str) -> HashMap<&str, Bag<'_>> {
 fn count_gold_options(s: &str) -> usize {
     let mut unchecked: HashMap<&str, Bag> = parse_input(s)
         .into_iter()
-        .filter(|(_, b)| b.contain.len() > 0)
+        .filter(|(_, b)| !b.contain.is_empty())
         .collect();
     let mut includes_gold = HashSet::new();
     let mut last_result = usize::MAX;
-    while unchecked.len() > 0 {
+    while !unchecked.is_empty() {
         let mut checked = HashMap::new();
         for (color, bag) in unchecked {
             if includes_gold.contains(color)
                 || bag
                     .contain
                     .iter()
-                    .find(|b| b.color == "shiny gold" || includes_gold.contains(b.color))
-                    .is_some()
+                    .any(|b| b.color == "shiny gold" || includes_gold.contains(b.color))
             {
                 includes_gold.insert(color);
             } else {
@@ -63,9 +62,8 @@ fn count_gold_options(s: &str) -> usize {
         unchecked = checked;
         if last_result == includes_gold.len() {
             break;
-        } else {
-            last_result = includes_gold.len();
         }
+        last_result = includes_gold.len();
     }
     includes_gold.len()
 }
@@ -122,6 +120,9 @@ dark violet bags contain no other bags.";
 
     #[test]
     fn part_2() {
-        assert_eq!(count_total_bags(&parse_input(&read_input()), "shiny gold"), 34862);
+        assert_eq!(
+            count_total_bags(&parse_input(&read_input()), "shiny gold"),
+            34862
+        );
     }
 }
