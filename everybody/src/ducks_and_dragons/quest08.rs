@@ -86,7 +86,7 @@ impl Solver<'_> for Part3 {
                 result = result.max(cuts);
             }
         }
-        
+
         result
     }
 

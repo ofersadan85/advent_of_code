@@ -29,11 +29,7 @@ impl IndexMover for WrappingMover {
 fn parse_names_moves(input: &str) -> (Vec<&str>, Vec<&str>) {
     let mut lines = input.lines();
     let names: Vec<_> = lines.next().unwrap_or_default().trim().split(',').collect();
-    let moves: Vec<_> = lines.nth(1)
-        .unwrap_or_default()
-        .trim()
-        .split(',')
-        .collect();
+    let moves: Vec<_> = lines.nth(1).unwrap_or_default().trim().split(',').collect();
     (names, moves)
 }
 

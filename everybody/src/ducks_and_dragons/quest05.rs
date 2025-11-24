@@ -139,7 +139,7 @@ impl<T: FromStr + Default + PartialOrd> FromStr for Fishbone<T> {
     type Err = <T as FromStr>::Err;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut fishbone= Self::default();
+        let mut fishbone = Self::default();
         let (id, input) = s.split_once(':').unwrap_or_default();
         let numbers = input.split(',').filter_map(|num| num.trim().parse().ok());
         for num in numbers {

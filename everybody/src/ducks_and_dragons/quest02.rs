@@ -144,9 +144,7 @@ mod tests {
     #[test]
     fn part_2() {
         fn f(s: &str) -> usize {
-            s.parse::<ComplexNumber>()
-                .unwrap()
-                .count_engraved(1000, 10)
+            s.parse::<ComplexNumber>().unwrap().count_engraved(1000, 10)
         }
         assert_eq!(f("[35300,-64910]"), 4076, "Example 2");
         assert_eq!(f("[-4531,67892]"), 1154, "Part 2");
@@ -155,9 +153,7 @@ mod tests {
     #[test]
     fn part_3() {
         fn f(s: &str) -> usize {
-            s.parse::<ComplexNumber>()
-                .unwrap()
-                .count_engraved(1000, 1)
+            s.parse::<ComplexNumber>().unwrap().count_engraved(1000, 1)
         }
         assert_eq!(f("[35300,-64910]"), 406954, "Example 3");
         assert_eq!(f("[-4531,67892]"), 108057, "Part 3");
