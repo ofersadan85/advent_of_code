@@ -155,6 +155,10 @@ impl<T> Grid<T> {
         self.y_range.end - self.y_range.start
     }
 
+    pub fn is_in_range(&self, c: &dyn Coords) -> bool {
+        self.x_range.contains(&c.x()) && self.y_range.contains(&c.y())
+    }
+
     pub fn get(&self, c: &dyn Coords) -> Option<&GridCell<T>> {
         self.cells.get(&c.as_point())
     }
