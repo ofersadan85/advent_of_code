@@ -176,7 +176,10 @@ mod tests {
 
     #[test]
     fn part1() {
-        assert_eq!(mirrors(include_str!("../../inputs/2023/day13.txt"), false), 30802);
+        assert_eq!(
+            mirrors(include_str!("../../inputs/2023/day13.txt"), false),
+            30802
+        );
     }
 
     #[test]
@@ -188,6 +191,9 @@ mod tests {
 
     #[test]
     fn part2() {
-        assert_eq!(mirrors(include_str!("../../inputs/2023/day13.txt"), true), 37876);
+        assert_eq!(
+            mirrors(include_str!("../../inputs/2023/day13.txt"), true),
+            37876
+        );
     }
 }

@@ -142,7 +142,6 @@ mod tests {
         assert_eq!(b.consume_until_end(), 0, "No more data");
     }
 
-
     #[test]
     fn parse_hex() {
         assert!("a5a5aq".parse::<BitsIterator>().is_err(), "Bad character");
@@ -168,7 +167,7 @@ mod tests {
         assert_eq!(b.consume(8), Some(0));
         assert_eq!(b.consume(8), Some(0x0F));
     }
-    
+
     #[test]
     fn consume_mid_byte() {
         let mut b: BitsIterator = "FFFF".parse().unwrap();

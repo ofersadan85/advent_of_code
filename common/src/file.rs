@@ -79,11 +79,7 @@ where
     for row in split_lines_trim(lines) {
         let mut row_vec = vec![];
         for c in row.chars() {
-            row_vec.push(
-                c.to_digit(radix)
-                    .context("Invalid digit")?
-                    .into(),
-            );
+            row_vec.push(c.to_digit(radix).context("Invalid digit")?.into());
         }
         result.push(row_vec);
     }

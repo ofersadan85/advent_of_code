@@ -9,5 +9,10 @@ pub mod range;
 pub mod v2;
 
 pub fn trim_lines(input: impl AsRef<str>) -> String {
-    input.as_ref().lines().map(str::trim).collect::<Vec<_>>().join("\n")
+    input
+        .as_ref()
+        .lines()
+        .map(str::trim)
+        .collect::<Vec<_>>()
+        .join("\n")
 }

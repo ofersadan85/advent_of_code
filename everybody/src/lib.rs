@@ -11,7 +11,7 @@ mod quest06;
 
 #[macro_export]
 macro_rules! expect_solution {
-    ($obj:ident, $index:literal, $expected:expr) => {{
+    ($obj:expr, $index:literal, $expected:expr) => {{
         let input = $obj.read_file_chunk($index).unwrap();
         assert_eq!($obj.solve(&input), $expected);
     }};

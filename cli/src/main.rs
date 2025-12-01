@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
             .with_day(26)
             .expect("Day is invalid");
     }
-    
+
     let max_year = u16::try_from(max_date.year())?;
     let years = args.year.map_or(2015..=max_year, |y| y..=y);
     let days = args.day.map_or(1..=25, |d| d..=d);
