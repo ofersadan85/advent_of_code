@@ -1,4 +1,5 @@
-use crate::{default_input_path, Solver};
+use crate::default_input_path;
+use advent_of_code_common::Solver;
 use itertools::Itertools;
 use std::{cmp::Ordering, str::FromStr};
 
@@ -230,7 +231,7 @@ impl Solver<'_> for Part3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expect_solution;
+    use advent_of_code_common::expect_solution;
 
     #[test]
     fn part_1() {

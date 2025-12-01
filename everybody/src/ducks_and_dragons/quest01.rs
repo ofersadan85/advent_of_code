@@ -1,4 +1,5 @@
-use crate::{default_input_path, Solver};
+use crate::default_input_path;
+use advent_of_code_common::Solver;
 
 trait IndexMover {
     fn move_index(index: usize, dir: char, n: usize, len: usize) -> usize;
@@ -95,8 +96,7 @@ impl<'a> Solver<'a> for Part3 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::expect_solution;
-    use test_log::test;
+    use advent_of_code_common::expect_solution;
 
     #[test]
     fn part_1() {
