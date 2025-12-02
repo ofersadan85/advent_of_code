@@ -1,5 +1,28 @@
 use advent_of_code_common::Solver;
 
+struct WrapCountingInt {
+    value: i32,
+    count: usize,
+}
+
+impl std::ops::AddAssign<i32> for WrapCountingInt {
+    fn add_assign(&mut self, rhs: i32) {
+        self.value += rhs;
+        while self.value > 100 {
+            self.value -= 100;
+            self.count += 1;
+        }
+        while self.value < 0 {
+            self.value += 100;
+            self.count += 1;
+        }
+        if self.value == 100 || self.value == 0 {
+            self.value = 0;
+            self.count += 1;
+        }
+    }
+}
+
 fn parse_input(input: &str) -> Vec<i32> {
     input
         .lines()
@@ -36,23 +59,29 @@ impl Solver<'_> for Part1 {
 }
 struct Part2;
 impl Solver<'_> for Part2 {
-    type Output = u32;
+    type Output = usize;
 
     fn solve(&self, input: &str) -> Self::Output {
-        let mut count = 0;
-        let mut acc = vec![50];
-        for mut value in parse_input(input) {
-            while value.abs() > 100 {
-                let step = if value > 0 { 100 } else { -100 };
-                acc.push(acc.last().expect("not empty") + step);
-                value -= step;
+        let numbers = parse_input(input);
+        let mut wrap_counter = WrapCountingInt {
+            value: 50,
+            count: 0,
+        };
+        let mut exact = false;
+        for value in numbers {
+            wrap_counter += value;
+            if exact {
+                exact = false;
+                if value < 0 {
+                    // Going negative after an exact wrap means we wrapped one too many times
+                    wrap_counter.count -= 1;
+                }
             }
-            acc.push(acc.last().expect("not empty") + value);
+            if wrap_counter.value == 0 {
+                exact = true;
+            }
         }
-        for window in acc.windows(2) {
-            todo!()
-        }
-        count
+        wrap_counter.count
     }
 
     fn file_path(&self) -> std::path::PathBuf {
@@ -74,7 +103,8 @@ mod tests {
 
     #[test]
     fn part_2() {
-        // expect_solution!(Part2, 0, 6);
+        expect_solution!(Part2, 0, 6);
+        expect_solution!(Part2, 1, 6027);
         expect_solution!(Part2, 2, 2);
     }
 }
