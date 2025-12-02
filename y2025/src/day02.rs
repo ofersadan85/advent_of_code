@@ -2,12 +2,12 @@ use advent_of_code_common::Solver;
 use std::{borrow::Cow, collections::HashSet};
 
 fn invalids_in_range(start: &str, end: &str, repeats: usize) -> impl Iterator<Item = usize> {
-    let start: Cow<str> = if !start.len().is_multiple_of(repeats) {
+    let start: Cow<str> = if start.len().is_multiple_of(repeats) {
+        Cow::Borrowed(start)
+    } else {
         let len = u32::try_from(start.len()).expect("valid length");
         let x = format!("{}", 10_usize.pow(len));
         Cow::Owned(x)
-    } else {
-        Cow::Borrowed(start)
     };
     let real_start: usize = start.parse().expect("start number");
     let new_start: usize = start
