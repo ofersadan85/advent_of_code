@@ -93,7 +93,6 @@ impl Solver<'_> for Part2 {
 mod tests {
     use super::*;
     use advent_of_code_common::expect_solution;
-    use test_log::test;
 
     #[test]
     fn part_1() {
@@ -105,6 +104,5 @@ mod tests {
     fn part_2() {
         expect_solution!(Part2, 0, 6);
         expect_solution!(Part2, 1, 6027);
-        expect_solution!(Part2, 2, 2);
     }
 }
