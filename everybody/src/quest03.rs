@@ -119,19 +119,18 @@ fn calc_slopes(grid: &Grid<Cell>, diagonal: bool) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::trim_lines;
     use std::fs::read_to_string;
     const EXAMPLE1: &str = "..........
-                            ..###.##..
-                            ...####...
-                            ..######..
-                            ..######..
-                            ...####...
-                            ..........";
+..###.##..
+...####...
+..######..
+..######..
+...####...
+..........";
 
     #[test]
     fn part1() {
-        let grid: Grid<Cell> = trim_lines(EXAMPLE1).parse().expect("parsing input");
+        let grid: Grid<Cell> = EXAMPLE1.parse().expect("parsing input");
         assert_eq!(calc_slopes(&grid, false), 35);
         let input = read_to_string("../inputs/everybody/quest03part1.txt").expect("input file");
         let grid: Grid<Cell> = input.parse().expect("parsing input");

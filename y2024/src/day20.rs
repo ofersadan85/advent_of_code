@@ -81,26 +81,25 @@ fn best_tunnels(mut maze: Maze, min_saved: isize, max_cheat: isize) -> usize {
 
 #[aoc_tests]
 mod tests {
-    use advent_of_code_common::trim_lines;
     const EXAMPLE1: &str = "###############
-                            #...#...#.....#
-                            #.#.#.#.#.###.#
-                            #S#...#.#.#...#
-                            #######.#.#.###
-                            #######.#.#...#
-                            #######.#.###.#
-                            ###..E#...#...#
-                            ###.#######.###
-                            #...###...#...#
-                            #.#####.#.###.#
-                            #.#...#.#.#...#
-                            #.#.#.#.#.#.###
-                            #...#...#...###
-                            ###############";
+#...#...#.....#
+#.#.#.#.#.###.#
+#S#...#.#.#...#
+#######.#.#.###
+#######.#.#...#
+#######.#.###.#
+###..E#...#...#
+###.#######.###
+#...###...#...#
+#.#####.#.###.#
+#.#...#.#.#...#
+#.#.#.#.#.#.###
+#...#...#...###
+###############";
 
     #[test]
     fn example_1() {
-        let maze: Maze = trim_lines(EXAMPLE1).parse().unwrap();
+        let maze: Maze = EXAMPLE1.parse().unwrap();
         assert_eq!(best_tunnels(maze, 2, 2), 44);
     }
 
@@ -112,7 +111,7 @@ mod tests {
 
     #[test]
     fn example_2() {
-        let maze: Maze = trim_lines(EXAMPLE1).parse().unwrap();
+        let maze: Maze = EXAMPLE1.parse().unwrap();
         assert_eq!(best_tunnels(maze, 50, 20), 285);
     }
 

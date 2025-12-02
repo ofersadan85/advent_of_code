@@ -178,26 +178,25 @@ fn sum_all_discount_costs(input: &str) -> usize {
 
 #[aoc_tests]
 mod tests {
-    use advent_of_code_common::trim_lines;
     const EXAMPLE1: &str = "AAAA\nBBCD\nBBCC\nEEEC";
     const EXAMPLE2: &str = "OOOOO\nOXOXO\nOOOOO\nOXOXO\nOOOOO";
     const EXAMPLE3: &str = "RRRRIICCFF
-                            RRRRIICCCF
-                            VVRRRCCFFF
-                            VVRCCCJFFF
-                            VVVVCJJCFE
-                            VVIVCCJJEE
-                            VVIIICJJEE
-                            MIIIIIJJEE
-                            MIIISIJEEE
-                            MMMISSJEEE";
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE";
     const EXAMPLE4: &str = "EEEEE\nEXXXX\nEEEEE\nEXXXX\nEEEEE";
 
     #[test]
     fn example_1() {
-        assert_eq!(sum_all_costs(&trim_lines(EXAMPLE1)), 140, "EXAMPLE1");
-        assert_eq!(sum_all_costs(&trim_lines(EXAMPLE2)), 772, "EXAMPLE2");
-        assert_eq!(sum_all_costs(&trim_lines(EXAMPLE3)), 1930, "EXAMPLE3");
+        assert_eq!(sum_all_costs(EXAMPLE1), 140, "EXAMPLE1");
+        assert_eq!(sum_all_costs(EXAMPLE2), 772, "EXAMPLE2");
+        assert_eq!(sum_all_costs(EXAMPLE3), 1930, "EXAMPLE3");
     }
 
     #[test]
@@ -207,9 +206,9 @@ mod tests {
 
     #[test]
     fn example_2() {
-        assert_eq!(sum_all_discount_costs(&trim_lines(EXAMPLE1)), 80, "EXAMPLE1");
-        assert_eq!(sum_all_discount_costs(&trim_lines(EXAMPLE2)), 436, "EXAMPLE2");
-        assert_eq!(sum_all_discount_costs(&trim_lines(EXAMPLE4)), 236, "EXAMPLE4");
+        assert_eq!(sum_all_discount_costs(EXAMPLE1), 80, "EXAMPLE1");
+        assert_eq!(sum_all_discount_costs(EXAMPLE2), 436, "EXAMPLE2");
+        assert_eq!(sum_all_discount_costs(EXAMPLE4), 236, "EXAMPLE4");
     }
 
     #[test]

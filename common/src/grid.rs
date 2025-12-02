@@ -416,17 +416,16 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::trim_lines;
     const EXAMPLE: &str = "L.LL.LL.LL
-                LLLLLLL.LL
-                L.L.L..L..
-                LLLL.LL.LL
-                L.LL.LL.LL
-                L.LLLLL.LL
-                ..L.L..###
-                LLLLLLLLLL
-                L.LLLLLL.L
-                L.LLLLL.LL";
+LLLLLLL.LL
+L.L.L..L..
+LLLL.LL.LL
+L.LL.LL.LL
+L.LLLLL.LL
+..L.L..###
+LLLLLLLLLL
+L.LLLLLL.L
+L.LLLLL.LL";
 
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     enum State {
@@ -450,7 +449,7 @@ mod tests {
 
     #[test]
     fn grid_from_str() {
-        let grid: Grid<State> = trim_lines(EXAMPLE).parse().unwrap();
+        let grid: Grid<State> = EXAMPLE.parse().unwrap();
         assert_eq!(grid.x_range, 0..10);
         assert_eq!(grid.y_range, 0..10);
         assert_eq!(grid.cells.len(), 100);
@@ -459,7 +458,7 @@ mod tests {
     #[test]
     fn neighbors() {
         use State::*;
-        let grid: Grid<State> = trim_lines(EXAMPLE).parse().unwrap();
+        let grid: Grid<State> = EXAMPLE.parse().unwrap();
         assert_eq!(
             grid.neighbors(&(0_isize, 0))
                 .iter()

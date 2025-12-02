@@ -53,22 +53,21 @@ fn step_rule_2(seats: &Grid<SeatState>) -> Grid<SeatState> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::trim_lines;
     use std::fs::read_to_string;
     const EXAMPLE: &str = "L.LL.LL.LL
-                LLLLLLL.LL
-                L.L.L..L..
-                LLLL.LL.LL
-                L.LL.LL.LL
-                L.LLLLL.LL
-                ..L.L.....
-                LLLLLLLLLL
-                L.LLLLLL.L
-                L.LLLLL.LL";
+LLLLLLL.LL
+L.L.L..L..
+LLLL.LL.LL
+L.LL.LL.LL
+L.LLLLL.LL
+..L.L.....
+LLLLLLLLLL
+L.LLLLLL.L
+L.LLLLL.LL";
 
     #[test]
     fn example_1() {
-        let mut seats: Grid<SeatState> = trim_lines(EXAMPLE).parse().unwrap();
+        let mut seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
         seats.apply_steps_until(step_rule_1, None);
         assert_eq!(seats.count_data(&SeatState::Occupied), 37);
     }
@@ -85,7 +84,7 @@ mod tests {
 
     #[test]
     fn example_2() {
-        let mut seats: Grid<SeatState> = trim_lines(EXAMPLE).parse().unwrap();
+        let mut seats: Grid<SeatState> = EXAMPLE.parse().unwrap();
         seats.apply_steps_until(step_rule_2, None);
         assert_eq!(seats.count_data(&SeatState::Occupied), 26);
     }
