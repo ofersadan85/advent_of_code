@@ -56,13 +56,13 @@ impl From<&str> for Game {
 }
 
 impl Game {
-    pub fn is_possible(&self, another: &GameResult) -> bool {
+    fn is_possible(&self, another: &GameResult) -> bool {
         self.results
             .iter()
             .all(|result| result.is_possible(another))
     }
 
-    pub fn power(&self) -> u32 {
+    fn power(&self) -> u32 {
         let mut max_red = 0;
         let mut max_green = 0;
         let mut max_blue = 0;

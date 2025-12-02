@@ -116,6 +116,7 @@ where
 }
 
 impl<T> MultiRange<T> {
+    #[must_use]
     pub const fn new() -> Self {
         Self { ranges: vec![] }
     }

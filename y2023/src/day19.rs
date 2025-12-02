@@ -257,7 +257,7 @@ fn parse_rule_set(s: &str) -> Result<(&str, RuleSet)> {
     ))
 }
 
-pub fn parse_input(input: &str) -> Result<(AllRules<'_>, Vec<Part>)> {
+fn parse_input(input: &str) -> Result<(AllRules<'_>, Vec<Part>)> {
     let double_line_end = if input.contains('\r') {
         "\r\n\r\n"
     } else {
@@ -279,7 +279,7 @@ pub fn parse_input(input: &str) -> Result<(AllRules<'_>, Vec<Part>)> {
     Ok((machine, parts))
 }
 
-pub fn machine_process<H>(machine: &HashMap<&str, RuleSet, H>, parts: Vec<Part>) -> Result<usize>
+fn machine_process<H>(machine: &HashMap<&str, RuleSet, H>, parts: Vec<Part>) -> Result<usize>
 where
     H: std::hash::BuildHasher,
 {
@@ -300,7 +300,7 @@ where
     Ok(total_accepted)
 }
 
-pub fn machine_process_ranges<H>(machine: &HashMap<&str, RuleSet, H>) -> Result<usize>
+fn machine_process_ranges<H>(machine: &HashMap<&str, RuleSet, H>) -> usize
 where
     H: std::hash::BuildHasher,
 {
@@ -308,13 +308,9 @@ where
     while !part.is_finished() {
         for rule_set in machine.values() {
             rule_set.eval_range(&mut part);
-            dbg!(&part);
-            let mut input = String::new();
-            std::io::stdin().read_line(&mut input).unwrap();
         }
     }
-    dbg!(&part);
-    let result = [part.x, part.m, part.a, part.s]
+    [part.x, part.m, part.a, part.s]
         .iter()
         .map(|field_map| {
             field_map
@@ -322,8 +318,7 @@ where
                 .map(|((start, end), _)| end - start + 1)
                 .sum::<usize>()
         })
-        .product();
-    Ok(result)
+        .product()
 }
 
 #[aoc_tests]
@@ -332,7 +327,7 @@ mod tests {
     #[ignore = "Too slow, need to debug"]
     fn part2_example() {
         let (machine, _) = parse_input(EXAMPLE_FULL).unwrap();
-        let total_accepted = machine_process_ranges(&machine).unwrap();
+        let total_accepted = machine_process_ranges(&machine);
         assert_eq!(total_accepted, 167409079868000);
     }
 

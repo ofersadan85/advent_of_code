@@ -32,46 +32,52 @@ fn row_map_digits(words: &[String], output: &[String]) -> usize {
     word_map[7] = words.remove(0);
     word_map[4] = words.remove(0);
 
-    word_map[3] = words
-        .iter()
-        .find(|s| s.len() == 5 && is_match(s, &word_map[1]))
-        .unwrap()
-        .to_string();
+    word_map[3].clone_from(
+        words
+            .iter()
+            .find(|s| s.len() == 5 && is_match(s, &word_map[1]))
+            .unwrap(),
+    );
     words = remove_value(&words, &word_map[3]);
 
-    word_map[9] = words
-        .iter()
-        .find(|s| is_match(s, &word_map[4]))
-        .unwrap()
-        .to_string();
+    word_map[9].clone_from(
+        words
+            .iter()
+            .find(|s| is_match(s, &word_map[4]))
+            .unwrap(),
+    );
     words = remove_value(&words, &word_map[9]);
 
-    word_map[5] = words
-        .iter()
-        .find(|s| s.len() == 5 && is_match(&word_map[9], s))
-        .unwrap()
-        .to_string();
+    word_map[5].clone_from(
+        words
+            .iter()
+            .find(|s| s.len() == 5 && is_match(&word_map[9], s))
+            .unwrap(),
+    );
     words = remove_value(&words, &word_map[5]);
 
-    word_map[0] = words
-        .iter()
-        .find(|s| s.len() == 6 && is_match(s, &word_map[1]))
-        .unwrap()
-        .to_string();
+    word_map[0].clone_from(
+        words
+            .iter()
+            .find(|s| s.len() == 6 && is_match(s, &word_map[1]))
+            .unwrap(),
+    );
     words = remove_value(&words, &word_map[0]);
 
-    word_map[6] = words
-        .iter()
-        .find(|s| s.len() == 6 && !word_map.contains(s))
-        .unwrap()
-        .to_string();
+    word_map[6].clone_from(
+        words
+            .iter()
+            .find(|s| s.len() == 6 && !word_map.contains(s))
+            .unwrap(),
+    );
     words = remove_value(&words, &word_map[6]);
 
-    word_map[2] = words
-        .iter()
-        .find(|s| s.len() == 5 && !word_map.contains(s))
-        .unwrap()
-        .to_string();
+    word_map[2].clone_from(
+        words
+            .iter()
+            .find(|s| s.len() == 5 && !word_map.contains(s))
+            .unwrap(),
+    );
 
     output
         .iter()

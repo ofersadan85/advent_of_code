@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-pub fn sum_digits(s: &str) -> u32 {
+fn sum_digits(s: &str) -> u32 {
     let mut digits = s.chars().filter_map(|c| c.to_digit(10));
     let first = digits.next().unwrap_or(0);
     let last = digits.next_back().unwrap_or(first);
@@ -12,7 +12,7 @@ const DIGIT_WORDS: [&str; 18] = [
     "5", "6", "7", "8", "9",
 ];
 
-pub fn word_to_num(s: &str) -> Option<u32> {
+fn word_to_num(s: &str) -> Option<u32> {
     match s {
         "one" => Some(1),
         "two" => Some(2),
@@ -27,7 +27,7 @@ pub fn word_to_num(s: &str) -> Option<u32> {
     }
 }
 
-pub fn sum_digit_words(s: &str) -> u32 {
+fn sum_digit_words(s: &str) -> u32 {
     let found = DIGIT_WORDS
         .iter()
         .map(|&word| (word, s.find(word), s.rfind(word)))

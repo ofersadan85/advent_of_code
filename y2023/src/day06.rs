@@ -1,15 +1,15 @@
 use anyhow::{Context, Result};
 use itertools::Itertools;
 
-pub const EXAMPLE: &str = "Time:      7  15   30
+const EXAMPLE: &str = "Time:      7  15   30
 Distance:  9  40  200";
-pub const INPUT: &str = "Time:        63     78     94     68
+const INPUT: &str = "Time:        63     78     94     68
 Distance:   411   1274   2047   1035";
 
 #[derive(Debug, Clone, Copy)]
-pub struct Race {
-    pub time: f64,
-    pub distance: f64,
+struct Race {
+    time: f64,
+    distance: f64,
 }
 
 impl Race {
@@ -19,7 +19,7 @@ impl Race {
         clippy::cast_possible_truncation,
         clippy::manual_midpoint
     )]
-    pub fn ways_to_win(&self) -> usize {
+    fn ways_to_win(&self) -> usize {
         let discriminant = self.time.mul_add(self.time, -4.0 * self.distance);
         if discriminant < 0.0 {
             return 0;
@@ -38,7 +38,7 @@ impl Race {
     }
 }
 
-pub fn parse_input1(s: &str) -> Result<Vec<Race>> {
+fn parse_input1(s: &str) -> Result<Vec<Race>> {
     let mut lines = s.lines();
     let times = lines
         .next()
@@ -61,7 +61,7 @@ pub fn parse_input1(s: &str) -> Result<Vec<Race>> {
     Ok(races)
 }
 
-pub fn parse_input2(s: &str) -> Result<Race> {
+fn parse_input2(s: &str) -> Result<Race> {
     let mut lines = s.lines();
     let time = lines
         .next()

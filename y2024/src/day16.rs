@@ -226,7 +226,7 @@ fn print_maze(maze: &Maze) {
         print!("{y}\t");
         for x in 0..maze.width() {
             let point = (x, y).as_point();
-            let cell = maze.get(&point).unwrap();
+            let cell = maze.get(&point).expect("cell exists");
             print!(
                 "{}",
                 match (

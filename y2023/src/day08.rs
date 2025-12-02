@@ -48,6 +48,7 @@ fn prime_factors(n: &u128) -> Vec<u128> {
     }
     result
 }
+
 fn parse_line(s: &str) -> Result<(&str, (&str, &str))> {
     let mut parts = s.split(" = ");
     let key = parts.next().context("no key")?;
@@ -61,7 +62,7 @@ fn parse_line(s: &str) -> Result<(&str, (&str, &str))> {
 type Map<'a> = HashMap<&'a str, (&'a str, &'a str)>;
 
 #[allow(clippy::implicit_hasher)]
-pub fn parse_input(s: &str) -> Result<(&str, Map<'_>)> {
+fn parse_input(s: &str) -> Result<(&str, Map<'_>)> {
     let mut lines = s.lines();
     let commands = lines.next().context("no commands")?;
     let map = lines.filter_map(|line| parse_line(line).ok()).collect();
@@ -69,7 +70,7 @@ pub fn parse_input(s: &str) -> Result<(&str, Map<'_>)> {
 }
 
 #[allow(clippy::implicit_hasher)]
-pub fn solve1(commands: &str, map: &Map) -> u128 {
+fn solve1(commands: &str, map: &Map) -> u128 {
     let mut count = 0;
     let mut key = "AAA";
     let mut commands = commands.chars().cycle();
@@ -86,7 +87,7 @@ pub fn solve1(commands: &str, map: &Map) -> u128 {
 }
 
 #[allow(clippy::implicit_hasher)]
-pub fn solve2(commands: &str, map: &Map) -> u128 {
+fn solve2(commands: &str, map: &Map) -> u128 {
     let mut count = 0;
     let mut keys: Vec<_> = map.keys().filter(|&&key| key.ends_with('A')).collect();
     let mut commands = commands.chars().cycle();

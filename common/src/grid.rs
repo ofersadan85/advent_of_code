@@ -126,6 +126,7 @@ impl<T> Grid<T> {
         grid
     }
 
+    #[must_use]
     pub fn new_default(width: isize, height: isize) -> Self
     where
         T: Default,
@@ -147,10 +148,12 @@ impl<T> Grid<T> {
         grid
     }
 
+    #[must_use]
     pub const fn width(&self) -> isize {
         self.x_range.end - self.x_range.start
     }
 
+    #[must_use]
     pub const fn height(&self) -> isize {
         self.y_range.end - self.y_range.start
     }
@@ -167,6 +170,7 @@ impl<T> Grid<T> {
         self.cells.get_mut(&c.as_point())
     }
 
+    #[expect(clippy::missing_panics_doc)] // We calculate the wrapped coordinates ourselves
     pub fn get_wrapped(&self, c: &dyn Coords) -> &GridCell<T> {
         let x = (self.width() + c.x() % self.width()) % self.width();
         let y = (self.height() + c.y() % self.height()) % self.height();
@@ -359,6 +363,11 @@ impl<T> Grid<T> {
         result
     }
 
+    /// Like `sight_line`, but wraps around the grid edges.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `n` is larger than [`isize::MAX`].
     pub fn sight_line_wrapped(
         &self,
         c: &dyn Coords,
@@ -374,7 +383,6 @@ impl<T> Grid<T> {
         result
     }
 
-    #[allow(clippy::range_plus_one)] // Can't use inclusive ranges here
     pub fn expand(&mut self)
     where
         T: Default,

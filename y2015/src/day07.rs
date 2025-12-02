@@ -129,19 +129,19 @@ impl Circuit {
         let mut new_wires = HashMap::new();
         for (name, wire) in &self.wires {
             if wire.has_value() {
-                new_wires.insert(name.to_string(), wire.clone());
+                new_wires.insert(name.clone(), wire.clone());
             } else {
                 let gate = wire.gate().expect("Wire has no gate and no value");
                 if let Some(value) = self.parse_gate(gate) {
                     new_wires.insert(
-                        name.to_string(),
+                        name.clone(),
                         Wire::Valued {
-                            name: name.to_string(),
+                            name: name.clone(),
                             value,
                         },
                     );
                 } else {
-                    new_wires.insert(name.to_string(), wire.clone());
+                    new_wires.insert(name.clone(), wire.clone());
                 }
             }
         }

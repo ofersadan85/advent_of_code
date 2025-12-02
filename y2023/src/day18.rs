@@ -48,7 +48,7 @@ impl From<Direction> for Coord {
     }
 }
 
-pub fn line_parser_1(s: &str) -> Option<(Direction, f64)> {
+fn line_parser_1(s: &str) -> Option<(Direction, f64)> {
     let mut parts = s.split_whitespace();
     let direction = parts
         .next()
@@ -58,7 +58,7 @@ pub fn line_parser_1(s: &str) -> Option<(Direction, f64)> {
     Some((direction, distance))
 }
 
-pub fn line_parser_2(s: &str) -> Option<(Direction, f64)> {
+fn line_parser_2(s: &str) -> Option<(Direction, f64)> {
     let (hex, dir) = s.split_once('#')?.1.split_at(5);
     let distance = f64::from(u32::from_str_radix(hex, 16).ok()?);
     let direction = dir.chars().next().and_then(|c| match c {
@@ -74,7 +74,7 @@ pub fn line_parser_2(s: &str) -> Option<(Direction, f64)> {
 #[allow(clippy::float_cmp)] // We're not doing any floating point math here, other that the assert_eq! below
 #[allow(clippy::cast_sign_loss)] // We know the result is always positive
 #[allow(clippy::cast_possible_truncation)] // We're checking that the result is an integer
-pub fn polygon_area<F>(s: &str, line_parser: F) -> usize
+fn polygon_area<F>(s: &str, line_parser: F) -> usize
 where
     F: Fn(&str) -> Option<(Direction, f64)>,
 {

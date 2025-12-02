@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub struct Santa {
+struct Santa {
     map: HashMap<(isize, isize), isize>,
     last: (isize, isize),
 }
@@ -12,13 +12,13 @@ impl Default for Santa {
 }
 
 impl Santa {
-    pub fn new() -> Self {
+    fn new() -> Self {
         let mut map = HashMap::new();
         map.insert((0, 0), 1);
         Self { map, last: (0, 0) }
     }
 
-    pub fn step(&mut self, direction: char) {
+    fn step(&mut self, direction: char) {
         let (x, y) = self.last;
         let (x, y) = match direction {
             '^' => (x, y + 1),
@@ -31,7 +31,7 @@ impl Santa {
         *self.map.entry((x, y)).or_insert(0) += 1;
     }
 
-    pub fn houses(&self) -> usize {
+    fn houses(&self) -> usize {
         self.map.len()
     }
 }

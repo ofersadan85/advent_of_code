@@ -66,7 +66,7 @@ fn visit_caves(graph: &Undirected, allow_double: bool) -> usize {
 
             if is_uppercase || !path.contains(next_node) || allow_double {
                 let mut new_path = path.clone();
-                new_path.extend(vec![next_node.to_string()]);
+                new_path.extend(vec![next_node.clone()]);
                 known_paths.push(new_path);
             }
         }

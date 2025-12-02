@@ -2,7 +2,7 @@ use itertools::Itertools;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 
-pub fn brute_force_path(s: &str, min: bool) -> usize {
+fn brute_force_path(s: &str, min: bool) -> usize {
     let regex = Regex::new(r"^(?P<from>\w+) to (?P<to>\w+) = (?P<dist>\d+)$").expect("regex");
     let mut graph: HashMap<(&str, &str), usize> = HashMap::new();
     let mut cities: HashSet<&str> = HashSet::new();

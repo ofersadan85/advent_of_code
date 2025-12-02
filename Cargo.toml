@@ -1,6 +1,18 @@
 [workspace]
 resolver = "2"
-members = ["common", "y2015", "y2020", "y2021", "y2022", "y2023", "cli", "y2024", "macros", "everybody", "y2019", "y2025"]
+members = [
+    "common",
+    "macros",
+    "y2015",
+    "y2019",
+    "y2020",
+    "y2021",
+    "y2022",
+    "y2023",
+    "y2024",
+    "y2025",
+    "everybody",
+]
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
@@ -11,29 +23,23 @@ dead_code = "allow"
 nursery = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 # unwrap_used = "deny"
-must_use_candidate = "allow"
-missing_errors_doc = "allow"
-missing_panics_doc = "allow"
-module_name_repetitions = "allow"
-unreadable_literal = "allow"
 
 [workspace.dependencies]
 advent_of_code_common = { path = "common" }
 advent_of_code_macros = { path = "macros" }
 anyhow = "1.0.94"
-colored = "2.2.0"
-geo = "0.29.1"
+colored = "3.0.0"
+geo = "0.31.0"
 integer-sqrt = "0.1.5"
-itertools = "0.13.0"
-md5 = "0.7.0"
+itertools = "0.14.0"
+md5 = "0.8.0"
 num = { version = "0.4.3", features = ["rand", "num-bigint"] }
-petgraph = "0.6.5"
+petgraph = "0.8.3"
 rayon = "1.10.0"
-regex = "1.11.1"
+regex = "1.12.2"
 seq-macro = "0.3.5"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0.133"
-strum = { version = "0.26", features = ["derive"] }
-test-log = {version = "0.2.16", features = ["trace"] }
-tracing = "0.1.41"
-tracing-subscriber = "0.3.19"
+test-log = { version = "0.2.19", features = ["trace"] }
+tracing = "0.1.43"
+tracing-subscriber = "0.3.22"

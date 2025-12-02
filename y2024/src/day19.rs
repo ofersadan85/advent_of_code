@@ -33,7 +33,7 @@ fn count_possible<'a>(
 
 fn count_possible_total(input: &str, count: bool) -> usize {
     let mut lines = input.lines();
-    let options: Vec<&str> = lines.next().unwrap().split(", ").collect();
+    let options: Vec<&str> = lines.next().unwrap_or_default().split(", ").collect();
     let mut cache = options.iter().map(|&o| (o, 1)).collect();
     let mut total = 0;
     let mut sum = 0;

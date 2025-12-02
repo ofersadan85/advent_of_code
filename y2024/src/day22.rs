@@ -2,11 +2,12 @@ use advent_of_code_macros::aoc_tests;
 use std::collections::{HashMap, HashSet};
 
 fn buyer_prices(buyer: isize) -> Vec<isize> {
+    let magic_number = 16_777_215;
     (0..2000).fold(Vec::with_capacity(2000), |mut prices, _| {
         let mut buyer = *prices.last().unwrap_or(&buyer);
-        buyer = ((buyer << 6) ^ buyer) & 16777215;
+        buyer = ((buyer << 6) ^ buyer) & magic_number;
         buyer = (buyer >> 5) ^ buyer;
-        buyer = (buyer.overflowing_shl(11).0 ^ buyer) & 16777215;
+        buyer = (buyer.overflowing_shl(11).0 ^ buyer) & magic_number;
         prices.push(buyer);
         prices
     })

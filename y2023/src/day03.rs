@@ -2,14 +2,14 @@ use itertools::iproduct;
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub enum EnginePart {
+enum EnginePart {
     Number(u32),
     Symbol(char),
 }
 
-pub type EngineMap = HashMap<(usize, usize), EnginePart>;
+type EngineMap = HashMap<(usize, usize), EnginePart>;
 
-pub fn create_engine_map(s: &str) -> EngineMap {
+fn create_engine_map(s: &str) -> EngineMap {
     let mut map = HashMap::new();
     let mut current_number = String::new();
     for (y, line) in s.lines().enumerate() {
@@ -36,7 +36,7 @@ pub fn create_engine_map(s: &str) -> EngineMap {
     map
 }
 
-pub fn numbers_with_neighbors(map: &EngineMap) -> Vec<u32> {
+fn numbers_with_neighbors(map: &EngineMap) -> Vec<u32> {
     let mut numbers = Vec::new();
     for ((x, y), part) in map {
         if let EnginePart::Number(number) = part {
@@ -53,13 +53,13 @@ pub fn numbers_with_neighbors(map: &EngineMap) -> Vec<u32> {
     numbers
 }
 
-pub fn find_number_neighbors(map: &EngineMap, x: &usize, y: &usize) -> Vec<u32> {
+fn find_number_neighbors(map: &EngineMap, x: usize, y: usize) -> Vec<u32> {
     map.iter()
         .filter(|((x_n, y_n), part)| {
             if let EnginePart::Number(n) = part {
                 let x_range = (x_n.saturating_sub(1))..=(x_n + n.to_string().len());
                 let y_range = (y_n.saturating_sub(1))..=(y_n + 1);
-                x_range.contains(x) && y_range.contains(y)
+                x_range.contains(&x) && y_range.contains(&y)
             } else {
                 false
             }
@@ -71,14 +71,14 @@ pub fn find_number_neighbors(map: &EngineMap, x: &usize, y: &usize) -> Vec<u32> 
         .collect()
 }
 
-pub fn find_gears(map: &EngineMap) -> Vec<u32> {
+fn find_gears(map: &EngineMap) -> Vec<u32> {
     let gears: Vec<u32> = map
         .iter()
         .filter(|(_, part)| match part {
             EnginePart::Symbol(c) => *c == '*',
             EnginePart::Number(_) => false,
         })
-        .map(|((x, y), _)| find_number_neighbors(map, x, y))
+        .map(|((x, y), _)| find_number_neighbors(map, *x, *y))
         .filter(|numbers| numbers.len() == 2)
         .map(|numbers| numbers[0] * numbers[1])
         .collect();

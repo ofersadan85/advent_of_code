@@ -443,11 +443,13 @@ impl TryFrom<char> for Direction {
 
 impl Direction {
     /// Get the 4 cardinal (orthogonal) directions, clockwise starting from `North`.
+    #[must_use]
     pub const fn orthogonal() -> [Self; 4] {
         [Self::North, Self::East, Self::South, Self::West]
     }
 
     /// Get the 4 diagonal directions, clockwise starting from `NorthEast`.
+    #[must_use]
     pub const fn diagonal() -> [Self; 4] {
         [
             Self::NorthEast,
@@ -458,6 +460,7 @@ impl Direction {
     }
 
     /// Get all 8 cardinal and diagonal directions, clockwise starting from `North`.
+    #[must_use]
     pub const fn all() -> [Self; 8] {
         [
             Self::North,

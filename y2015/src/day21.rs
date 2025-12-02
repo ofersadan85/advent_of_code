@@ -8,14 +8,14 @@ use std::{
 };
 use strum::{EnumIter, IntoEnumIterator};
 
-pub trait GearStats {
+pub(crate) trait GearStats {
     fn damage(&self) -> u32;
     fn armor(&self) -> u32;
     fn cost(&self) -> u32;
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIter)]
-pub enum RingPower {
+pub(crate) enum RingPower {
     One,
     Two,
     Three,
@@ -32,7 +32,7 @@ impl From<&RingPower> for u32 {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum Ring {
+pub(crate) enum Ring {
     DamageRing(RingPower),
     ArmorRing(RingPower),
 }
@@ -69,7 +69,7 @@ impl GearStats for Ring {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIter)]
-pub enum Weapon {
+pub(crate) enum Weapon {
     Dagger,
     ShortSword,
     WarHammer,
@@ -104,7 +104,7 @@ impl GearStats for Weapon {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, EnumIter)]
-pub enum Armor {
+pub(crate) enum Armor {
     Leather,
     ChainMail,
     SplintMail,
@@ -153,11 +153,11 @@ impl<T: GearStats> GearStats for Option<T> {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Default)]
-pub struct Gear {
-    pub weapon: Option<Weapon>,
-    pub armor: Option<Armor>,
-    pub ring1: Option<Ring>,
-    pub ring2: Option<Ring>,
+pub(crate) struct Gear {
+    pub(crate) weapon: Option<Weapon>,
+    pub(crate) armor: Option<Armor>,
+    pub(crate) ring1: Option<Ring>,
+    pub(crate) ring2: Option<Ring>,
 }
 
 impl GearStats for Gear {
@@ -175,7 +175,7 @@ impl GearStats for Gear {
 }
 
 impl Gear {
-    pub fn weapon_combinations() -> Vec<Self> {
+    pub(crate) fn weapon_combinations() -> Vec<Self> {
         iproduct!(
             Weapon::iter().map(Some),
             Armor::iter().map(Some).chain(once(None)),
@@ -209,7 +209,7 @@ impl Gear {
 /// Spells without an inner type are single-use (no lasting effect), and spells with an inner (number) type
 /// are lasting effects, with the number representing the remaining number of turns.
 #[derive(Debug, Clone, Copy, EnumIter, Eq)]
-pub enum Spell {
+pub(crate) enum Spell {
     /// Costs 53 mana. It instantly does 4 damage
     MagicMissile,
     /// Costs 73 mana. It instantly does 2 damage and heals you for 2 hit points
@@ -242,7 +242,7 @@ impl Hash for Spell {
     }
 }
 
-pub trait SpellEffect
+pub(crate) trait SpellEffect
 where
     Self: Sized,
 {
@@ -393,7 +393,7 @@ impl<T: SpellEffect> SpellEffect for Option<T> {
     }
 }
 
-pub type ActiveEffects = HashSet<Option<Spell>>;
+pub(crate) type ActiveEffects = HashSet<Option<Spell>>;
 
 impl SpellEffect for ActiveEffects {
     fn heal(&self) -> u32 {
@@ -437,15 +437,16 @@ impl GearStats for ActiveEffects {
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct Player {
-    pub hp: u32,
-    pub gear: Gear,
-    pub mana: u32,
-    pub mana_spent: u32,
-    pub active_effects: ActiveEffects,
+pub(crate) struct Player {
+    pub(crate) hp: u32,
+    pub(crate) gear: Gear,
+    pub(crate) mana: u32,
+    pub(crate) mana_spent: u32,
+    pub(crate) active_effects: ActiveEffects,
 }
 
 impl Player {
+    #[must_use]
     pub fn new(hp: u32) -> Self {
         Self {
             hp,
@@ -469,10 +470,10 @@ impl GearStats for Player {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Boss {
-    pub hp: u32,
-    pub damage: u32,
-    pub armor: u32,
+pub(crate) struct Boss {
+    pub(crate) hp: u32,
+    pub(crate) damage: u32,
+    pub(crate) armor: u32,
 }
 
 impl GearStats for Boss {
@@ -522,7 +523,7 @@ impl FromStr for Boss {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum GameState {
+pub(crate) enum GameState {
     #[default]
     Active,
     PlayerWon,
@@ -530,23 +531,23 @@ pub enum GameState {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum GameDifficulty {
+pub(crate) enum GameDifficulty {
     #[default]
     Easy,
     Hard,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Game {
-    pub player: Player,
-    pub boss: Boss,
-    pub state: GameState,
-    pub damage_minimum: u32,
-    pub difficulty: GameDifficulty,
+pub(crate) struct Game {
+    pub(crate) player: Player,
+    pub(crate) boss: Boss,
+    pub(crate) state: GameState,
+    pub(crate) damage_minimum: u32,
+    pub(crate) difficulty: GameDifficulty,
 }
 
 impl Game {
-    pub const fn new(
+    pub(crate) const fn new(
         boss: Boss,
         player: Player,
         damage_minimum: u32,
@@ -561,7 +562,7 @@ impl Game {
         }
     }
 
-    pub fn apply_spells(&mut self, cast_spell: Option<Spell>) {
+    pub(crate) fn apply_spells(&mut self, cast_spell: Option<Spell>) {
         // eprintln!("Active spells: {:?}", self.player.active_effects);
         if cast_spell.is_some() && cast_spell.mana_cost() > self.player.mana {
             self.state = GameState::BossWon;
@@ -607,7 +608,7 @@ impl Game {
         }
     }
 
-    pub fn player_turn(&mut self, cast_spell: Option<Spell>) {
+    pub(crate) fn player_turn(&mut self, cast_spell: Option<Spell>) {
         // eprintln!("Player casts: {:?}", cast_spell);
         // eprintln!("Boss before {:?}", self.boss);
         if self.difficulty == GameDifficulty::Hard {
@@ -630,7 +631,7 @@ impl Game {
         // eprintln!("Boss After {:?}", self.boss);
     }
 
-    pub fn boss_turn(&mut self) {
+    pub(crate) fn boss_turn(&mut self) {
         // eprintln!("BOSS TURN before {:?}", self.boss);
         // eprintln!("Player before {:?}", self.player);
         self.apply_spells(None);
@@ -651,7 +652,7 @@ impl Game {
         // eprintln!("Player after {:?}", self.player);
     }
 
-    pub fn step(&mut self, cast_spell: Option<Spell>) -> GameState {
+    pub(crate) fn step(&mut self, cast_spell: Option<Spell>) -> GameState {
         self.player_turn(cast_spell);
         if self.state == GameState::Active {
             self.boss_turn();
@@ -659,7 +660,7 @@ impl Game {
         self.state
     }
 
-    pub fn play<T>(&mut self, spells: T) -> GameState
+    pub(crate) fn play<T>(&mut self, spells: T) -> GameState
     where
         T: IntoIterator<Item = Option<Spell>>,
     {

@@ -1,4 +1,4 @@
-pub fn normal(input: &str, expect: &str) -> usize {
+fn normal(input: &str, expect: &str) -> usize {
     (0usize..usize::MAX)
         .find(|i| {
             let test_str = format!("{input}{i}");

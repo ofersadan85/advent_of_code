@@ -163,7 +163,7 @@ impl Row {
         // true
     }
 
-    pub fn solutions(&self) -> HashSet<u32> {
+    fn solutions(&self) -> HashSet<u32> {
         self.bit_solutions()
             .into_iter()
             .filter(|&solution| self.is_valid_solution(solution))

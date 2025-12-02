@@ -59,6 +59,12 @@ pub fn aoc_tests(
     item.into_token_stream().into()
 }
 
+/// A procedural macro to include all day modules up to a specified last day.
+/// If no last day is specified, defaults to 25.
+/// 
+/// # Panics
+/// 
+/// Panics if the provided last day is not a valid integer
 #[proc_macro]
 pub fn all_the_days(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let last: u8 = if input.is_empty() {
@@ -66,7 +72,7 @@ pub fn all_the_days(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     } else {
         syn::parse_macro_input!(input as syn::LitInt)
             .base10_parse()
-            .unwrap()
+            .expect("valid integer")
     };
     if last <= 10 {
         quote! {
@@ -101,6 +107,11 @@ pub fn derive_char_enum_display(input: proc_macro::TokenStream) -> proc_macro::T
     impls::enum_char_impls(&input, true)
 }
 
+/// A procedural macro to define an enum where each variant is associated with a `char` value.
+/// 
+/// # Panics
+/// 
+/// Panics if any variant does not have a `char` discriminant.
 #[proc_macro_attribute]
 pub fn char_enum(
     attr: proc_macro::TokenStream,
@@ -138,7 +149,7 @@ pub fn char_enum(
             .to_compile_error()
             .into();
         }
-        let value = v.discriminant.clone().unwrap().1;
+        let value = v.discriminant.clone().expect("checked above").1;
         v.discriminant = None;
         v.attrs.push(syn::parse_quote! {#[c = #value]});
     }

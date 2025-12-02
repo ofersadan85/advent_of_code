@@ -100,19 +100,19 @@ impl FromStr for Space {
 }
 
 impl Space {
-    pub fn width(&self) -> usize {
+    fn width(&self) -> usize {
         self.tiles[0].len()
     }
 
-    pub const fn height(&self) -> usize {
+    const fn height(&self) -> usize {
         self.tiles.len()
     }
 
-    pub const fn expand_fast(&mut self, factor: usize) {
+    const fn expand_fast(&mut self, factor: usize) {
         self.expansion += factor;
     }
 
-    pub fn expand(&mut self) {
+    fn expand(&mut self) {
         let width = self.width();
         let height = self.height();
         let non_galaxy_rows = (0..height - 1).filter(|y| !self.galaxy_rows.contains(y));
@@ -183,13 +183,13 @@ impl Space {
         path.0
     }
 
-    pub fn total_distance(&self) -> usize {
+    fn total_distance(&self) -> usize {
         self.pairs_of_galaxies()
             .map(|(galaxy1, galaxy2)| self.distance(galaxy1, galaxy2))
             .sum()
     }
 
-    pub fn distance_estimate(&self, galaxy1: (usize, usize), galaxy2: (usize, usize)) -> usize {
+    fn distance_estimate(&self, galaxy1: (usize, usize), galaxy2: (usize, usize)) -> usize {
         let min_x = galaxy1.0.min(galaxy2.0);
         let max_x = galaxy1.0.max(galaxy2.0);
         let min_y = galaxy1.1.min(galaxy2.1);
@@ -215,7 +215,7 @@ impl Space {
         dx + dy
     }
 
-    pub fn total_distance_estimate(&self) -> usize {
+    fn total_distance_estimate(&self) -> usize {
         self.pairs_of_galaxies()
             .map(|(galaxy1, galaxy2)| self.distance_estimate(galaxy1, galaxy2))
             .sum()

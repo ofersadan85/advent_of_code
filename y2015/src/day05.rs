@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn is_nice_str(s: &str) -> bool {
+fn is_nice_str(s: &str) -> bool {
     let mut vowel_count = 0;
     let mut has_double_letter = false;
     let mut previous = ' '; // dummy value, will never match
@@ -18,7 +18,7 @@ pub fn is_nice_str(s: &str) -> bool {
     vowel_count >= 3 && has_double_letter
 }
 
-pub fn is_even_nicer_str(s: &str) -> (bool, bool, HashMap<(char, char), Vec<i32>>) {
+fn is_even_nicer_str(s: &str) -> (bool, bool, HashMap<(char, char), Vec<i32>>) {
     let mut chars = s.chars();
     let mut window = [' '; 3];
     let mut pairs: HashMap<(char, char), Vec<i32>> = HashMap::new();
@@ -49,7 +49,7 @@ pub fn is_even_nicer_str(s: &str) -> (bool, bool, HashMap<(char, char), Vec<i32>
     (has_wings, has_pairs, pairs)
 }
 
-pub fn has_pairs(s: &str) -> bool {
+fn has_pairs(s: &str) -> bool {
     let mut pairs: HashMap<String, usize> = HashMap::new();
     let mut previous = ' ';
     s.chars().enumerate().for_each(|(i, c)| {
@@ -64,11 +64,11 @@ pub fn has_pairs(s: &str) -> bool {
     pairs.values().any(|v| *v > 1)
 }
 
-pub fn winged_pairs(s: &str) -> bool {
+fn winged_pairs(s: &str) -> bool {
     (1..s.len()).any(|i| s.chars().nth(i - 1).unwrap_or('*') == s.chars().nth(i + 1).unwrap_or('?'))
 }
 
-pub fn has_triple(s: &str) -> bool {
+fn has_triple(s: &str) -> bool {
     (1..s.len()).any(|i| {
         let previous = s.chars().nth(i - 1).unwrap_or('*');
         let current = s.chars().nth(i).unwrap_or('?');

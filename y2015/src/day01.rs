@@ -1,4 +1,4 @@
-pub fn count_parentheses(s: &str) -> (i32, usize) {
+fn count_parentheses(s: &str) -> (i32, usize) {
     let mut first_negative = 0;
     let mut sum = 0;
     for (i, c) in s.chars().enumerate() {

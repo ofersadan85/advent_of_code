@@ -47,6 +47,7 @@ impl std::str::FromStr for BitsIterator {
 }
 
 impl BitsIterator {
+    #[must_use]
     pub const fn new(data: Vec<u8>) -> Self {
         Self {
             data,
@@ -55,14 +56,17 @@ impl BitsIterator {
         }
     }
 
+    #[must_use]
     pub const fn len(&self) -> usize {
         self.data.len() * 8
     }
 
+    #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.data.is_empty()
     }
 
+    #[must_use]
     pub const fn remaining(&self) -> usize {
         (self.data.len() - self.index) * 8 - self.used
     }
@@ -110,6 +114,7 @@ impl BitsIterator {
         self.used = 0;
     }
 
+    #[must_use]
     pub fn as_bytes(&self) -> &[u8] {
         &self.data
     }

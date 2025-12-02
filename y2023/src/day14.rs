@@ -185,7 +185,7 @@ fn push_rocks(rocks: &[Rock], direction: Direction, max: usize) -> Vec<Rock> {
     no_move
 }
 
-pub fn push_rocks_north(input: &str) -> usize {
+fn push_rocks_north(input: &str) -> usize {
     let len = input.lines().count();
     let rocks = parse_input(input);
     let pushed = push_rocks(&rocks, Direction::North, len);

@@ -40,7 +40,7 @@ pub type Maze = UnGraphMap<(i32, i32), u8>;
 pub type MazeMap = HashMap<(i32, i32), Tile>;
 
 #[instrument(skip_all, level = "info")]
-pub fn parse_input(s: &str) -> Result<((i32, i32), Maze)> {
+pub(crate) fn parse_input(s: &str) -> Result<((i32, i32), Maze)> {
     let width = i32::try_from(s.lines().next().context("No lines")?.len())?;
     let height = i32::try_from(s.lines().count())?;
     let map: MazeMap = s

@@ -2,6 +2,7 @@ use crate::default_input_path;
 use advent_of_code_common::grid::{Coords, Grid, GridCell, Point};
 use advent_of_code_common::Solver;
 use advent_of_code_macros::char_enum;
+use colored::Colorize;
 use itertools::Itertools;
 use std::collections::{BTreeMap, HashSet};
 
@@ -14,7 +15,7 @@ enum Entity {
 }
 
 impl Entity {
-    fn next_moves(&self) -> Vec<(isize, isize)> {
+    fn next_moves(self) -> Vec<(isize, isize)> {
         match self {
             Self::Sheep => vec![(0, 1)],
             Self::Dragon => vec![
@@ -50,15 +51,12 @@ fn parse_grid(s: &str) -> MultiGrid {
             let x = isize::try_from(x).expect("x in isize range");
             let y = isize::try_from(y).expect("y in isize range");
             let point = (x, y).as_point();
-            match Entity::try_from(c) {
-                Ok(ty) => {
-                    let cell = grid
-                        .cells
-                        .entry(point)
-                        .or_insert_with(|| GridCell::new(&point, HashSet::new()));
-                    cell.data.insert(ty);
-                }
-                Err(_) => {}
+            if let Ok(ty) = Entity::try_from(c) {
+                let cell = grid
+                    .cells
+                    .entry(point)
+                    .or_insert_with(|| GridCell::new(&point, HashSet::new()));
+                cell.data.insert(ty);
             }
         }
         width = width.max(line_width);
@@ -95,10 +93,11 @@ fn step_ty(grid: &mut MultiGrid, ty: Entity, replace: bool) {
 fn remove_eaten(grid: &mut MultiGrid) -> usize {
     grid.iter_mut()
         .map(|(_, cell)| {
-            if cell.data.contains(&Entity::Dragon) && !cell.data.contains(&Entity::Shield) {
-                if cell.data.remove(&Entity::Sheep) {
-                    return 1;
-                }
+            if cell.data.contains(&Entity::Dragon)
+                && !cell.data.contains(&Entity::Shield)
+                && cell.data.remove(&Entity::Sheep)
+            {
+                return 1;
             }
             0
         })
@@ -155,7 +154,6 @@ impl std::fmt::Display for Move {
         let x = usize::try_from(self.to.x).unwrap_or(usize::MAX);
         let x = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".chars().nth(x).unwrap_or('?');
         let y = self.to.y + 1;
-        use colored::Colorize;
         let ty = match self.ty {
             Entity::Sheep => self.ty.to_string().green(),
             Entity::Dragon => self.ty.to_string().red(),
@@ -192,7 +190,7 @@ fn legal_moves(grid: &MultiGrid, ty: Entity) -> Vec<Move> {
     }
     println!(
         "Legal moves for {ty}: {}",
-        moves.iter().map(|mv| mv.to_string()).join(" ")
+        moves.iter().map(std::string::ToString::to_string).join(" ")
     );
     moves
 }
@@ -266,7 +264,10 @@ impl GridGame {
     }
 
     fn fmt_history(&self) -> String {
-        self.moves.iter().map(|mv| mv.to_string()).join(" ")
+        self.moves
+            .iter()
+            .map(std::string::ToString::to_string)
+            .join(" ")
     }
 }
 

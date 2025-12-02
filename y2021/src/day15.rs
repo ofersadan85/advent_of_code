@@ -64,7 +64,7 @@ fn multi_wrap(v: u32, count: u32) -> u32 {
 }
 
 /// Extend vectors horizontally n times (with value increments)
-pub fn enlarge_horizontal(data: &V2<u32>, n: u32) -> V2<u32> {
+fn enlarge_horizontal(data: &V2<u32>, n: u32) -> V2<u32> {
     let mut new_data = data.clone();
     for y in 0..data.len() {
         for count in 1..n {
@@ -75,7 +75,7 @@ pub fn enlarge_horizontal(data: &V2<u32>, n: u32) -> V2<u32> {
 }
 
 /// Extend vectors vertically n times (with value increments)
-pub fn enlarge_vertical(data: &V2<u32>, n: u32) -> V2<u32> {
+fn enlarge_vertical(data: &V2<u32>, n: u32) -> V2<u32> {
     let mut new_data = data.clone();
     for count in 1..n {
         for row in data {

@@ -1,6 +1,6 @@
 use itertools::Itertools;
 
-pub const EXAMPLE1: &str = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
+const EXAMPLE1: &str = "Card 1: 41 48 83 86 17 | 83 86  6 31 17  9 48 53
 Card 2: 13 32 20 16 61 | 61 30 68 82 17 32 24 19
 Card 3:  1 21 53 59 44 | 69 82 63 72 16 21 14  1
 Card 4: 41 92 73 84 69 | 59 84 76 51 58  5 54 83
@@ -8,11 +8,11 @@ Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
 
 #[derive(Debug, Clone)]
-pub struct Card {
-    pub id: usize,
-    pub copies: usize,
-    pub win_numbers: Vec<usize>,
-    pub have_numbers: Vec<usize>,
+struct Card {
+    id: usize,
+    copies: usize,
+    win_numbers: Vec<usize>,
+    have_numbers: Vec<usize>,
 }
 
 impl TryFrom<&str> for Card {
@@ -45,14 +45,14 @@ impl TryFrom<&str> for Card {
 }
 
 impl Card {
-    pub fn count(&self) -> usize {
+    fn count(&self) -> usize {
         self.have_numbers
             .iter()
             .filter(|n| self.win_numbers.contains(n))
             .count()
     }
 
-    pub fn score(&self) -> usize {
+    fn score(&self) -> usize {
         let count = self.count();
         if count == 0 {
             0
@@ -64,7 +64,7 @@ impl Card {
     }
 }
 
-pub fn card_explosion(cards: &mut [Card]) {
+fn card_explosion(cards: &mut [Card]) {
     let mut index = 0;
     let last_index = cards.len() - 1;
     loop {

@@ -363,12 +363,14 @@ impl Hand5 {
         hand_type
     }
 
+    #[must_use]
     pub fn cmp_hand_type(&self, other: &Self) -> Ordering {
         let self_value = self.joker_swap().evaluate();
         let other_value = other.joker_swap().evaluate();
         self_value.cmp_hand_type(other_value)
     }
 
+    #[must_use]
     pub fn cmp_with_order(&self, other: &Self) -> Ordering {
         match self.cmp_hand_type(other) {
             Ordering::Equal => self

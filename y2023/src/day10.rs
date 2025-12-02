@@ -3,7 +3,7 @@ use geo::{area::Area, Coord, CoordsIter, Polygon};
 use std::collections::HashMap;
 
 #[derive(Debug, Default, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum PipeShape {
+enum PipeShape {
     Vertical,
     Horizontal,
     BottomRight,
@@ -53,7 +53,7 @@ impl TryFrom<char> for PipeShape {
 }
 
 impl PipeShape {
-    pub const fn to_char(&self) -> char {
+    const fn to_char(self) -> char {
         match self {
             Self::Vertical => '|',
             Self::Horizontal => '-',
@@ -66,7 +66,7 @@ impl PipeShape {
         }
     }
 
-    pub const fn to_ascii_border(&self) -> char {
+    const fn to_ascii_border(self) -> char {
         match self {
             Self::TopLeft => '┌',
             Self::TopRight => '┐',
@@ -178,7 +178,7 @@ fn pipes_polygon(pipes: &Pipes, start: Coord<i32>) -> Result<Polygon<i32>> {
     Ok(Polygon::new(points.into(), vec![]))
 }
 
-pub fn furthest_node(input: &str) -> Result<usize> {
+fn furthest_node(input: &str) -> Result<usize> {
     Ok(parse_input(input)?.exterior().points().len() / 2)
 }
 
@@ -186,7 +186,7 @@ pub fn furthest_node(input: &str) -> Result<usize> {
 #[allow(clippy::cast_sign_loss)] // We know the result is always positive
 #[allow(clippy::cast_precision_loss)] // Tested it, and it's fine
 #[allow(clippy::cast_possible_truncation)] // We're checking that the result is an integer
-pub fn inner_area(input: &str) -> Result<usize> {
+fn inner_area(input: &str) -> Result<usize> {
     let coords: Vec<_> = parse_input(input)?
         .exterior_coords_iter()
         .map(|c| Coord {

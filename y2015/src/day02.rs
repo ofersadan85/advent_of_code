@@ -1,4 +1,4 @@
-pub fn wrapper(x: usize, y: usize, z: usize) -> usize {
+fn wrapper(x: usize, y: usize, z: usize) -> usize {
     let width = 2 * x * y;
     let height = 2 * y * z;
     let length = 2 * x * z;
@@ -6,7 +6,7 @@ pub fn wrapper(x: usize, y: usize, z: usize) -> usize {
     width + height + length + min / 2
 }
 
-pub fn ribbon(x: usize, y: usize, z: usize) -> usize {
+fn ribbon(x: usize, y: usize, z: usize) -> usize {
     let max = x.max(y).max(z);
     (x + y + z - max) * 2 + x * y * z
 }

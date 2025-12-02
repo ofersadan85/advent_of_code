@@ -69,7 +69,7 @@ struct CellData {
 }
 
 #[instrument(skip_all, level = "info")]
-fn max_energize(grid: Grid<CellData>) -> usize {
+fn max_energize(grid: &Grid<CellData>) -> usize {
     let mut entry_options = HashSet::new();
     grid.x_range.clone().for_each(|x| {
         entry_options.insert(((x, 0).as_point(), Direction::South));
@@ -90,7 +90,7 @@ fn max_energize(grid: Grid<CellData>) -> usize {
 }
 
 #[instrument(skip_all, level = "info")]
-pub fn energize(grid: &mut Grid<CellData>, point: &Point, dir: Direction) -> usize {
+fn energize(grid: &mut Grid<CellData>, point: &Point, dir: Direction) -> usize {
     let mut to_visit = vec![(*point, dir)];
     while let Some((point, direction)) = to_visit.pop() {
         if let Some(cell) = grid.get_mut(&point) {
@@ -165,13 +165,13 @@ mod tests {
     #[test]
     fn example_2() {
         let grid: Grid<CellData> = EXAMPLE.parse().unwrap();
-        assert_eq!(max_energize(grid), 51);
+        assert_eq!(max_energize(&grid), 51);
     }
 
     #[test]
     fn part_2() {
         // init_tracing();
         let grid: Grid<CellData> = read_input().parse().unwrap();
-        assert_eq!(max_energize(grid), 7324);
+        assert_eq!(max_energize(&grid), 7324);
     }
 }

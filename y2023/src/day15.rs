@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn hash(s: &str) -> u8 {
+fn hash(s: &str) -> u8 {
     s.chars()
         .fold(0, |h, c| h.wrapping_add(c as u8).wrapping_mul(17))
 }
@@ -12,7 +12,7 @@ pub struct LightBox<'a> {
 }
 
 impl LightBox<'_> {
-    pub fn total_value(&self) -> usize {
+    fn total_value(&self) -> usize {
         self.labels
             .iter()
             .filter(|&label| self.values.contains_key(label))
@@ -22,7 +22,7 @@ impl LightBox<'_> {
     }
 }
 
-pub fn parse_input(s: &str) -> Vec<LightBox<'_>> {
+fn parse_input(s: &str) -> Vec<LightBox<'_>> {
     let mut boxes: Vec<LightBox> = (0..256).map(|_| LightBox::default()).collect();
     for item in s.split(',') {
         let (label, value_s) = item
@@ -44,7 +44,7 @@ pub fn parse_input(s: &str) -> Vec<LightBox<'_>> {
     boxes
 }
 
-pub fn sum_boxes(boxes: &[LightBox]) -> usize {
+fn sum_boxes(boxes: &[LightBox]) -> usize {
     boxes
         .iter()
         .enumerate()

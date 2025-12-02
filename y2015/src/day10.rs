@@ -26,7 +26,7 @@ pub fn look_and_say(numbers: &mut Vec<u8>) {
     *numbers = result;
 }
 
-pub fn look_and_say_many(s: &str, n: usize) -> String {
+fn look_and_say_many(s: &str, n: usize) -> String {
     #[allow(clippy::cast_possible_truncation)] // c is always a single digit
     let mut numbers = s
         .chars()

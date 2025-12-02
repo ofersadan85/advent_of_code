@@ -12,6 +12,7 @@ pub fn split_lines(s: &str) -> Vec<String> {
 }
 
 /// Same as `split_lines` but trims whitespace from start and end of input and from every line
+#[must_use]
 pub fn split_lines_trim(s: &str) -> Vec<String> {
     split_lines(s.trim())
         .iter()
@@ -99,6 +100,7 @@ where
 }
 
 /// Separates lines to blocks on empty lines
+#[must_use]
 pub fn lines_as_blocks(lines: &str) -> V2<String> {
     let mut result = vec![];
     let mut block = vec![];
