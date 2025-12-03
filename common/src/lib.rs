@@ -23,7 +23,7 @@ pub trait Solver<'a> {
     fn solve(&self, input: &'a str) -> Self::Output;
 
     /// The separator used to split the input file into chunks. Defaults to "------".
-    /// 
+    ///
     /// If each problem chunk is on a new line, consider overriding this method to return "\n".
     #[expect(clippy::unnecessary_literal_bound)]
     fn file_chunk_separator(&self) -> &str {
@@ -31,7 +31,7 @@ pub trait Solver<'a> {
     }
 
     /// Constructs the file path for the input file based on the source file location.
-    /// 
+    ///
     /// Overrides the default behavior to specify the input file path. By default,
     /// it replaces the source file extension with ".txt" and adjusts the path to start
     /// from the "src" directory.
@@ -46,9 +46,9 @@ pub trait Solver<'a> {
     }
 
     /// Reads the entire input file and returns its content as a `String`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an [`std::io::Error`] if the file cannot be read / opened.
     fn read_file(&self) -> Result<String, std::io::Error> {
         let path = self.file_path();
@@ -60,9 +60,9 @@ pub trait Solver<'a> {
 
     /// Reads a specific chunk of the input file, split by whatever is returned by
     /// [`Self::file_chunk_separator`]. Returns an error if the chunk index is out of bounds
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an [`std::io::Error`] if the file cannot be read / opened,
     /// or if the chunk index is out of bounds.
     fn read_file_chunk(&self, chunk_index: usize) -> Result<String, std::io::Error> {
