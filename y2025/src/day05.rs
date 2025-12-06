@@ -2,38 +2,27 @@ use advent_of_code_common::Solver;
 use itertools::Itertools;
 use std::ops::RangeInclusive;
 
-enum RangeUnification {
-    Separate,
-    Unified(RangeInclusive<usize>),
-}
-
-fn unify_ranges(r1: &RangeInclusive<usize>, r2: &RangeInclusive<usize>) -> RangeUnification {
-    if r1.contains(r2.start())
+fn ranges_cross<T: Ord>(r1: &RangeInclusive<T>, r2: &RangeInclusive<T>) -> bool {
+    r1.contains(r2.start())
         || r1.contains(r2.end())
         || r2.contains(r1.start())
         || r2.contains(r1.end())
-    {
-        RangeUnification::Unified((*r1.start().min(r2.start()))..=(*r1.end().max(r2.end())))
-    } else {
-        RangeUnification::Separate
-    }
 }
 
-fn unify_multiple_ranges(ranges: &mut Vec<RangeInclusive<usize>>) {
+fn unify_ranges<T: Ord + Copy>(ranges: &mut Vec<RangeInclusive<T>>) {
     let mut i = 0;
     while i < ranges.len() {
         let mut changed = false;
         let mut j = i + 1;
         while j < ranges.len() {
-            match unify_ranges(&ranges[i], &ranges[j]) {
-                RangeUnification::Unified(unified) => {
-                    ranges[i] = unified;
-                    ranges.remove(j);
-                    changed = true;
-                }
-                RangeUnification::Separate => {
-                    j += 1;
-                }
+            if ranges_cross(&ranges[i], &ranges[j]) {
+                let start = *ranges[i].start().min(ranges[j].start());
+                let end = *ranges[i].end().max(ranges[j].end());
+                ranges[i] = start..=end;
+                ranges.remove(j);
+                changed = true;
+            } else {
+                j += 1;
             }
         }
         if !changed {
@@ -53,7 +42,7 @@ fn parse_input(input: &str) -> (Vec<RangeInclusive<usize>>, Vec<usize>) {
             start..=end
         })
         .collect();
-    unify_multiple_ranges(&mut ranges);
+    unify_ranges(&mut ranges);
     let numbers = lines.filter_map(|s| s.parse().ok()).collect();
     (ranges, numbers)
 }
