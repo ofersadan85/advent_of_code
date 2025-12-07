@@ -1,4 +1,4 @@
-advent_of_code_macros::all_the_days!(6);
+advent_of_code_macros::all_the_days!(7);
 
 #[macro_export]
 macro_rules! default_input_path {
