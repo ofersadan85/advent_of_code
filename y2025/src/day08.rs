@@ -34,10 +34,36 @@ impl Position {
     }
 }
 
+type Cluster = HashSet<Position>;
+
+enum Inclusion {
+    None,
+    One,
+    Both,
+}
+
 #[derive(Clone)]
 struct Connection {
     cubes: (Position, Position),
     distance: f64,
+}
+
+impl Connection {
+    fn is_in_cluster(&self, cluster: &Cluster) -> Inclusion {
+        match (
+            cluster.contains(&self.cubes.0),
+            cluster.contains(&self.cubes.1),
+        ) {
+            (false, false) => Inclusion::None,
+            (true, true) => Inclusion::Both,
+            (true, false) | (false, true) => Inclusion::One,
+        }
+    }
+
+    fn insert_into_cluster(&self, cluster: &mut Cluster) {
+        cluster.insert(self.cubes.0.clone());
+        cluster.insert(self.cubes.1.clone());
+    }
 }
 
 fn sorted_connections(cubes: &[Position]) -> Vec<Connection> {
@@ -52,51 +78,51 @@ fn sorted_connections(cubes: &[Position]) -> Vec<Connection> {
     connections
 }
 
-type Cluster = HashSet<Position>;
-
 fn build_clusters(input: &str, limit: usize) -> (Vec<Cluster>, Connection) {
     let cubes: Vec<Position> = input.lines().filter_map(|line| line.parse().ok()).collect();
     let connections = sorted_connections(&cubes);
+    let limit = limit.min(connections.len());
     let mut clusters: Vec<Cluster> = Vec::new();
-    'outer: for connection in &connections[..limit.min(connections.len())] {
+    'outer: for connection in &connections[..limit] {
         let mut found = None;
         for (idx, cluster) in clusters.iter_mut().enumerate() {
-            if cluster.contains(&connection.cubes.0) && cluster.contains(&connection.cubes.1) {
-                continue 'outer;
-            }
-            if cluster.contains(&connection.cubes.0) || cluster.contains(&connection.cubes.1) {
-                cluster.insert(connection.cubes.0.clone());
-                cluster.insert(connection.cubes.1.clone());
-                found = Some(idx);
-                break;
+            match connection.is_in_cluster(cluster) {
+                Inclusion::One => {
+                    connection.insert_into_cluster(cluster);
+                    found = Some(idx);
+                    break;
+                }
+                Inclusion::Both => continue 'outer,
+                Inclusion::None => {}
             }
         }
         if let Some(idx) = found {
-            let mut to_merge = Vec::new();
-            for (other_idx, cluster) in clusters.iter().enumerate() {
-                if other_idx != idx
-                    && (cluster.contains(&connection.cubes.0)
-                        || cluster.contains(&connection.cubes.1))
-                {
-                    to_merge.push(other_idx);
-                }
-            }
-            for merge_idx in to_merge.into_iter().rev() {
+            let to_merge: Vec<usize> = clusters[idx + 1..]
+                .iter()
+                .enumerate()
+                .rev()
+                .filter_map(|(other_idx, cluster)| {
+                    if matches!(connection.is_in_cluster(cluster), Inclusion::None) {
+                        None
+                    } else {
+                        Some(other_idx + idx + 1)
+                    }
+                })
+                .collect();
+            for merge_idx in to_merge {
                 let merging_cluster = clusters.remove(merge_idx);
                 clusters[idx].extend(merging_cluster);
             }
         } else {
             let mut new_cluster = Cluster::new();
-            new_cluster.insert(connection.cubes.0.clone());
-            new_cluster.insert(connection.cubes.1.clone());
+            connection.insert_into_cluster(&mut new_cluster);
             clusters.push(new_cluster);
         }
         if clusters.len() == 1 && clusters[0].len() == cubes.len() {
             return (clusters, connection.clone());
         }
     }
-    let last_idx = limit.min(connections.len()) - 1;
-    (clusters, connections[last_idx].clone())
+    (clusters, connections[limit - 1].clone())
 }
 
 struct Part1(usize);
