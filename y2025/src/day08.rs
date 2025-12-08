@@ -26,11 +26,12 @@ impl FromStr for Position {
 
 impl Position {
     #[expect(clippy::cast_precision_loss)]
-    fn euclidean_distance(&self, other: &Self) -> f64 {
+    fn euclidean_distance(&self, other: &Self) -> usize {
         let dx = self.x.abs_diff(other.x);
         let dy = self.y.abs_diff(other.y);
         let dz = self.z.abs_diff(other.z);
-        ((dx * dx + dy * dy + dz * dz) as f64).sqrt()
+        // Turns out that using integer square root is sufficient for this problem
+        (dx * dx + dy * dy + dz * dz).isqrt()
     }
 }
 
@@ -45,7 +46,7 @@ enum Inclusion {
 #[derive(Clone)]
 struct Connection {
     cubes: (Position, Position),
-    distance: f64,
+    distance: usize,
 }
 
 impl Connection {
@@ -74,7 +75,7 @@ fn sorted_connections(cubes: &[Position]) -> Vec<Connection> {
             distance: a.euclidean_distance(b),
         });
     }
-    connections.sort_unstable_by(|a, b| a.distance.total_cmp(&b.distance));
+    connections.sort_unstable_by_key(|conn| conn.distance);
     connections
 }
 
