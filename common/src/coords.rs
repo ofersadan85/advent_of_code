@@ -16,6 +16,21 @@ impl std::fmt::Display for Point {
     }
 }
 
+/// Parse a Point from a string in the format "x,y" or "(x,y)", where x and y are integers.
+///
+/// Whitespace around the coordinates or around the comma is ignored.
+impl std::str::FromStr for Point {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.trim().trim_start_matches('(').trim_end_matches(')');
+        let (x_str, y_str) = s.split_once(',').ok_or("Invalid point format")?;
+        let x = x_str.trim().parse().map_err(|_| "Invalid x coordinate")?;
+        let y = y_str.trim().parse().map_err(|_| "Invalid y coordinate")?;
+        Ok(Self { x, y })
+    }
+}
+
 /// An implementation of [`PartialOrd`] and [`Ord`] is required to use [`Point`] as a key in a [`BTreeMap`].
 ///
 /// The ordering is first by `y` coordinate, then by `x` coordinate.
@@ -742,5 +757,33 @@ where
             x: self.x() * rhs,
             y: self.y() * rhs,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn point_str() {
+        let p: Point = "3,4".parse().unwrap();
+        assert_eq!(p.x, 3);
+        assert_eq!(p.y, 4);
+        let p: Point = "(3,4)".parse().unwrap();
+        assert_eq!(p.x, 3);
+        assert_eq!(p.y, 4);
+        // With spaces
+        let p: Point = "   ( -2 ,  5 )   ".parse().unwrap();
+        assert_eq!(p.x, -2);
+        assert_eq!(p.y, 5);
+        // Invalid formats
+        let p: Result<Point, _> = "invalid".parse();
+        assert!(p.is_err());
+        let p: Result<Point, _> = "(1;2)".parse();
+        assert!(p.is_err());
+        let p: Result<Point, _> = "(12)".parse();
+        assert!(p.is_err());
+        let p: Result<Point, _> = "(1.2,2.4)".parse();
+        assert!(p.is_err());
     }
 }

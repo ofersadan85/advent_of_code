@@ -25,8 +25,7 @@ impl FromStr for Position {
 }
 
 impl Position {
-    #[expect(clippy::cast_precision_loss)]
-    fn euclidean_distance(&self, other: &Self) -> usize {
+    const fn euclidean_distance(&self, other: &Self) -> usize {
         let dx = self.x.abs_diff(other.x);
         let dy = self.y.abs_diff(other.y);
         let dz = self.z.abs_diff(other.z);
