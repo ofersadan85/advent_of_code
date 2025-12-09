@@ -1,8 +1,8 @@
-use std::num::ParseIntError;
+use advent_of_code_common::Solver;
 
-fn parse_input(s: &str) -> Result<Vec<usize>, ParseIntError> {
+fn parse_input(s: &str) -> Vec<usize> {
     s.split_ascii_whitespace()
-        .map(str::parse::<usize>)
+        .filter_map(|line| line.parse().ok())
         .collect()
 }
 
@@ -20,21 +20,47 @@ const fn fuel_per_mass_recursive(mass: usize) -> usize {
     total_fuel
 }
 
-#[advent_of_code_macros::aoc_tests]
+struct Part1;
+impl Solver<'_> for Part1 {
+    type Output = usize;
+
+    fn solve(&self, input: &str) -> Self::Output {
+        parse_input(input).iter().map(|&m| fuel_per_mass(m)).sum()
+    }
+
+    fn file_path(&self) -> std::path::PathBuf {
+        crate::default_input_path!()
+    }
+}
+
+struct Part2;
+impl Solver<'_> for Part2 {
+    type Output = usize;
+
+    fn solve(&self, input: &str) -> Self::Output {
+        parse_input(input)
+            .iter()
+            .map(|&m| fuel_per_mass_recursive(m))
+            .sum()
+    }
+
+    fn file_path(&self) -> std::path::PathBuf {
+        crate::default_input_path!()
+    }
+}
+
+#[cfg(test)]
 mod tests {
+    use super::*;
+    use advent_of_code_common::expect_solution;
+
     #[test]
-    fn part1() {
-        let input = read_input();
-        let masses = parse_input(&input).unwrap();
-        let total_fuel: usize = masses.iter().map(|&m| fuel_per_mass(m)).sum();
-        assert_eq!(total_fuel, 3154112);
+    fn part_1() {
+        expect_solution!(Part1, 0, 3154112);
     }
 
     #[test]
-    fn part2() {
-        let input = read_input();
-        let masses = parse_input(&input).unwrap();
-        let total_fuel: usize = masses.iter().map(|&m| fuel_per_mass_recursive(m)).sum();
-        assert_eq!(total_fuel, 4728317);
+    fn part_2() {
+        expect_solution!(Part2, 0, 4728317);
     }
 }
