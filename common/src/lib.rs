@@ -13,7 +13,7 @@ pub mod v2;
 /// The lifetime parameter `'a` allows the solver to return references to the input string
 /// if needed.
 pub trait Solver<'a> {
-    /// The output type of the solver. Must implement [`std::fmt::Debug`
+    /// The output type of the solver. Must implement [`std::fmt::Debug`]
     type Output: std::fmt::Debug;
 
     /// The main solving function. Takes the input as a string slice and returns the output.

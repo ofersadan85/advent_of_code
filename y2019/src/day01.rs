@@ -50,6 +50,7 @@ impl Solver<'_> for Part2 {
 }
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     use advent_of_code_common::expect_solution;
