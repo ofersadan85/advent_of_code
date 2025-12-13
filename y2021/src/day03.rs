@@ -1,7 +1,4 @@
-use advent_of_code_common::{
-    file::{lines_as_digits_radix, parse_file},
-    v2::V2,
-};
+use advent_of_code_common::{file::lines_as_digits_radix, v2::V2};
 use itertools::iproduct;
 use std::collections::HashMap;
 
@@ -91,12 +88,12 @@ fn life_support(data: &V2<bool>) -> usize {
 }
 
 fn input(example: bool) -> V2<bool> {
-    let data: V2<u32> = if example {
-        lines_as_digits_radix(EXAMPLE, 2)
+    let input = if example {
+        EXAMPLE
     } else {
-        parse_file(PATH, |lines| lines_as_digits_radix(lines, 2))
-    }
-    .unwrap();
+        &std::fs::read_to_string(PATH).unwrap()
+    };
+    let data = lines_as_digits_radix::<u32>(input, 2).unwrap();
     data.iter()
         .map(|line| line.iter().map(|&b| b == 1).collect())
         .collect()

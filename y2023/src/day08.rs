@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use integer_sqrt::IntegerSquareRoot;
 use std::collections::{HashMap, HashSet};
 
 pub const EXAMPLE1: &str = "RL
@@ -33,7 +32,7 @@ fn prime_factors(n: &u128) -> Vec<u128> {
     let mut n = *n;
     let mut div = 2;
     let mut result = Vec::new();
-    let max_div = n.integer_sqrt();
+    let max_div = n.isqrt();
     while n > 1 {
         if div > max_div {
             result.push(n);

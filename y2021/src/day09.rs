@@ -70,7 +70,7 @@ fn setup_data(data: &[String]) -> V2<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::file::{lines_as_digits, parse_file};
+    use advent_of_code_common::file::lines_as_digits;
 
     #[test]
     fn example_1() {
@@ -86,13 +86,15 @@ mod tests {
 
     #[test]
     fn task_1() {
-        let data = parse_file(PATH, lines_as_digits).unwrap();
+        let input = std::fs::read_to_string(PATH).unwrap();
+        let data = lines_as_digits(&input).unwrap();
         assert_eq!(get_low_points(&data), 594);
     }
 
     #[test]
     fn task_2() {
-        let data = parse_file(PATH, lines_as_digits).unwrap();
+        let input = std::fs::read_to_string(PATH).unwrap();
+        let data = lines_as_digits(&input).unwrap();
         assert_eq!(count_basins(&data), 858_494);
     }
 }

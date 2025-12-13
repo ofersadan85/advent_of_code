@@ -76,7 +76,7 @@ fn setup_data(data: &[String]) -> V2<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::file::{lines_as_digits, parse_file};
+    use advent_of_code_common::file::lines_as_digits;
 
     #[test]
     fn example_1() {
@@ -94,14 +94,16 @@ mod tests {
 
     #[test]
     fn task_1() {
-        let mut data = parse_file(PATH, lines_as_digits).unwrap();
+        let input = std::fs::read_to_string(PATH).unwrap();
+        let mut data = lines_as_digits(&input).unwrap();
         let result: usize = count_flashes(&mut data, 100);
         assert_eq!(result, 1741);
     }
 
     #[test]
     fn task_2() {
-        let mut data = parse_file(PATH, lines_as_digits).unwrap();
+        let input = std::fs::read_to_string(PATH).unwrap();
+        let mut data = lines_as_digits(&input).unwrap();
         let result: usize = sync_flash(&mut data);
         assert_eq!(result, 440);
     }

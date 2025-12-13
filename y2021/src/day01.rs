@@ -26,23 +26,27 @@ fn count_increments_windows(data: &[i32]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use advent_of_code_common::file::{lines_as_numbers, parse_file};
 
     #[test]
     fn example() {
-        let data = lines_as_numbers(EXAMPLE).unwrap();
+        let data: Vec<i32> = EXAMPLE
+            .lines()
+            .filter_map(|line| line.parse().ok())
+            .collect();
         assert_eq!(count_increments(&data), 7);
     }
 
     #[test]
     fn task_1() {
-        let data = parse_file(PATH, lines_as_numbers).unwrap();
+        let input = std::fs::read_to_string(PATH).unwrap();
+        let data: Vec<i32> = input.lines().filter_map(|line| line.parse().ok()).collect();
         assert_eq!(count_increments(&data), 1316);
     }
 
     #[test]
     fn task_2() {
-        let data = parse_file(PATH, lines_as_numbers).unwrap();
+        let input = std::fs::read_to_string(PATH).unwrap();
+        let data: Vec<i32> = input.lines().filter_map(|line| line.parse().ok()).collect();
         assert_eq!(count_increments_windows(&data), 1344);
     }
 }

@@ -1,6 +1,5 @@
-use integer_sqrt::IntegerSquareRoot;
 use itertools::Itertools;
-use num::{Integer, Num, NumCast, One, PrimInt, Unsigned, Zero};
+use num::{integer, Integer, Num, NumCast, One, PrimInt, Unsigned, Zero};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -56,16 +55,16 @@ where
 }
 
 /// Calculate the prime factors of positive integers
-#[allow(clippy::missing_panics_doc)] // False positive - will never panic
+#[expect(clippy::missing_panics_doc)] // False positive - will never panic
 pub fn prime_factors<T>(n: &T) -> Vec<T>
 where
-    T: PrimInt + Unsigned + NumCast + Copy,
+    T: PrimInt + Unsigned + integer::Roots + NumCast + Copy,
 {
     let two = NumCast::from(2).expect("Casting 2");
     let mut n = *n;
     let mut div = two;
     let mut result: Vec<T> = Vec::new();
-    let max_div = n.integer_sqrt();
+    let max_div = integer::sqrt(n);
     while n > One::one() {
         if div > max_div {
             result.push(n);
