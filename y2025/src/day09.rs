@@ -6,7 +6,7 @@ fn parse_points(input: &str) -> Vec<Point> {
     input.lines().filter_map(|line| line.parse().ok()).collect()
 }
 
-fn area(a: &Point, b: &Point) -> usize {
+const fn area(a: &Point, b: &Point) -> usize {
     (a.x.abs_diff(b.x) + 1) * (a.y.abs_diff(b.y) + 1)
 }
 
@@ -56,8 +56,7 @@ impl Solver<'_> for Part2 {
                 }
                 true
             })
-            .map(|(_, _, area)| area)
-            .unwrap_or(0)
+            .map_or(0, |(_, _, area)| area)
     }
 
     fn file_path(&self) -> std::path::PathBuf {

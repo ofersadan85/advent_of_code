@@ -40,7 +40,7 @@ impl std::str::FromStr for Machine {
             .split(',')
             .filter_map(|n| n.trim().parse().ok())
             .collect();
-        let machine = Machine {
+        let machine = Self {
             lights,
             buttons,
             jolts,

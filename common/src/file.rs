@@ -36,8 +36,9 @@ where
 ///
 /// # Errors
 ///
-/// Will return `Err(())` if characters are not valid digits under given radix
-pub fn lines_as_digits_radix<T>(lines: &str, radix: u32) -> Result<V2<T>, ()>
+/// Will return `None` if characters are not valid digits under given radix
+#[must_use]
+pub fn lines_as_digits_radix<T>(lines: &str, radix: u32) -> Option<V2<T>>
 where
     T: From<u32>,
 {
@@ -45,20 +46,21 @@ where
     for row in split_lines_trim(lines) {
         let mut row_vec = vec![];
         for c in row.chars() {
-            let digit = c.to_digit(radix).ok_or(())?;
+            let digit = c.to_digit(radix)?;
             row_vec.push(digit.into());
         }
         result.push(row_vec);
     }
-    Ok(result)
+    Some(result)
 }
 
 /// Treats lines as 2d Vector of digits where each character i
 ///
 /// # Errors
 ///
-/// Will return `Err(())` if characters are not valid digits under given radix
-pub fn lines_as_digits<T>(lines: &str) -> Result<V2<T>, ()>
+/// Will return `None` if characters are not valid digits under given radix
+#[must_use]
+pub fn lines_as_digits<T>(lines: &str) -> Option<V2<T>>
 where
     T: From<u32>,
 {
