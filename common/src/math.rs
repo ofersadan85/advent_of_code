@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use num::{integer, Integer, Num, NumCast, One, PrimInt, Unsigned, Zero};
+use num::{integer, Integer, Num, PrimInt, Unsigned, Zero};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -22,59 +22,57 @@ where
     T: Into<f64>,
 {
     let (a, b, c): (f64, f64, f64) = (a.into(), b.into(), c.into());
-    let two: f64 = NumCast::from(2).expect("Casting 2");
-    let discriminant = b.mul_add(b, -two * two * a * c); // b * b - two * two * a * c;
-    if a == Zero::zero() {
+    let discriminant = b.mul_add(b, -4.0 * a * c); // b * b - two * two * a * c;
+    if a.is_zero() {
         return Err(Error::DivisionByZero);
     }
-    if discriminant < 0. {
+    if discriminant < 0.0 {
         Err(Error::ImaginaryRoots)
     } else {
+        let divisor = 2.0 * a;
         Ok((
-            (-b + discriminant.sqrt()) / (two * a),
-            (-b - discriminant.sqrt()) / (two * a),
+            (-b + discriminant.sqrt()) / divisor,
+            (-b - discriminant.sqrt()) / divisor,
         ))
     }
 }
 
 /// Sums the series [1, 2, .., n]
 #[allow(clippy::missing_panics_doc)] // False positive - will never panic
-pub fn simple_series_sum<T: Integer + NumCast + Copy>(n: T) -> T {
-    (n * n + n) / NumCast::from(2).expect("Casting 2")
+pub fn simple_series_sum<T: PrimInt>(n: T) -> T {
+    (n * n + n) / (T::one() + T::one())
 }
 
 /// Sums the series [n.., m] in steps
-#[allow(clippy::missing_panics_doc)] // False positive - will never panic
 pub fn series_sum<T>(start: T, end: T, step: T) -> T
 where
-    T: Num + NumCast + Copy,
+    T: Num + Copy,
 {
     let real_end = end - (end % step);
-    let steps = (real_end - start) / step + One::one();
-    steps * (start + real_end) / NumCast::from(2).expect("Casting 2")
+    let steps = (real_end - start) / step + T::one();
+    steps * (start + real_end) / (T::one() + T::one())
 }
 
 /// Calculate the prime factors of positive integers
-#[expect(clippy::missing_panics_doc)] // False positive - will never panic
 pub fn prime_factors<T>(n: &T) -> Vec<T>
 where
-    T: PrimInt + Unsigned + integer::Roots + NumCast + Copy,
+    T: Unsigned + integer::Roots + Copy,
 {
-    let two = NumCast::from(2).expect("Casting 2");
+    let two = T::one() + T::one();
     let mut n = *n;
     let mut div = two;
     let mut result: Vec<T> = Vec::new();
     let max_div = integer::sqrt(n);
-    while n > One::one() {
+    while n > T::one() {
         if div > max_div {
             result.push(n);
             break;
-        } else if n % div == Zero::zero() {
+        } else if n % div == T::zero() {
             result.push(div);
             n = n / div;
             div = two;
         } else {
-            div = div + One::one();
+            div = div + T::one();
         }
     }
     result
