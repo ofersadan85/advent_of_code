@@ -64,7 +64,7 @@ struct Packet {
     version: u8,
     op_type: OpType,
     length: LengthType,
-    operands: Vec<Packet>,
+    operands: Vec<Self>,
 }
 
 impl Packet {

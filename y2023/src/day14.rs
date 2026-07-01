@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use std::cmp::Reverse;
 use std::fmt::Debug;
 use tracing::{info, instrument};
 
@@ -130,20 +131,20 @@ fn push_rocks(rocks: &[Rock], direction: Direction, max: usize) -> Vec<Rock> {
     }
     match direction {
         North => {
-            no_move.sort_unstable_by(|a: &Rock, b| b.y.cmp(&a.y));
-            to_move.sort_unstable_by(|a, b| b.y.cmp(&a.y));
+            no_move.sort_unstable_by_key(|b| Reverse(b.x));
+            to_move.sort_unstable_by_key(|b| Reverse(b.y));
         }
         South => {
-            no_move.sort_unstable_by(|b: &Rock, a| b.y.cmp(&a.y));
-            to_move.sort_unstable_by(|b, a| b.y.cmp(&a.y));
+            no_move.sort_unstable_by_key(|b| b.y);
+            to_move.sort_unstable_by_key(|b| b.y);
         }
         West => {
-            no_move.sort_unstable_by(|a: &Rock, b| b.x.cmp(&a.x));
-            to_move.sort_unstable_by(|a, b| b.x.cmp(&a.x));
+            no_move.sort_unstable_by_key(|b| Reverse(b.x));
+            to_move.sort_unstable_by_key(|b| Reverse(b.x));
         }
         East => {
-            no_move.sort_unstable_by(|b: &Rock, a| b.x.cmp(&a.x));
-            to_move.sort_unstable_by(|b, a| b.x.cmp(&a.x));
+            no_move.sort_unstable_by_key(|b| b.x);
+            to_move.sort_unstable_by_key(|b| b.x);
         }
     }
 

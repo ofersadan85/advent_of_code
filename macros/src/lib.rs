@@ -61,9 +61,9 @@ pub fn aoc_tests(
 
 /// A procedural macro to include all day modules up to a specified last day.
 /// If no last day is specified, defaults to 25.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if the provided last day is not a valid integer
 #[proc_macro]
 pub fn all_the_days(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -108,9 +108,9 @@ pub fn derive_char_enum_display(input: proc_macro::TokenStream) -> proc_macro::T
 }
 
 /// A procedural macro to define an enum where each variant is associated with a `char` value.
-/// 
+///
 /// # Panics
-/// 
+///
 /// Panics if any variant does not have a `char` discriminant.
 #[proc_macro_attribute]
 pub fn char_enum(
