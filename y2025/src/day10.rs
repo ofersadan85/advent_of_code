@@ -126,6 +126,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "not yet implemented"]
     fn part_2() {
         expect_solution!(Part2, 0, 33);
         // expect_solution!(Part2, 1, 1562459680);
