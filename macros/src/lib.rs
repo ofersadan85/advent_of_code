@@ -1,7 +1,8 @@
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 use syn::parse_macro_input;
 
 mod impls;
+mod solver_fn;
 
 fn read_input_fn() -> proc_macro2::TokenStream {
     quote! {
@@ -26,6 +27,19 @@ fn read_input_fn() -> proc_macro2::TokenStream {
             std::fs::read_to_string(format!("../inputs/{year}/{day}")).expect("Input file")
         }
     }
+}
+
+#[proc_macro_attribute]
+pub fn aoc_solver(
+    attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    let input = parse_macro_input!(item as syn::ItemFn);
+    // Parse as a punctuated list of MetaNameValue pairs
+    let attrs = parse_macro_input!(attr as solver_fn::AttrPairs);
+    solver_fn::impl_solver(&input, attrs)
+        .unwrap_or_else(|e| e.to_compile_error())
+        .into()
 }
 
 #[proc_macro_attribute]
@@ -132,11 +146,11 @@ pub fn char_enum(
             .push(syn::parse_quote!(#[derive(Debug, PartialEq, Eq, Clone, Copy, #derive_variant)]));
     } else {
         for attr in &mut item.attrs {
-            if attr.meta.path().is_ident("derive") {
-                if let syn::Meta::List(ref mut list) = attr.meta {
-                    list.tokens
-                        .extend(quote! {, Debug, PartialEq, Eq, Clone, Copy, #derive_variant});
-                }
+            if attr.meta.path().is_ident("derive")
+                && let syn::Meta::List(ref mut list) = attr.meta
+            {
+                list.tokens
+                    .extend(quote! {, Debug, PartialEq, Eq, Clone, Copy, #derive_variant});
             }
         }
     }
