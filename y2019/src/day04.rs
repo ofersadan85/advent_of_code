@@ -40,7 +40,7 @@ impl Password {
             for &d in &self.0 {
                 counts[d] += 1;
             }
-            if counts.iter().any(|&c| c == 2) {
+            if counts.contains(&2) {
                 break;
             }
         }
@@ -95,8 +95,8 @@ impl From<&Password> for usize {
 
 fn solve(input: &str, tick_f: fn(&mut Password)) -> usize {
     let (start, end) = input.trim().split_once('-').expect("valid input");
-    let start = usize::from_str_radix(start, 10).expect("valid input");
-    let end = usize::from_str_radix(end, 10).expect("valid input");
+    let start: usize = start.parse().expect("valid input");
+    let end: usize = end.parse().expect("valid input");
     let mut current = Password::from(start);
     // Ensure the first counted password is valid
     while current.0.windows(2).any(|w| w[0] > w[1]) {
