@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, collections::VecDeque, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq)]
 enum ValueMode {
@@ -35,9 +35,9 @@ impl Instruction {
     const fn parameter_count(&self) -> usize {
         match self {
             Self::Add | Self::Multiply | Self::LessThan | Self::Equals => 3,
-            Self::Input | Self::Output => 1,
+            Self::Output => 1,
             Self::JumpIfTrue | Self::JumpIfFalse => 2,
-            Self::Halt => 0,
+            Self::Halt | Self::Input => 0, // Input is a special case
         }
     }
 }
@@ -79,42 +79,71 @@ impl From<isize> for Opcode {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum State {
+    Running,
+    AwaitingInput,
+    Halted,
+}
+
 #[derive(Clone)]
 pub struct IntcodeComputer {
     pub memory: Vec<isize>,
     pc: usize, // program counter
+    queued_input: VecDeque<isize>,
+    pub state: State,
+    pub output: VecDeque<isize>,
+}
+
+impl FromStr for IntcodeComputer {
+    type Err = std::num::ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let memory: Result<Vec<isize>, _> = s.trim().split(',').map(str::parse).collect();
+        Ok(Self::new(memory?))
+    }
 }
 
 impl IntcodeComputer {
     pub const fn new(memory: Vec<isize>) -> Self {
-        Self { memory, pc: 0 }
+        Self {
+            memory,
+            pc: 0,
+            queued_input: VecDeque::new(),
+            state: State::Running,
+            output: VecDeque::new(),
+        }
     }
 
-    pub fn build(memory_input: &str) -> Self {
-        let memory = memory_input
-            .trim()
-            .split(',')
-            .map(|line| line.parse().expect("valid number input"))
-            .collect();
-        Self::new(memory)
+    pub fn queue_input(&mut self, input: isize) {
+        self.queued_input.push_back(input);
     }
 
-    pub fn build_and_run(memory_input: &str, input_values: &[isize]) -> Vec<isize> {
-        let mut computer = Self::build(memory_input);
-        computer.run(input_values)
+    fn handle_input(&mut self) {
+        let dest = usize::try_from(self.memory[self.pc + 1]).expect("Index must be non-negative");
+        match self.queued_input.pop_front() {
+            Some(value) => {
+                self.memory[dest] = value;
+                self.pc += 2; // Move past the input instruction and its parameter only when consumed
+            }
+            None => self.state = State::AwaitingInput,
+        }
     }
 
-    pub fn run(&mut self, input_values: &[isize]) -> Vec<isize> {
-        let mut input_values_iter = input_values.iter();
-        let mut output = Vec::new();
+    pub fn run(&mut self) -> State {
+        if matches!(self.state, State::AwaitingInput) {
+            if self.queued_input.is_empty() {
+                return State::AwaitingInput;
+            }
+            self.state = State::Running;
+        }
         let real_index =
             |n: isize| -> usize { usize::try_from(n).expect("Index must be non-negative") };
         let value = |mode: &ValueMode, mem: &[isize], index: usize| match mode {
             ValueMode::Position => mem[real_index(mem[index])],
             ValueMode::Immediate => mem[index],
         };
-
-        loop {
+        while self.state == State::Running {
             let opcode = Opcode::from(self.memory[self.pc]);
             match opcode.instruction {
                 Instruction::Add => {
@@ -130,14 +159,15 @@ impl IntcodeComputer {
                     self.memory[dest] = a * b;
                 }
                 Instruction::Input => {
-                    let dest = real_index(self.memory[self.pc + 1]);
-                    println!("Reading input and storing in position {dest}");
-                    self.memory[dest] = *input_values_iter.next().expect("Expected input value");
+                    self.handle_input();
+                    if self.state == State::AwaitingInput {
+                        break;
+                    }
+                    continue; // Skip the normal pc increment at the end of the loop
                 }
                 Instruction::Output => {
                     let src = value(&opcode.modes[0], &self.memory, self.pc + 1);
-                    output.push(src);
-                    println!("Output: {src}");
+                    self.output.push_back(src);
                 }
                 Instruction::JumpIfTrue | Instruction::JumpIfFalse => {
                     let a = value(&opcode.modes[0], &self.memory, self.pc + 1);
@@ -160,10 +190,18 @@ impl IntcodeComputer {
                         _ => 0,
                     };
                 }
-                Instruction::Halt => break,
+                Instruction::Halt => {
+                    self.state = State::Halted;
+                    break;
+                }
             }
             self.pc += 1 + opcode.instruction.parameter_count();
         }
-        output
+        self.state
+    }
+
+    pub fn run_with_input(&mut self, input: impl Iterator<Item = isize>) -> State {
+        self.queued_input.extend(input);
+        self.run()
     }
 }
