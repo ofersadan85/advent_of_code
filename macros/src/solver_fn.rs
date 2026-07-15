@@ -116,7 +116,23 @@ pub fn impl_solver(
     } else {
         quote! {#f_name(input)}
     };
-    let test_name = syn::Ident::new(&format!("test_{f_name}"), f_name.span());
+    let mut prefix = attrs
+        .pairs
+        .remove("prefix")
+        .and_then(|m| str_value_from_meta_name_value(&m))
+        .unwrap_or_default();
+    if !prefix.ends_with('_') && !prefix.is_empty() {
+        prefix.push('_');
+    }
+    let mut suffix = attrs
+        .pairs
+        .remove("suffix")
+        .and_then(|m| str_value_from_meta_name_value(&m))
+        .unwrap_or_default();
+    if !suffix.starts_with('_') && !suffix.is_empty() {
+        suffix.insert(0, '_');
+    }
+    let test_name = syn::Ident::new(&format!("test_{prefix}{f_name}{suffix}"), f_name.span());
     Ok(quote! {
         #f
 
