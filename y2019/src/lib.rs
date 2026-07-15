@@ -17,3 +17,5 @@ macro_rules! default_input_path {
         ::std::path::PathBuf::from("../inputs/2019/").join(file_name)
     }};
 }
+
+mod intcode;
