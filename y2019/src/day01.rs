@@ -50,18 +50,17 @@ impl Solver<'_> for Part2 {
 }
 
 #[cfg(test)]
-#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     use advent_of_code_common::expect_solution;
 
     #[test]
     fn part_1() {
-        expect_solution!(Part1, 0, 3154112);
+        expect_solution!(Part1, 0, 3_154_112);
     }
 
     #[test]
     fn part_2() {
-        expect_solution!(Part2, 0, 4728317);
+        expect_solution!(Part2, 0, 4_728_317);
     }
 }

@@ -36,7 +36,7 @@ impl std::str::FromStr for Point {
 /// The ordering is first by `y` coordinate, then by `x` coordinate.
 ///
 /// Incidentally, this also facilitates printing a grid of points in the correct order.
-#[allow(clippy::non_canonical_partial_ord_impl)]
+#[expect(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for Point {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.y.cmp(&other.y).then(self.x.cmp(&other.x)))
@@ -103,7 +103,7 @@ pub trait Coords {
     /// let other = Point { x: 3, y: 4 };
     /// assert!(point.distance(&other) - 5.0 < f64::EPSILON);
     /// ```
-    #[allow(clippy::cast_precision_loss)]
+    #[expect(clippy::cast_precision_loss)]
     fn distance(&self, other: &dyn Coords) -> f64 {
         let dx = (self.x() - other.x()) as f64;
         let dy = (self.y() - other.y()) as f64;
@@ -267,7 +267,7 @@ pub trait Coords {
     /// assert_eq!(box_n[0], Point { x: -2, y: -2 });
     /// assert_eq!(box_n[24], Point { x: 2, y: 2 });
     /// ```
-    #[allow(clippy::cast_sign_loss)]
+    #[expect(clippy::cast_sign_loss)]
     fn neighbors_box_n(&self, n: isize) -> Vec<Point> {
         let size = 2 * n + 1;
         let mut neighbors = Vec::with_capacity((size * size) as usize);
@@ -306,6 +306,26 @@ pub trait Coords {
         let mut neighbors = [Point::default(); 9];
         neighbors.copy_from_slice(&self.neighbors_box_n(1));
         neighbors
+    }
+
+    /// Get the angle in radians to another Coords, relative to the positive x-axis.
+    ///
+    /// The angle is measured counter-clockwise from the positive x-axis.
+    /// The result is in the range `(-π, π]`, where positive angles are counter-clockwise and negative angles are clockwise.
+    ///
+    /// # Example
+    /// ```rust
+    /// use advent_of_code_common::coords::{Point, Coords};
+    /// let point = Point::default();
+    /// let other = Point { x: 1, y: 1 };
+    /// let angle = point.angle_to(&other);
+    /// assert!((angle - std::f64::consts::FRAC_PI_4).abs() < f64::EPSILON);
+    /// ```
+    #[expect(clippy::cast_precision_loss)]
+    fn angle_to(&self, other: &dyn Coords) -> f64 {
+        let dx = (other.x() - self.x()) as f64;
+        let dy = (other.y() - self.y()) as f64;
+        dy.atan2(dx)
     }
 }
 
