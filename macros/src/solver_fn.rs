@@ -96,12 +96,7 @@ pub fn impl_solver(
             }
         }
         (None, Some(input_meta)) => {
-            let value = str_value_from_meta_name_value(&input_meta).ok_or_else(|| {
-                syn::Error::new_spanned(
-                    &input_meta,
-                    "Expected a string literal for 'input' attribute",
-                )
-            })?;
+            let value = input_meta.value;
             quote! {#value}
         }
         _ => {
