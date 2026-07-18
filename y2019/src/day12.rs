@@ -40,7 +40,7 @@ impl FromStr for Moon {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<isize> = s
-            .trim_matches(&['<', '>'])
+            .trim_matches(['<', '>'])
             .splitn(3, ", ")
             .filter_map(|p| p.split_once('=').map(|x| x.1))
             .filter_map(|p| p.parse().ok())
@@ -58,13 +58,13 @@ impl FromStr for Moon {
 }
 
 impl Moon {
-    fn apply_gravity(&mut self, other: &Self) {
+    const fn apply_gravity(&mut self, other: &Self) {
         apply_axis_gravity!(self, other, x);
         apply_axis_gravity!(self, other, y);
         apply_axis_gravity!(self, other, z);
     }
 
-    fn apply_velocity(&mut self) {
+    const fn apply_velocity(&mut self) {
         self.position.x += self.velocity.x;
         self.position.y += self.velocity.y;
         self.position.z += self.velocity.z;
@@ -99,7 +99,7 @@ fn part_1(input: &str) -> isize {
     for _ in 0..1000 {
         physics_step(&mut moons);
     }
-    moons.iter().map(|m| m.energy()).sum()
+    moons.iter().map(Energy::energy).sum()
 }
 
 const EXAMPLE1: &str = "<x=-1, y=0, z=2>
@@ -129,7 +129,7 @@ fn part_2(input: &str) -> isize {
         }
         println!(
             "Total energy: {}",
-            moons.iter().map(|m| m.energy()).sum::<isize>()
+            moons.iter().map(Energy::energy).sum::<isize>()
         );
     }
     // moons.iter().map(|m| m.energy()).sum()
