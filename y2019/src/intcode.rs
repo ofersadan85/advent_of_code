@@ -126,8 +126,8 @@ impl IntcodeComputer {
         }
     }
 
-    pub fn queue_input(&mut self, input: isize) {
-        self.queued_input.push_back(input);
+    pub fn queue_input(&mut self, input: impl Into<isize>) {
+        self.queued_input.push_back(input.into());
     }
 
     fn read_memory(&self, index: usize) -> isize {
@@ -243,8 +243,12 @@ impl IntcodeComputer {
         self.state
     }
 
-    pub fn run_with_input(&mut self, input: impl Iterator<Item = isize>) -> State {
-        self.queued_input.extend(input);
+    pub fn run_with_input<I, T>(&mut self, input: I) -> State
+    where
+        I: Iterator<Item = T>,
+        T: Into<isize>,
+    {
+        self.queued_input.extend(input.map(Into::into));
         self.run()
     }
 }
