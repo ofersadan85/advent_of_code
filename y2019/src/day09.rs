@@ -20,7 +20,7 @@ use std::iter::once;
 #[aoc_solver(file = "inputs/2019/day09.txt", expected = [3742852857])]
 fn part_1(input: &str) -> Vec<isize> {
     let mut computer: IntcodeComputer = input.parse().expect("Invalid input");
-    computer.run_with_input(once(1));
+    computer.run_with_input(once(1_isize));
     println!("Output: {:?}", computer.output);
     computer.output.drain(..).collect()
 }
@@ -28,7 +28,7 @@ fn part_1(input: &str) -> Vec<isize> {
 #[aoc_solver(file = "inputs/2019/day09.txt", expected = [73439])]
 fn part_2(input: &str) -> Vec<isize> {
     let mut computer: IntcodeComputer = input.parse().expect("Invalid input");
-    computer.run_with_input(once(2));
+    computer.run_with_input(once(2_isize));
     println!("Output: {:?}", computer.output);
     computer.output.drain(..).collect()
 }
