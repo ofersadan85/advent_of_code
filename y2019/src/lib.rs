@@ -1,5 +1,5 @@
 mod intcode;
-advent_of_code_macros::all_the_days!(14);
+advent_of_code_macros::all_the_days!(15);
 
 #[macro_export]
 macro_rules! default_input_path {
