@@ -54,6 +54,48 @@ impl<T> Coords for GridCell<T> {
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone)]
+pub struct DimensionlessGrid<T = char> {
+    pub cells: BTreeMap<Point, GridCell<T>>,
+}
+
+impl<T> std::ops::Deref for DimensionlessGrid<T> {
+    type Target = BTreeMap<Point, GridCell<T>>;
+    fn deref(&self) -> &Self::Target {
+        &self.cells
+    }
+}
+
+impl<T> std::ops::DerefMut for DimensionlessGrid<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.cells
+    }
+}
+
+impl<T> From<DimensionlessGrid<T>> for Grid<T> {
+    fn from(dg: DimensionlessGrid<T>) -> Self {
+        let (mut min_x, mut max_x, mut min_y, mut max_y) =
+            (isize::MAX, isize::MIN, isize::MAX, isize::MIN);
+        for p in dg.cells.keys() {
+            min_x = min_x.min(p.x);
+            max_x = max_x.max(p.x);
+            min_y = min_y.min(p.y);
+            max_y = max_y.max(p.y);
+        }
+        Self {
+            x_range: min_x..max_x + 1,
+            y_range: min_y..max_y + 1,
+            cells: dg.cells,
+        }
+    }
+}
+
+impl<T> From<Grid<T>> for DimensionlessGrid<T> {
+    fn from(grid: Grid<T>) -> Self {
+        Self { cells: grid.cells }
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Clone)]
 pub struct Grid<T = char> {
     pub x_range: std::ops::Range<isize>,
     pub y_range: std::ops::Range<isize>,
@@ -146,6 +188,13 @@ impl<T> Grid<T> {
         grid.x_range = 0..width;
         grid.y_range = 0..height;
         grid
+    }
+
+    #[must_use]
+    pub const fn new_dimensionless() -> DimensionlessGrid<T> {
+        DimensionlessGrid {
+            cells: BTreeMap::new(),
+        }
     }
 
     #[must_use]
