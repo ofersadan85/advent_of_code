@@ -127,11 +127,18 @@ pub fn impl_solver(
     if !suffix.starts_with('_') && !suffix.is_empty() {
         suffix.insert(0, '_');
     }
+    let ignore = attrs
+        .pairs
+        .remove("ignore")
+        .map(|m| str_value_from_meta_name_value(&m))
+        .unwrap_or_default();
+    let ignore_attr = ignore.map_or_else(|| quote! {}, |ignore| quote! { #[ignore = #ignore] });
     let test_name = syn::Ident::new(&format!("test_{prefix}{f_name}{suffix}"), f_name.span());
     Ok(quote! {
         #f
 
         #[cfg(test)]
+        #ignore_attr
         #[test]
         fn #test_name() {
             let input = #input_expr;

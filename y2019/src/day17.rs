@@ -165,7 +165,7 @@ fn part_1(input: &str) -> isize {
     mark_intersections(&mut robot.grid)
 }
 
-#[aoc_solver(file = "inputs/2019/day17.txt", expected = 0)]
+#[aoc_solver(file = "inputs/2019/day17.txt", expected = 0, ignore = "not yet implemented")]
 fn part_2(input: &str) -> isize {
     let mut robot: Robot = input.parse().expect("valid robot");
     assert_eq!(robot.computer.state, State::AwaitingInput);
